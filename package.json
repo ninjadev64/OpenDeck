@@ -1,0 +1,15 @@
+{
+  "name": "oceandesktop",
+  "version": "1.0.0",
+  "description": "Software counterpart for your OceanDeck",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "ninjadev64",
+  "license": "ISC",
+  "dependencies": {
+    "serialport": "^10.4.0",
+    "electron": "^20.2.0"
+  }
+}
