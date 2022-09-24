@@ -1,0 +1,9 @@
+@font-face { font-family: Whitney; src: url("Rubik.ttf"); }
+
+* {
+    font-family: "Rubik", "Arial", "sans-serif";
+}
+
+input {
+    padding: 5px;
+}
