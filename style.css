@@ -4,6 +4,6 @@
     font-family: "Rubik", "Arial", "sans-serif";
 }
 
-input {
+input, select {
     padding: 5px;
 }

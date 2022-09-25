@@ -2,14 +2,15 @@
 <html lang="en">
 	<head>
     	<meta charset="UTF-8" />
-		<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'" />
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; connect-src *" />
 		<link rel="stylesheet" href="style.css" />
 		<title>OceanDesktop</title>
 	</head>
 	<body>
-		<input id="button1" placeholder="Executable for button 1"></input><br />
-		<input id="button2" placeholder="Executable for button 2"></input><br />
-		<input id="button3" placeholder="Executable for button 3"></input><br />
+		<select class="button-dropdown" id="1"></select><input id="option1" placeholder="Options for action" disabled></input><br />
+		<select class="button-dropdown" id="2"></select><input id="option2" placeholder="Options for action" disabled></input><br />
+		<select class="button-dropdown" id="3"></select><input id="option3" placeholder="Options for action" disabled></input><br />
 	</body>
+	<script src="configs.js"></script>
   	<script src="script.js"></script>
 </html>

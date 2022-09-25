@@ -9,7 +9,8 @@
   "author": "ninjadev64",
   "license": "ISC",
   "dependencies": {
-    "serialport": "^10.4.0",
-    "electron": "^20.2.0"
+    "discord-rpc": "^4.0.1",
+    "electron": "^20.2.0",
+    "serialport": "^10.4.0"
   }
 }
