@@ -4,7 +4,7 @@
 	"description": "Software counterpart for your OceanDeck",
 	"main": "main.js",
 	"scripts": {
-		"start": "electron-forge start",
+		"start": "electron .",
 		"package": "electron-forge package",
 		"make": "electron-forge make"
 	},
@@ -13,6 +13,7 @@
 	"dependencies": {
 		"discord-rpc": "^4.0.1",
 		"electron-squirrel-startup": "^1.0.0",
+		"node-key-sender": "^1.0.11",
 		"serialport": "^10.4.0"
 	},
 	"devDependencies": {
@@ -27,10 +28,26 @@
 		"forge": {
 			"packagerConfig": {},
 			"makers": [
-				{ "name": "@electron-forge/maker-squirrel", "config": { "name": "OceanDesktop" } },
-				{ "name": "@electron-forge/maker-zip", "platforms": [ "darwin" ] },
-				{ "name": "@electron-forge/maker-deb", "config": {} },
-				{ "name": "@electron-forge/maker-rpm", "config": {} }
+				{
+					"name": "@electron-forge/maker-squirrel",
+					"config": {
+						"name": "OceanDesktop"
+					}
+				},
+				{
+					"name": "@electron-forge/maker-zip",
+					"platforms": [
+						"darwin"
+					]
+				},
+				{
+					"name": "@electron-forge/maker-deb",
+					"config": {}
+				},
+				{
+					"name": "@electron-forge/maker-rpm",
+					"config": {}
+				}
 			]
 		}
 	}

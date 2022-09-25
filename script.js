@@ -2,6 +2,7 @@ const { SerialPort } = require("serialport");
 const { ReadlineParser } = require("@serialport/parser-readline");
 const spawn = require("child_process").spawn;
 const RPC = require("discord-rpc");
+const KS = require("node-key-sender");
 const port = new SerialPort({ path: "/dev/ttyACM0", baudRate: 57600 });
 const parser = port.pipe(new ReadlineParser({ delimiter: '\r\n' }));
 
@@ -14,6 +15,7 @@ const parser = port.pipe(new ReadlineParser({ delimiter: '\r\n' }));
 		<option value="dmute"> Discord Mute </option>
 		<option value="ddeaf"> Discord Deafen </option>
 		<option value="exec"> Launch Executable </option>
+		<option value="keyc"> Key Combination </option>
 		`
 		dropdown.addEventListener("change", function() {
 			let option = document.getElementById(`option${this.id}`);
@@ -24,6 +26,7 @@ const parser = port.pipe(new ReadlineParser({ delimiter: '\r\n' }));
 				case "dmute": callbacks[this.id] = mute; break;
 				case "ddeaf": callbacks[this.id] = deafen; break;
 				case "exec": callbacks[this.id] = application; option.disabled = false; break;
+				case "keyc": callbacks[this.id] = keyCombo; option.disabled = false; break;
 			}
 		});
 }})();
@@ -79,6 +82,11 @@ function application(dat) {
 	});
 	
 	child.unref();
+}
+
+function keyCombo(dat) {
+	button = JSON.parse(dat).button;
+	KS.sendCombination(document.getElementById(`option${button}`).value.split("+"));
 }
 
 parser.on("data", function (dat) {
