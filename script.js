@@ -6,28 +6,29 @@ const KS = require("node-key-sender");
 const port = new SerialPort({ path: "/dev/ttyACM0", baudRate: 57600 });
 const parser = port.pipe(new ReadlineParser({ delimiter: '\r\n' }));
 
+var actions = {
+	"clog": { name: "Debug Log", handler: text },
+	"dmute": { name: "Discord Mute", handler: mute },
+	"ddeaf": { name: "Discord Deafen", handler: deafen },
+	"exec": { name: "Launch Executable", handler: application, additionalInput: true },
+	"keyc": { name: "Key Combination", handler: keyCombo, additionalInput: true }
+};
+
 (function() {
 	let elements = document.getElementsByClassName("button-dropdown");
 	for (let i = 0; i < elements.length; i++) {
 		let dropdown = elements[i];
-		dropdown.innerHTML = `
-		<option value="clog"> Debug Log </option>
-		<option value="dmute"> Discord Mute </option>
-		<option value="ddeaf"> Discord Deafen </option>
-		<option value="exec"> Launch Executable </option>
-		<option value="keyc"> Key Combination </option>
-		`
+		let optionHTML = "";
+		for (const [key, value] of Object.entries(actions)) {
+			optionHTML+=`<option value="${key}"> ${value.name} </option>`;
+		}
+		dropdown.innerHTML = optionHTML;
 		dropdown.addEventListener("change", function() {
 			let option = document.getElementById(`option${this.id}`);
 			option.disabled = true;
 			option.value = "";
-			switch (this.value) {
-				case "clog": callbacks[this.id] = text; break;
-				case "dmute": callbacks[this.id] = mute; break;
-				case "ddeaf": callbacks[this.id] = deafen; break;
-				case "exec": callbacks[this.id] = application; option.disabled = false; break;
-				case "keyc": callbacks[this.id] = keyCombo; option.disabled = false; break;
-			}
+			callbacks[this.id] = actions[this.value].handler;
+			if (actions[this.value].additionalInput) option.disabled = false;
 		});
 }})();
 
