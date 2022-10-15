@@ -1,7 +1,11 @@
 const { SerialPort } = require("serialport");
 const { ReadlineParser } = require("@serialport/parser-readline");
-const port = new SerialPort({ path: "/dev/ttyACM0", baudRate: 57600 });
+const port = new SerialPort({ path: localStorage.getItem("serialPort") ? localStorage.getItem("serialPort") : "/dev/ttyACM0", baudRate: 57600 });
 const parser = port.pipe(new ReadlineParser({ delimiter: '\r\n' }));
+
+document.getElementById("open-settings").addEventListener("click", () => {
+	window.open("settings.html");
+});
 
 const basicActions = new BasicActions();
 const discordActions = new DiscordActions();

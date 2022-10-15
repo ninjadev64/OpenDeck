@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; connect-src *" />
+		<link rel="stylesheet" href="style.css" />
+		<title>OceanDesktop - Settings</title>
+    </head>
+    <body>
+        <input type="text" id="serial-port" placeholder="Serial port" />
+        <hr />
+        <button id="apply-changes"> Apply changes </button>
+        <script>
+            const serialPort = document.getElementById("serial-port");
+            function applyChanges() {
+                localStorage.setItem("serialPort", serialPort.value);
+                alert("Changes have been applied. You may need to restart OceanDesktop for them to take effect.");
+            }
+            document.getElementById("apply-changes").addEventListener("click", applyChanges);
+        </script>
+    </body>
+</html>
