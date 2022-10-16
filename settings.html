@@ -12,12 +12,17 @@
                 <td><label for="serial-port"> Serial port </label></td>
                 <td><input type="text" id="serial-port" /></td>
             </tr>
+            <tr>
+                <td><label for="thresholds"> Thresholds </label></td>
+                <td><input type="text" id="thresholds" /></td>
+            </tr>
         </table>
         <hr />
         <button id="apply-changes"> Apply changes </button>
         <script>
             const options = {
-                "serialPort": document.getElementById("serial-port")
+                "serialPort": document.getElementById("serial-port"),
+                "thresholds": document.getElementById("thresholds")
             }
             for (const [key, value] of Object.entries(options)) {
                 value.value = localStorage.getItem(key);
