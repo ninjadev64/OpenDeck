@@ -1,6 +1,9 @@
 const { SerialPort } = require("serialport");
 const { ReadlineParser } = require("@serialport/parser-readline");
-const port = new SerialPort({ path: localStorage.getItem("serialPort") ? localStorage.getItem("serialPort") : "/dev/ttyACM0", baudRate: 57600 });
+
+if (!localStorage.getItem("serialPort")) localStorage.setItem("serialPort", "/dev/oceandeck");
+
+const port = new SerialPort({ path: localStorage.getItem("serialPort"), baudRate: 57600 });
 const parser = port.pipe(new ReadlineParser({ delimiter: '\r\n' }));
 
 document.getElementById("open-settings").addEventListener("click", () => {

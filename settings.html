@@ -7,13 +7,25 @@
 		<title>OceanDesktop - Settings</title>
     </head>
     <body>
-        <input type="text" id="serial-port" placeholder="Serial port" />
+        <table>
+            <tr>
+                <td><label for="serial-port"> Serial port </label></td>
+                <td><input type="text" id="serial-port" /></td>
+            </tr>
+        </table>
         <hr />
         <button id="apply-changes"> Apply changes </button>
         <script>
-            const serialPort = document.getElementById("serial-port");
+            const options = {
+                "serialPort": document.getElementById("serial-port")
+            }
+            for (const [key, value] of Object.entries(options)) {
+                value.value = localStorage.getItem(key);
+            }
             function applyChanges() {
-                localStorage.setItem("serialPort", serialPort.value);
+                for (const [key, value] of Object.entries(options)) {
+                    localStorage.setItem(key, value.value);
+                }
                 alert("Changes have been applied. You may need to restart OceanDesktop for them to take effect.");
             }
             document.getElementById("apply-changes").addEventListener("click", applyChanges);
