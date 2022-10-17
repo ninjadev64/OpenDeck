@@ -2,7 +2,6 @@ const { SerialPort } = require("serialport");
 const { ReadlineParser } = require("@serialport/parser-readline");
 
 if (!localStorage.getItem("serialPort")) localStorage.setItem("serialPort", "/dev/oceandeck");
-if (!localStorage.getItem("thresholds")) localStorage.setItem("thresholds", "[ 965, 985, 1005 ]");
 
 const port = new SerialPort({ path: localStorage.getItem("serialPort"), baudRate: 57600 });
 const parser = port.pipe(new ReadlineParser({ delimiter: '\r\n' }));
@@ -10,8 +9,6 @@ const parser = port.pipe(new ReadlineParser({ delimiter: '\r\n' }));
 document.getElementById("open-settings").addEventListener("click", () => {
 	window.open("settings.html");
 });
-
-const thresholds = JSON.parse(localStorage.getItem("thresholds"));
 
 const basicActions = new BasicActions();
 const discordActions = new DiscordActions();
@@ -55,27 +52,7 @@ var callbacks = {
 		});
 }})();
 
-var lastPress = 0;
 parser.on("data", function (dat) {
-	try { dat = JSON.parse(dat); }
-	catch { return; }
-	let button = 0;
-
-	/**/ if (dat.button <= 100          ) button = 0;
-	else if (dat.button <= thresholds[0]) button = 1;
-	else if (dat.button <= thresholds[1]) button = 2;
-	else if (dat.button <= thresholds[2]) button = 3;
-	else if (dat.button <= thresholds[3]) button = 4;
-	else if (dat.button <= thresholds[4]) button = 5;
-	else if (dat.button <= thresholds[5]) button = 6;
-	else if (dat.button <= thresholds[6]) button = 7;
-	else if (dat.button <= thresholds[7]) button = 8;
-	else if (dat.button <= thresholds[8]) button = 9;
-
-	if (button === lastPress) return;
-	else { lastPress = button; }
-
-	callbacks[button]({
-		button: button
-	});
+	dat = JSON.parse(dat);	
+	callbacks[dat.button](dat);
 });

@@ -1,4 +1,5 @@
 const { app, BrowserWindow, Tray, Menu } = require("electron");
+const path = require("path");
 
 let isQuitting = false;
 let tray;
@@ -15,7 +16,7 @@ const createWindow = () => {
   
 	win.loadFile("index.html");
 
-	tray = new Tray("icon.png");
+	tray = new Tray(path.join(__dirname, "icon.png"));
 
 	tray.setContextMenu(Menu.buildFromTemplate([
 		{
