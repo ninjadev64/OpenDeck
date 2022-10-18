@@ -17,15 +17,15 @@ var actions = {
 	"clog": { name: "Debug Log", handler: (d) => { basicActions.text(d); } },
 	"dmute": { name: "Discord Mute", handler: (d) => { discordActions.mute(d); } },
 	"ddeaf": { name: "Discord Deafen", handler: (d) => { discordActions.deafen(d); } },
-	"exec": { name: "Launch Executable", handler: (d) => { basicActions.application(d); }, additionalInput: true },
-	"keyc": { name: "Key Combination", handler: (d) => { basicActions.keyCombo(d); }, additionalInput: true }
+	"exec": { name: "Launch Executable", handler: (d, o) => { basicActions.application(d, o); }, additionalInput: true },
+	"keyc": { name: "Key Combination", handler: (d, o) => { basicActions.keyCombo(d, o); }, additionalInput: true }
 };
 
-var callbacks = {
-	0: (d) => { return d; },
-	1: (d) => { basicActions.text(d); },
-	2: (d) => { basicActions.text(d); },
-	3: (d) => { basicActions.text(d); }
+var buttons = {
+	0: actions["clog"],
+	1: actions["clog"],
+	2: actions["clog"],
+	3: actions["clog"]
 };
 
 function hexToRgb(hex) {
@@ -58,20 +58,17 @@ document.getElementById("led1").addEventListener("change", function () {
 		dropdown.innerHTML = optionHTML;
 		dropdown.addEventListener("change", function() {
 			let option = document.getElementById(`option${this.id}`);
-			option.disabled = true;
+			option.disabled = !actions[this.value].additionalInput;
 			option.value = "";
-			callbacks[this.id] = (d) => {
-				try {
-					actions[this.value].handler(d);
-				} catch (e) {
-					alert(`Action ${actions[this.value].name} failed with error message ${e.message}`);
-				}
-			};
-			if (actions[this.value].additionalInput) option.disabled = false;
+			buttons[this.id] = actions[this.value];
 		});
 }})();
 
 parser.on("data", function (dat) {
-	dat = JSON.parse(dat);	
-	callbacks[dat.button](dat);
+	dat = JSON.parse(dat);
+	if (buttons[dat.button].additionalInput) {
+		buttons[dat.button].handler(dat, document.getElementById(`option${dat.button}`).value);
+	} else {
+		buttons[dat.button].handler(dat);
+	}
 });

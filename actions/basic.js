@@ -6,8 +6,8 @@ class BasicActions {
         console.log(`Button ${dat.button} was pressed!`);
     }
 
-    application(dat) {
-        let child = spawn(document.getElementById(`option${dat.button}`).value, [], {
+    application(dat, option) {
+        let child = spawn(option, [], {
             detached: true,
             stdio: [ 'ignore', 'ignore', 'ignore' ]
         });
@@ -15,7 +15,7 @@ class BasicActions {
         child.unref();
     }
 
-    keyCombo(dat) {
-        KS.sendCombination(document.getElementById(`option${dat.button}`).value.split("+"));
+    keyCombo(dat, option) {
+        KS.sendCombination(option.split("+"));
     }
 }
