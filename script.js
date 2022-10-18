@@ -28,6 +28,25 @@ var callbacks = {
 	3: (d) => { basicActions.text(d); }
 };
 
+function hexToRgb(hex) {
+	// https://stackoverflow.com/a/5624139/14269655
+	var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+	hex = hex.replace(shorthandRegex, function(m, r, g, b) {
+		return r + r + g + g + b + b;
+	});
+
+	var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+	return {
+		red: parseInt(result[1], 16),
+		green: parseInt(result[2], 16),
+		blue: parseInt(result[3], 16)
+	};
+}
+
+document.getElementById("led1").addEventListener("change", function () {
+	port.write(JSON.stringify(hexToRgb(this.value)) + "\n");
+});
+
 (function() {
 	let elements = document.getElementsByClassName("button-dropdown");
 	for (let i = 0; i < elements.length; i++) {
