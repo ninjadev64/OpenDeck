@@ -9,10 +9,27 @@
 	<body>
 		<button id="open-settings"> Settings </button>
 		<hr />
-		<select class="button-dropdown" id="1"></select><input id="option1" placeholder="Options for action" disabled></input><br />
-		<select class="button-dropdown" id="2"></select><input id="option2" placeholder="Options for action" disabled></input><br />
-		<select class="button-dropdown" id="3"></select><input id="option3" placeholder="Options for action" disabled></input><br />
-		<input type="color" id="led1" value="#000000" /><br />
+		<table>
+			<tr>
+				<td><label for="1"> Button 1 </label></td>
+				<td><select class="button-dropdown" id="1"></select></td>
+				<td><input id="option1" placeholder="Options for action" disabled></input></td>
+			</tr>
+			<tr>
+				<td><label for="2"> Button 2 </label></td>
+				<td><select class="button-dropdown" id="2"></select></td>
+				<td><input id="option2" placeholder="Options for action" disabled></input></td>
+			</tr>
+			<tr>
+				<td><label for="3"> Button 3 </label></td>
+				<td><select class="button-dropdown" id="3"></select></td>
+				<td><input id="option3" placeholder="Options for action" disabled></input></td>
+			</tr>
+			<tr>
+				<td><label for="led1"> LED 1 </label></td>
+				<td><input type="color" id="led1" value="#000000" /></td>
+			</tr>
+		</table>
 	</body>
 	<script src="configs.js"></script>
 	<script src="actions/basic.js"></script>
