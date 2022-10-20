@@ -6,6 +6,7 @@ if (!localStorage.getItem("serialPort")) localStorage.setItem("serialPort", "/de
 const port = new SerialPort({ path: localStorage.getItem("serialPort"), baudRate: 57600 });
 const parser = port.pipe(new ReadlineParser({ delimiter: '\r\n' }));
 
+SerialPort.list().then((ports) => { localStorage.setItem("allPorts", JSON.stringify(ports)); });
 document.getElementById("open-settings").addEventListener("click", () => {
 	window.open("settings.html");
 });
