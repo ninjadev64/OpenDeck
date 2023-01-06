@@ -3,6 +3,9 @@ const { app, BrowserWindow } = require("electron");
 const { readdirSync, readFileSync } = require("fs");
 const WebSocketServer = require("ws").Server;
 
+const os = require("os");
+const { version } = require("./package.json");
+
 class StreamDeckPlugin {
     constructor(root, uuid) {
         let manifest = JSON.parse(readFileSync(path.join(root, uuid, "manifest.json"), "utf8"));
@@ -25,11 +28,49 @@ class StreamDeckPlugin {
         this.window = new BrowserWindow({
             autoHideMenuBar: true,
             icon: path.join(root, uuid, this.iconPath + ".png")
-            // show: false,
+            // show: false
         });
         this.window.loadFile(path.join(root, uuid, this.htmlPath));
+
+        const info = {
+            "application": {
+                "font": "Rubik",
+                "language": "en",
+                "platform": (
+                    os.platform() == "win32" ? "windows" :
+                    (os.platform() == "darwin" ? "mac" :
+                    (os.platform() == "linux" ? "linux" : "unknown"))
+                ),
+                "platformVersion": os.version(),
+                "version": version
+            },
+            "plugin": {
+                "uuid": this.uuid,
+                "version": this.version
+            },
+            "devicePixelRatio": 0,
+            "colors": {
+                "buttonPressedBackgroundColor": "#000000", 
+                "buttonPressedBorderColor": "#000000", 
+                "buttonPressedTextColor": "#000000", 
+                "disabledColor": "#000000", 
+                "highlightColor": "#000000", 
+                "mouseDownColor": "#000000"
+            },
+            "devices": [
+                {
+                    "id": "OceanDeck",
+                    "name": "OceanDeck",
+                    "size": {
+                        "columns": 3,
+                        "rows": 3
+                    },
+                    "type": 7
+                }
+            ]
+        }        
         this.window.webContents.executeJavaScript(`
-        connectElgatoStreamDeckSocket(57116, "${this.uuid}", "register", "{}");
+        connectElgatoStreamDeckSocket(57116, "${this.uuid}", "register", \`${JSON.stringify(info)}\`);
         `);
     }
 }
