@@ -1,14 +1,11 @@
 const path = require("path");
+const { app, BrowserWindow } = require("electron");
 const { readdirSync, readFileSync } = require("fs");
 
-const pluginsDir = path.join(localStorage.getItem("userData"), "Plugins");
-const pluginDirs = readdirSync(pluginsDir, { withFileTypes: true })
-    .filter((item) => item.isDirectory())
-    .map((item) => item.name);
-var plugins = [];
-
 class StreamDeckPlugin {
-    constructor(manifest) {
+    constructor(dir) {
+        let manifest = JSON.parse(readFileSync(path.join(dir, "manifest.json"), "utf8"));
+
         this.name = manifest.Name;
         this.description = manifest.Description;
         this.author = manifest.Author;
@@ -19,14 +16,41 @@ class StreamDeckPlugin {
         this.actions = [];
         
         manifest.Actions.forEach((action) => {
-            this.actions.push(new Action(action.Name, action.UUID, action.Tooltip));
+            this.actions.push(new StreamDeckPluginAction(action.Name, action.UUID, action.Tooltip));
+        });
+
+        this.window = new BrowserWindow({
+            autoHideMenuBar: true,
+            icon: path.join(dir, this.iconPath + ".png"),
+            show: false
+        });
+        this.window.loadFile(path.join(dir, this.htmlPath));
+    }
+}
+
+class StreamDeckPluginAction {
+    constructor(name, uuid, tooltip) {
+        this.name = name;
+        this.uuid = uuid;
+        this.tooltip = tooltip;
+    }
+}
+
+class StreamDeckPluginManager {
+    constructor() {
+        this.pluginsDir = path.join(app.getPath("userData"), "Plugins");
+        this.pluginDirs = readdirSync(this.pluginsDir, { withFileTypes: true })
+            .filter((item) => item.isDirectory())
+            .map((item) => item.name);
+        this.plugins = [];
+    }
+
+    start() {
+        this.pluginDirs.forEach((dir) => {
+            let pl = new StreamDeckPlugin(path.join(this.pluginsDir, dir));
+            this.plugins.push(pl);
         });
     }
 }
 
-
-pluginDirs.forEach((dir) => {
-    let manifest = readFileSync(path.join(pluginsDir, dir, "manifest.json"), "utf8");
-    let pl = new StreamDeckPlugin(JSON.parse(manifest));
-    plugins.push(pl);
-});
+module.exports = { StreamDeckPluginManager };
