@@ -16,6 +16,9 @@ const createWindow = () => {
   
 	win.loadFile("index.html");
 
+	let userDataPath = app.getPath("userData");
+	win.webContents.executeJavaScript(`localStorage.setItem("userData", \`${userDataPath}\`);`);
+
 	tray = new Tray(path.join(__dirname, "icon.png"));
 
 	tray.setContextMenu(Menu.buildFromTemplate([
