@@ -2,13 +2,13 @@ const { pluginManager } = require("./plugins");
 const { SerialPort } = require("serialport");
 const { ReadlineParser } = require("@serialport/parser-readline");
 
+const Store = require("electron-store");
+const store = new Store();
+SerialPort.list().then((ports) => { store.set("allPorts", ports); });
+
 class SerialInterface {
     constructor() {
-        SerialPort.list().then((ports) => {
-            ports.filter((port) => port.vendorId === "2341" && port.productId === "0043").then((devices) => {
-                this.port = devices[0];
-            });
-        });
+        this.port = new SerialPort({ path: store.get("serialPort"), baudRate: 57600 });
         this.parser = this.port.pipe(new ReadlineParser({ delimiter: "\r\n" }));
 
         this.buttons = {

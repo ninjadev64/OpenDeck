@@ -1,6 +1,8 @@
+const Store = require("electron-store");
+const store = new Store();
+
 let serialSelect = document.getElementById("serial-port");
-JSON.parse(localStorage.getItem("allPorts")).forEach((port) => {
-    if (port.vendorId === undefined || port.productId === undefined) return;
+store.get("allPorts").forEach((port) => {
     if (port.vendorId === "2341" && port.productId === "0043") {
         serialSelect.insertAdjacentHTML("beforeend", `<option value=${port.path}> ${port.path} </option>`);
     }
@@ -13,7 +15,7 @@ for (const [key, value] of Object.entries(options)) {
 }
 function applyChanges() {
     for (const [key, value] of Object.entries(options)) {
-        localStorage.setItem(key, value.value);
+        store.set(key, value.value);
     }
     alert("Changes have been applied. You may need to restart OceanDesktop for them to take effect.");
 }

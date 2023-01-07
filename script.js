@@ -8,7 +8,7 @@ const parser = port.pipe(new ReadlineParser({ delimiter: '\r\n' }));
 
 SerialPort.list().then((ports) => { localStorage.setItem("allPorts", JSON.stringify(ports)); });
 document.getElementById("open-settings").addEventListener("click", () => {
-	window.open("settings.html");
+	window.open("settings.html", undefined, "nodeIntegration=yes,contextIsolation=no");
 });
 
 const basicActions = new BasicActions();
