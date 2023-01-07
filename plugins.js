@@ -90,6 +90,15 @@ class StreamDeckPluginManager {
             .filter((item) => item.isDirectory())
             .map((item) => item.name);
         this.plugins = {};
+        this.server = null;
+    }
+
+    start() {
+        this.pluginIds.forEach((uuid) => {
+            let pl = new StreamDeckPlugin(this.pluginsDir, uuid);
+            this.plugins[uuid] = pl;
+        });
+        
         this.server = new WebSocketServer({ port: 57116 });
         this.server.on("connection", (ws) => {
             ws.on("message", (data) => {
@@ -101,12 +110,11 @@ class StreamDeckPluginManager {
         });
     }
 
-    start() {
-        this.pluginIds.forEach((uuid) => {
-            let pl = new StreamDeckPlugin(this.pluginsDir, uuid);
-            this.plugins[uuid] = pl;
-        });
+    async sendEvent(plugin, data) {
+        this.plugins[plugin].socket.send(data);
     }
 }
 
-module.exports = { StreamDeckPluginManager };
+const pluginManager = new StreamDeckPluginManager();
+pluginManager.start();
+module.exports = { pluginManager };

@@ -1,8 +1,6 @@
 const { app, BrowserWindow, Tray, Menu } = require("electron");
 const path = require("path");
 
-const { StreamDeckPluginManager } = require("./plugins");
-
 let isQuitting = false;
 let tray;
 
@@ -48,8 +46,10 @@ const createWindow = () => {
 
 app.whenReady().then(() => {
 	createWindow();
-	new StreamDeckPluginManager().start();
-  
+
+	require("./plugins");
+	require("./serial");
+
 	app.on("activate", () => {
 		if (BrowserWindow.getAllWindows().length === 0) createWindow()
 	});
