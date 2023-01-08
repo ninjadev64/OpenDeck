@@ -27,10 +27,15 @@ class StreamDeckPlugin {
 
         this.window = new BrowserWindow({
             autoHideMenuBar: true,
-            icon: path.join(root, uuid, this.iconPath + ".png")
+            icon: path.join(root, uuid, this.iconPath + ".png"),
+            width: 300,
+            height: 200,
             // show: false
         });
         this.window.loadFile(path.join(root, uuid, this.htmlPath));
+        this.window.once("ready-to-show", () => {
+            this.window.title = this.name;
+        });
 
         const info = {
             "application": {
