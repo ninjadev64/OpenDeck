@@ -21,8 +21,11 @@ const createWindow = () => {
 	win.once("ready-to-show", () => {
 		win.webContents.send("categories", categories);
 	});
+	const { eventHandler } = require("./event");
 	ipcMain.on("keyUpdate", (_event, key, action) => {
+		eventHandler.willDisappear(key);
 		keys[key] = allActions[action];
+		eventHandler.willAppear(key);
 	});
 
 	tray = new Tray(path.join(__dirname, "../assets/icon.png"));
