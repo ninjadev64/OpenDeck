@@ -30,8 +30,7 @@ void loop() {
   else if (digitalRead(3) == HIGH) doc["button"] = 2;
   else if (digitalRead(4) == HIGH) doc["button"] = 3;
   else {
-    lastPressed = 0;
-    return;
+    doc["button"] = 0;
   }
   
   if (lastPressed == doc["button"]) return;

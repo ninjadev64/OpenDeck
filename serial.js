@@ -23,6 +23,8 @@ class SerialInterface {
             9: { plugin: "com.elgato.template.sdPlugin", action: "com.elgato.template.action" }
         }
 
+        this.lastPressed = 0;
+
         if (ws) { // Mock an OceanDeck over a WebSocket connection
             this.server = new WebSocketServer({ port: 1925 });
             this.server.on("connection", (ws) => {
@@ -41,8 +43,30 @@ class SerialInterface {
     }
 
     handle(data) {
-        if (data.button === 0) return;
+        if (data.button <= 0) {
+            if (this.lastPressed > 0) {
+                pluginManager.sendEvent(this.buttons[this.lastPressed].plugin, 
+                    {
+                        event: "keyUp",
+                        action: this.buttons[this.lastPressed].action,
+                        context: this.lastPressed,
+                        device: 0,
+                        payload: {
+                            settings: {},
+                            coordinates: {
+                                row: Math.floor(this.lastPressed / 3) + 1,
+                                column: this.lastPressed % 3
+                            },
+                            isInMultiAction: false
+                        }
+                    }
+                );
+                this.lastPressed = 0;
+            }
+            return;
+        }
 
+        this.lastPressed = data.button;
         pluginManager.sendEvent(this.buttons[data.button].plugin, 
             {
                 event: "keyDown",
