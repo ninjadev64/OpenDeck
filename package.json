@@ -2,7 +2,7 @@
 	"name": "oceandesktop",
 	"version": "1.0.0",
 	"description": "Software counterpart for your OceanDeck",
-	"main": "main.js",
+	"main": "script/main.js",
 	"scripts": {
 		"start": "electron .",
 		"package": "electron-forge package",
