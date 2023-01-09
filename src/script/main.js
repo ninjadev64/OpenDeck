@@ -11,15 +11,15 @@ const createWindow = () => {
 			contextIsolation: false,
 		},
 		autoHideMenuBar: true,
-		icon: "icon.png"
+		icon: path.join(__dirname, "../assets/icon.png")
 	});
   
-	win.loadFile("index.html");
+	win.loadFile(path.join(__dirname, "../markup/index.html"));
 
 	let userDataPath = app.getPath("userData");
 	win.webContents.executeJavaScript(`localStorage.setItem("userData", \`${userDataPath}\`);`);
 
-	tray = new Tray(path.join(__dirname, "icon.png"));
+	tray = new Tray(path.join(__dirname, "../assets/icon.png"));
 
 	tray.setContextMenu(Menu.buildFromTemplate([
 		{

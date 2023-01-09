@@ -4,7 +4,7 @@ const { readdirSync, readFileSync } = require("fs");
 const WebSocketServer = require("ws").Server;
 
 const os = require("os");
-const { version } = require("./package.json");
+const { version } = require("../../package.json");
 
 class StreamDeckPlugin {
     constructor(root, uuid) {
