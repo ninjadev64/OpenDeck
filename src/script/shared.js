@@ -20,4 +20,7 @@ var keys = {
     9: new Action("Example Action", "com.elgato.template.action", "com.elgato.template.sdPlugin", "This is an example tooltip")
 }
 
-module.exports = { keys, Action };
+var allActions = { };
+var categories = { };
+
+module.exports = { keys, allActions, categories, Action };

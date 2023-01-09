@@ -3,7 +3,7 @@ const { app, BrowserWindow } = require("electron");
 const { readdirSync, readFileSync } = require("fs");
 const WebSocketServer = require("ws").Server;
 
-const { Action } = require("./shared");
+const { allActions, categories, Action } = require("./shared");
 
 const os = require("os");
 const { version } = require("../../package.json");
@@ -20,11 +20,16 @@ class StreamDeckPlugin {
         this.website = manifest.URL;
         this.htmlPath = manifest.CodePath;
         this.iconPath = manifest.Icon;
+        this.category = manifest.Category || "Custom";
         this.actions = [];
         this.socket = null;
         
+        if (categories[this.category] == undefined) categories[this.category] = [];
         manifest.Actions.forEach((action) => {
-            this.actions.push(new Action(action.Name, action.UUID, this.uuid, action.Tooltip));
+            let i = new Action(action.Name, action.UUID, this.uuid, action.Tooltip);
+            this.actions.push(i);
+            allActions[i.uuid] = i;
+            categories[this.category].push(i);
         });
 
         this.window = new BrowserWindow({

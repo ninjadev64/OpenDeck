@@ -1,5 +1,7 @@
-const { app, BrowserWindow, Tray, Menu } = require("electron");
+const { app, ipcMain, BrowserWindow, Tray, Menu } = require("electron");
 const path = require("path");
+
+const { keys, allActions, categories } = require("./shared");
 
 let isQuitting = false;
 let tray;
@@ -16,11 +18,14 @@ const createWindow = () => {
   
 	win.loadFile(path.join(__dirname, "../markup/index.html"));
 
-	let userDataPath = app.getPath("userData");
-	win.webContents.executeJavaScript(`localStorage.setItem("userData", \`${userDataPath}\`);`);
+	win.once("ready-to-show", () => {
+		win.webContents.send("categories", categories);
+	});
+	ipcMain.on("keyUpdate", (_event, key, action) => {
+		keys[key] = allActions[action];
+	});
 
 	tray = new Tray(path.join(__dirname, "../assets/icon.png"));
-
 	tray.setContextMenu(Menu.buildFromTemplate([
 		{
 			label: "Open", click: () => {
