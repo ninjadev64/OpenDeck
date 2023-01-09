@@ -3,6 +3,8 @@ const { app, BrowserWindow } = require("electron");
 const { readdirSync, readFileSync } = require("fs");
 const WebSocketServer = require("ws").Server;
 
+const { Action } = require("./shared");
+
 const os = require("os");
 const { version } = require("../../package.json");
 
@@ -22,7 +24,7 @@ class StreamDeckPlugin {
         this.socket = null;
         
         manifest.Actions.forEach((action) => {
-            this.actions.push(new StreamDeckPluginAction(action.Name, action.UUID, action.Tooltip));
+            this.actions.push(new Action(action.Name, action.UUID, this.uuid, action.Tooltip));
         });
 
         this.window = new BrowserWindow({
@@ -77,14 +79,6 @@ class StreamDeckPlugin {
         this.window.webContents.executeJavaScript(`
         connectElgatoStreamDeckSocket(57116, "${this.uuid}", "register", \`${JSON.stringify(info)}\`);
         `);
-    }
-}
-
-class StreamDeckPluginAction {
-    constructor(name, uuid, tooltip) {
-        this.name = name;
-        this.uuid = uuid;
-        this.tooltip = tooltip;
     }
 }
 
