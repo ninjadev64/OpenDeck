@@ -117,6 +117,13 @@ class StreamDeckPluginManager {
     async sendEvent(plugin, data) {
         this.plugins[plugin].socket.send(JSON.stringify(data));
     }
+
+    async sendGlobalEvent(data) {
+        data = JSON.stringify(data);
+        Object.values(this.plugins).forEach((plugin) => {
+            plugin.socket.send(data);
+        });
+    }
 }
 
 const pluginManager = new StreamDeckPluginManager();

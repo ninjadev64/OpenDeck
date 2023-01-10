@@ -14,18 +14,21 @@ class SerialInterface {
 
         if (ws) { // Mock an OceanDeck over a WebSocket connection
             this.server = new WebSocketServer({ port: 1925 });
-            this.server.on("connection", (ws) => {
+            this.server.once("connection", (ws) => {
+                eventHandler.deviceDidConnect();
                 ws.on("message", (data) => {
                     this.handle(JSON.parse(data));
                 });
+                ws.on("close", eventHandler.deviceDidDisconnect);
             });
         } else { // Use serial as normal
             this.port = new SerialPort({ path: store.get("serialPort"), baudRate: 57600 });
             this.parser = this.port.pipe(new ReadlineParser({ delimiter: "\r\n" }));
-
+            eventHandler.deviceDidConnect();
             this.parser.on("data", (data) => {
                 this.handle(JSON.parse(data));
             });
+            this.port.on("close", eventHandler.deviceDidDisconnect);
         }
     }
 

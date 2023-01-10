@@ -71,6 +71,28 @@ class EventHandler {
             }
         });
     }
+
+    deviceDidConnect() {
+        pluginManager.sendGlobalEvent({
+            event: "deviceDidConnect",
+            device: 0,
+            deviceInfo: {
+                name: "OceanDeck",
+                type: 7,
+                size: {
+                    rows: 3,
+                    columns: 3
+                }
+            }
+        });
+    }
+
+    deviceDidDisconnect() {
+        pluginManager.sendGlobalEvent({
+            event: "deviceDidDisconnect",
+            device: 0
+        });
+    }
 }
 
 const eventHandler = new EventHandler();
