@@ -11,10 +11,8 @@
 	"author": "ninjadev64",
 	"license": "ISC",
 	"dependencies": {
-		"discord-rpc": "^4.0.1",
 		"electron-squirrel-startup": "^1.0.0",
 		"electron-store": "^8.1.0",
-		"node-key-sender": "^1.0.11",
 		"serialport": "^10.4.0",
 		"ws": "^7.5.9"
 	},

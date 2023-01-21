@@ -1,6 +1,6 @@
 const path = require("path");
+const fs = require("fs");
 const { app, BrowserWindow } = require("electron");
-const { readdirSync, readFileSync } = require("fs");
 const WebSocketServer = require("ws").Server;
 
 const { allActions, categories, Action } = require("./shared");
@@ -10,7 +10,7 @@ const { version } = require("../../package.json");
 
 class StreamDeckPlugin {
     constructor(root, uuid) {
-        let manifest = JSON.parse(readFileSync(path.join(root, uuid, "manifest.json"), "utf8"));
+        let manifest = JSON.parse(fs.readFileSync(path.join(root, uuid, "manifest.json"), "utf8"));
 
         this.uuid = uuid;
         this.name = manifest.Name;
@@ -90,7 +90,11 @@ class StreamDeckPlugin {
 class StreamDeckPluginManager {
     constructor() {
         this.pluginsDir = path.join(app.getPath("userData"), "Plugins");
-        this.pluginIds = readdirSync(this.pluginsDir, { withFileTypes: true })
+
+        store.set("pluginsDir", this.pluginsDir);
+        if (!fs.existsSync(this.pluginsDir)) fs.mkdirSync(this.pluginsDir);
+
+        this.pluginIds = fs.readdirSync(this.pluginsDir, { withFileTypes: true })
             .filter((item) => item.isDirectory())
             .map((item) => item.name);
         this.plugins = {};

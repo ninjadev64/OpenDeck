@@ -3,6 +3,9 @@ const path = require("path");
 
 const { keys, allActions, categories } = require("./shared");
 
+const Store = require("electron-store");
+global.store = new Store();
+
 let isQuitting = false;
 let tray;
 

@@ -4,8 +4,6 @@ const { ReadlineParser } = require("@serialport/parser-readline");
 
 const WebSocketServer = require("ws").Server;
 
-const Store = require("electron-store");
-const store = new Store();
 SerialPort.list().then((ports) => { store.set("allPorts", ports); });
 
 class SerialInterface {

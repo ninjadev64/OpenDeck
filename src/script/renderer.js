@@ -19,3 +19,7 @@ ipcRenderer.on("categories", (event, categories) => {
         });
     });
 });
+
+document.getElementById("open-settings").addEventListener("click", () => {
+    window.open("settings.html", undefined, "nodeIntegration=yes,contextIsolation=no");
+});
