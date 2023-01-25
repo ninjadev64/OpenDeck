@@ -1,9 +1,51 @@
 @font-face { font-family: Rubik; src: url("../assets/Rubik.ttf"); }
 
 * {
-    font-family: "Rubik", "Arial", "sans-serif";
+	font-family: "Rubik", "Arial", sans-serif;
 }
 
-input, select, button {
-    padding: 5px;
+body {
+	background-color: #000020;
+	overflow: hidden;
+}
+
+h1, h2, h3, h4, h5, h6, p, span, label {
+	color: #f2f2f2;
+}
+
+.actionList {
+	width: 250px;
+	height: 100vh;
+	float: right;
+	padding-left: 12px;
+	padding-right: 10px;
+	border-left: 1px solid white;
+}
+
+.action {
+	margin-bottom: 5px;
+}
+.action img {
+	width: 50px;
+	height: 50px;
+	vertical-align: middle;
+	border: 0.5px solid #f2f2f2;
+	border-radius: 5px;
+	padding: 5px;
+	margin-left: 5px;
+	margin-right: 15px;
+}
+.icon {
+    width: 75px;
+    height: 75px;
+}
+
+.key {
+	width: 75px;
+	height: 75px;
+	border: 2px solid #f2f2f2;
+	border-radius: 5px;
+	padding: 10px;
+	margin: 10px;
+	text-align: center;
 }

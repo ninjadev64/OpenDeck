@@ -1,9 +1,10 @@
 class Action {
-    constructor(name, uuid, plugin, tooltip) {
+    constructor(name, uuid, plugin, tooltip, icon) {
         this.name = name;
         this.uuid = uuid;
         this.plugin = plugin;
         this.tooltip = tooltip;
+        this.icon = icon;
     }
 }
 

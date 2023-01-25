@@ -26,7 +26,7 @@ class StreamDeckPlugin {
         
         if (categories[this.category] == undefined) categories[this.category] = [];
         manifest.Actions.forEach((action) => {
-            let i = new Action(action.Name, action.UUID, this.uuid, action.Tooltip);
+            let i = new Action(action.Name, action.UUID, this.uuid, action.Tooltip, path.join(root, uuid, action.Icon + ".png"));
             this.actions.push(i);
             allActions[i.uuid] = i;
             categories[this.category].push(i);
