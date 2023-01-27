@@ -2,6 +2,7 @@ const { eventHandler } = require("./event");
 const { SerialPort } = require("serialport");
 const { ReadlineParser } = require("@serialport/parser-readline");
 
+const store = require("./store");
 const WebSocketServer = require("ws").Server;
 
 SerialPort.list().then((ports) => { store.set("allPorts", ports); });

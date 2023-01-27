@@ -3,9 +3,11 @@ const { keys } = require("./shared");
 
 class EventHandler {
 	keyDown(button) {
-		pluginManager.sendEvent(keys[button].plugin, {
+		let action = keys[button];
+		if (action == undefined) return;
+		pluginManager.sendEvent(action.plugin, {
 			event: "keyDown",
-			action: keys[button].uuid,
+			action: action.uuid,
 			context: button,
 			device: 0,
 			payload: {
@@ -20,9 +22,11 @@ class EventHandler {
 	}
 
 	keyUp(button) {
-		pluginManager.sendEvent(keys[button].plugin, {
+		let action = keys[button];
+		if (action == undefined) return;
+		pluginManager.sendEvent(action.plugin, {
 			event: "keyUp",
-			action: keys[button].uuid,
+			action: action.uuid,
 			context: button,
 			device: 0,
 			payload: {
@@ -37,9 +41,11 @@ class EventHandler {
 	}
 
 	willAppear(button) {
-		pluginManager.sendEvent(keys[button].plugin, {
+		let action = keys[button];
+		if (action == undefined) return;
+		pluginManager.sendEvent(action.plugin, {
 			event: "willAppear",
-			action: keys[button].uuid,
+			action: action.uuid,
 			context: button,
 			device: 0,
 			payload: {
@@ -55,9 +61,11 @@ class EventHandler {
 	}
 
 	willDisappear(button) {
-		pluginManager.sendEvent(keys[button].plugin, {
+		let action = keys[button];
+		if (action == undefined) return;
+		pluginManager.sendEvent(action.plugin, {
 			event: "willDisappear",
-			action: keys[button].uuid,
+			action: action.uuid,
 			context: button,
 			device: 0,
 			payload: {

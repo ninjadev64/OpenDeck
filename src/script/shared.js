@@ -1,3 +1,5 @@
+const store = require("./store");
+
 class Action {
 	constructor(name, uuid, plugin, tooltip, icon) {
 		this.name = name;
@@ -8,20 +10,17 @@ class Action {
 	}
 }
 
-var keys = {
-	0: undefined,
-	1: new Action("Example Action", "com.elgato.template.action", "com.elgato.template.sdPlugin", "This is an example tooltip"),
-	2: new Action("Example Action", "com.elgato.template.action", "com.elgato.template.sdPlugin", "This is an example tooltip"),
-	3: new Action("Example Action", "com.elgato.template.action", "com.elgato.template.sdPlugin", "This is an example tooltip"),
-	4: new Action("Example Action", "com.elgato.template.action", "com.elgato.template.sdPlugin", "This is an example tooltip"),
-	5: new Action("Example Action", "com.elgato.template.action", "com.elgato.template.sdPlugin", "This is an example tooltip"),
-	6: new Action("Example Action", "com.elgato.template.action", "com.elgato.template.sdPlugin", "This is an example tooltip"),
-	7: new Action("Example Action", "com.elgato.template.action", "com.elgato.template.sdPlugin", "This is an example tooltip"),
-	8: new Action("Example Action", "com.elgato.template.action", "com.elgato.template.sdPlugin", "This is an example tooltip"),
-	9: new Action("Example Action", "com.elgato.template.action", "com.elgato.template.sdPlugin", "This is an example tooltip")
-}
+var keys = store.get("keys");
 
 var allActions = { };
 var categories = { };
 
-module.exports = { keys, allActions, categories, Action };
+function updateKey(key, action) {
+	const { eventHandler } = require("./event");
+	eventHandler.willDisappear(key);
+	keys[key] = allActions[action];
+	store.set("keys", keys);
+	eventHandler.willAppear(key);
+}
+
+module.exports = { keys, allActions, categories, Action, updateKey };

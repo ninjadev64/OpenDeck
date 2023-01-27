@@ -1,10 +1,7 @@
 const { app, ipcMain, BrowserWindow, Tray, Menu } = require("electron");
 const path = require("path");
 
-const { keys, allActions, categories } = require("./shared");
-
-const Store = require("electron-store");
-global.store = new Store();
+const { keys, allActions, categories, updateKey } = require("./shared");
 
 let isQuitting = false;
 let tray;
@@ -26,9 +23,7 @@ const createWindow = () => {
 	});
 	const { eventHandler } = require("./event");
 	ipcMain.on("keyUpdate", (_event, key, action) => {
-		eventHandler.willDisappear(key);
-		keys[key] = allActions[action];
-		eventHandler.willAppear(key);
+		updateKey(key, action);
 	});
 
 	tray = new Tray(path.join(__dirname, "../assets/icon.png"));

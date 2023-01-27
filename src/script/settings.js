@@ -1,5 +1,4 @@
-const Store = require("electron-store");
-const store = new Store();
+const store = require("./store");
 
 const { platform } = require("os");
 const { spawn } = require("child_process");
@@ -14,14 +13,16 @@ document.getElementById("open-plugins").addEventListener("click", () => {
 	spawn(explorer, [store.get("pluginsDir")], { detached: true }).unref();
 });
 
-let serialSelect = document.getElementById("serial-port");
+let serialPort = document.getElementById("serial-port");
 store.get("allPorts").forEach((port) => {
 	if (port.vendorId === "2341" && port.productId === "0043") {
-		serialSelect.insertAdjacentHTML("beforeend", `<option value=${port.path}> ${port.path} </option>`);
+		serialPort.insertAdjacentHTML("beforeend", `<option value=${port.path}> ${port.path} </option>`);
 	}
 });
+let webSocketPort = document.getElementById("websocket-port");
 const options = {
-	"serialPort": serialSelect
+	"serialPort": serialPort,
+	"webSocketPort": webSocketPort
 }
 for (const [key, value] of Object.entries(options)) {
 	value.value = store.get(key);

@@ -1,6 +1,8 @@
-const path = require("path");
-const fs = require("fs");
 const { app, BrowserWindow } = require("electron");
+
+const fs = require("fs");
+const path = require("path");
+const store = require("./store");
 const WebSocketServer = require("ws").Server;
 
 const { allActions, categories, Action } = require("./shared");
@@ -82,7 +84,7 @@ class StreamDeckPlugin {
 			]
 		}        
 		this.window.webContents.executeJavaScript(`
-		connectElgatoStreamDeckSocket(57116, "${this.uuid}", "register", \`${JSON.stringify(info)}\`);
+		connectElgatoStreamDeckSocket(${store.get("webSocketPort")}, "${this.uuid}", "register", \`${JSON.stringify(info)}\`);
 		`);
 	}
 }
@@ -107,7 +109,7 @@ class StreamDeckPluginManager {
 			this.plugins[uuid] = pl;
 		});
 		
-		this.server = new WebSocketServer({ port: 57116 });
+		this.server = new WebSocketServer({ port: store.get("webSocketPort") });
 		this.server.on("connection", (ws) => {
 			ws.on("message", (data) => {
 				data = JSON.parse(data);
