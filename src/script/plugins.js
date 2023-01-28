@@ -1,5 +1,4 @@
-const { app, BrowserWindow } = require("electron");
-
+const os = require("os");
 const fs = require("fs");
 const path = require("path");
 const store = require("./store");
@@ -7,7 +6,8 @@ const WebSocketServer = require("ws").Server;
 
 const { allActions, categories, Action } = require("./shared");
 
-const os = require("os");
+const { app, BrowserWindow } = require("electron");
+const { spawn } = require("child_process");
 const { version } = require("../../package.json");
 
 class StreamDeckPlugin {
@@ -20,7 +20,6 @@ class StreamDeckPlugin {
 		this.author = manifest.Author;
 		this.version = manifest.Version;
 		this.website = manifest.URL;
-		this.htmlPath = manifest.CodePath;
 		this.iconPath = manifest.Icon;
 		this.category = manifest.Category || "Custom";
 		this.actions = [];
@@ -32,18 +31,6 @@ class StreamDeckPlugin {
 			this.actions.push(i);
 			allActions[i.uuid] = i;
 			categories[this.category].push(i);
-		});
-
-		this.window = new BrowserWindow({
-			autoHideMenuBar: true,
-			icon: path.join(root, uuid, this.iconPath + ".png"),
-			width: 300,
-			height: 200,
-			// show: false
-		});
-		this.window.loadFile(path.join(root, uuid, this.htmlPath));
-		this.window.once("ready-to-show", () => {
-			this.window.title = this.name;
 		});
 
 		const info = {
@@ -82,10 +69,39 @@ class StreamDeckPlugin {
 					"type": 7
 				}
 			]
-		}        
-		this.window.webContents.executeJavaScript(`
-		connectElgatoStreamDeckSocket(${store.get("webSocketPort")}, "${this.uuid}", "register", \`${JSON.stringify(info)}\`);
-		`);
+		}
+
+		let codePath;
+		switch (os.platform()) {
+			case "win32":
+				manifest.CodePathWin && (codePath = manifest.CodePathWin); break;
+			case "darwin":
+				manifest.CodePathMac && (codePath = manifest.CodePathMac); break;
+			case "linux":
+				manifest.CodePathLin && (codePath = manifest.CodePathLin); break;
+		}
+		if (codePath == undefined) codePath = manifest.CodePath;
+		
+		if (codePath.endsWith(".html")) {
+			this.window = new BrowserWindow({
+				autoHideMenuBar: true,
+				icon: path.join(root, uuid, this.iconPath + ".png"),
+				width: 300,
+				height: 200,
+				// show: false
+			});
+			this.window.loadFile(path.join(root, uuid, codePath));
+			this.window.once("ready-to-show", () => {
+				this.window.title = this.name;
+				this.window.webContents.executeJavaScript(`
+				connectElgatoStreamDeckSocket(${store.get("webSocketPort")}, "${this.uuid}", "register", \`${JSON.stringify(info)}\`);
+				`);
+			});
+		} else {
+			this.process = spawn(path.join(root, uuid, codePath), [
+				"-port", store.get("webSocketPort"), "-pluginUUID", this.uuid, "-registerEvent", "register", "-info", JSON.stringify(info)
+			]);
+		}
 	}
 }
 
