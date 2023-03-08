@@ -13,6 +13,11 @@ h1, h2, h3, h4, h5, h6, p, span, label {
 	color: #f2f2f2;
 }
 
+button, input, select {
+	padding: 5px;
+	border-radius: 5px;
+}
+
 .actionList {
 	width: 250px;
 	height: 100vh;

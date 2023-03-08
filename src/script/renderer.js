@@ -29,12 +29,21 @@ ipcRenderer.on("categories", (_, categories) => {
 			actionList.appendChild(div);
 		});
 	}
+
+	let pluginStore = document.createElement("button");
+	pluginStore.innerText = "Open plugin store";
+	pluginStore.addEventListener("click", () => {
+		window.open("pluginstore.html", undefined, "nodeIntegration=yes,contextIsolation=no");
+	});
+	pluginStore.style = "position: absolute; bottom: 10px;";
+	actionList.append(pluginStore);
+
 	let settings = document.createElement("button");
 	settings.innerText = "Open settings";
 	settings.addEventListener("click", () => {
 		window.open("settings.html", undefined, "nodeIntegration=yes,contextIsolation=no");
 	});
-	settings.style = "position: absolute; bottom: 10px;";
+	settings.style = "position: absolute; bottom: 10px; right: 35px;";
 	actionList.append(settings);
 });
 

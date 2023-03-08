@@ -13,6 +13,9 @@ const schema = {
         minimum: 0,
         maximum: 65535,
 		default: 57116
+	},
+	userDataPath: {
+		type: "string"
 	}
 }
 

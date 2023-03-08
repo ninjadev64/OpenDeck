@@ -88,7 +88,7 @@ class StreamDeckPlugin {
 				icon: path.join(root, uuid, this.iconPath + ".png"),
 				width: 300,
 				height: 200,
-				// show: false
+				show: false
 			});
 			this.window.loadFile(path.join(root, uuid, codePath));
 			this.window.once("ready-to-show", () => {
@@ -109,6 +109,7 @@ class StreamDeckPluginManager {
 	constructor() {
 		this.pluginsDir = path.join(app.getPath("userData"), "Plugins");
 
+		store.set("userDataPath", app.getPath("userData"));
 		store.set("pluginsDir", this.pluginsDir);
 		if (!fs.existsSync(this.pluginsDir)) fs.mkdirSync(this.pluginsDir);
 

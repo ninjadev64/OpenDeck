@@ -11,6 +11,7 @@
 	"author": "ninjadev64",
 	"license": "ISC",
 	"dependencies": {
+		"adm-zip": "^0.5.10",
 		"electron-squirrel-startup": "^1.0.0",
 		"electron-store": "^8.1.0",
 		"serialport": "^10.4.0",
