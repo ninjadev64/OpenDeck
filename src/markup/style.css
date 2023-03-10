@@ -6,10 +6,17 @@
 
 body {
 	background-color: #000020;
-	overflow: hidden;
+	margin: 0;
+	overflow-x: hidden;
 }
 
-h1, h2, h3, h4, h5, h6, p, span, label {
+h1, h2, h3, h4, h5, h6, header {
+	color: #f2f2f2;
+	margin-top: 20px;
+	margin-bottom: 10px;
+}
+
+p, span, label, small {
 	color: #f2f2f2;
 }
 
@@ -53,4 +60,25 @@ button, input, select {
 	padding: 10px;
 	margin: 10px;
 	text-align: center;
+}
+
+.plugin-card {
+	display: inline-block;
+	padding: 10px;
+	padding-top: 0;
+	margin: 10px;
+	width: 215px;
+	height: 150px;
+	border: 2px solid #f2f2f2;
+	border-radius: 5px;
+	white-space: nowrap;
+}
+
+.plugin-icon {
+	width: 36px;
+	height: 36px;
+	border-radius: 5px;
+	float: right;
+	position: relative;
+	bottom: 8px;
 }

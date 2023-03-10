@@ -33,7 +33,7 @@ ipcRenderer.on("categories", (_, categories) => {
 	let pluginStore = document.createElement("button");
 	pluginStore.innerText = "Open plugin store";
 	pluginStore.addEventListener("click", () => {
-		window.open("pluginstore.html", undefined, "nodeIntegration=yes,contextIsolation=no");
+		window.open("pluginstore.html", undefined, "nodeIntegration=yes,contextIsolation=no,autoHideMenuBar=yes");
 	});
 	pluginStore.style = "position: absolute; bottom: 10px;";
 	actionList.append(pluginStore);
@@ -43,7 +43,7 @@ ipcRenderer.on("categories", (_, categories) => {
 	settings.addEventListener("click", () => {
 		window.open("settings.html", undefined, "nodeIntegration=yes,contextIsolation=no");
 	});
-	settings.style = "position: absolute; bottom: 10px; right: 35px;";
+	settings.style = "position: absolute; bottom: 10px; right: 30px;";
 	actionList.append(settings);
 });
 
