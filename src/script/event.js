@@ -2,78 +2,78 @@ const { pluginManager } = require("./plugins");
 const { keys } = require("./shared");
 
 class EventHandler {
-	keyDown(button) {
-		let action = keys[button];
+	keyDown(key) {
+		let action = keys[key];
 		if (action == undefined) return;
 		pluginManager.sendEvent(action.plugin, {
 			event: "keyDown",
 			action: action.uuid,
-			context: button,
+			context: key,
 			device: 0,
 			payload: {
 				settings: {},
 				coordinates: {
-					row: Math.floor(button / 3) + 1,
-					column: button % 3
+					row: Math.floor(key / 3) + 1,
+					column: key % 3
 				},
 				isInMultiAction: false
 			}
 		});
 	}
 
-	keyUp(button) {
-		let action = keys[button];
+	keyUp(key) {
+		let action = keys[key];
 		if (action == undefined) return;
 		pluginManager.sendEvent(action.plugin, {
 			event: "keyUp",
 			action: action.uuid,
-			context: button,
+			context: key,
 			device: 0,
 			payload: {
 				settings: {},
 				coordinates: {
-					row: Math.floor(button / 3) + 1,
-					column: button % 3
+					row: Math.floor(key / 3) + 1,
+					column: key % 3
 				},
 				isInMultiAction: false
 			}
 		});
 	}
 
-	willAppear(button) {
-		let action = keys[button];
+	willAppear(key) {
+		let action = keys[key];
 		if (action == undefined) return;
 		pluginManager.sendEvent(action.plugin, {
 			event: "willAppear",
 			action: action.uuid,
-			context: button,
+			context: key,
 			device: 0,
 			payload: {
 				controller: "Keypad",
 				settings: {},
 				coordinates: {
-					row: Math.floor(button / 3) + 1,
-					column: button % 3
+					row: Math.floor(key / 3) + 1,
+					column: key % 3
 				},
 				isInMultiAction: false
 			}
 		});
 	}
 
-	willDisappear(button) {
-		let action = keys[button];
+	willDisappear(key) {
+		let action = keys[key];
 		if (action == undefined) return;
 		pluginManager.sendEvent(action.plugin, {
 			event: "willDisappear",
 			action: action.uuid,
-			context: button,
+			context: key,
 			device: 0,
 			payload: {
 				controller: "Keypad",
 				settings: {},
 				coordinates: {
-					row: Math.floor(button / 3) + 1,
-					column: button % 3
+					row: Math.floor(key / 3) + 1,
+					column: key % 3
 				},
 				isInMultiAction: false
 			}

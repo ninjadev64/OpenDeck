@@ -72,6 +72,7 @@ button, input, select {
 	border: 2px solid #f2f2f2;
 	border-radius: 5px;
 	white-space: nowrap;
+	text-overflow: ellipsis;
 }
 
 .plugin-icon {

@@ -14,6 +14,12 @@ const schema = {
         maximum: 65535,
 		default: 57116
 	},
+	propertyInspectorPort: {
+		type: "number",
+        minimum: 0,
+        maximum: 65535,
+		default: 57117
+	},
 	userDataPath: {
 		type: "string"
 	}

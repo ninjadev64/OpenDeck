@@ -20,9 +20,11 @@ store.get("allPorts").forEach((port) => {
 	}
 });
 let webSocketPort = document.getElementById("websocket-port");
+let propertyInspectorPort = document.getElementById("propertyinspector-port");
 const options = {
 	"serialPort": serialPort,
-	"webSocketPort": webSocketPort
+	"webSocketPort": webSocketPort,
+	"propertyInspectorPort": propertyInspectorPort
 }
 for (const [key, value] of Object.entries(options)) {
 	value.value = store.get(key);

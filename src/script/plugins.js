@@ -24,16 +24,21 @@ class StreamDeckPlugin {
 		this.category = manifest.Category || "Custom";
 		this.actions = [];
 		this.socket = null;
+		this.propertyInspector = manifest.PropertyInspectorPath ? path.join(root, uuid, manifest.PropertyInspectorPath) : "../markup/empty.html";
 		
 		if (categories[this.category] == undefined) categories[this.category] = [];
 		manifest.Actions.forEach((action) => {
-			let i = new Action(action.Name, action.UUID, this.uuid, action.Tooltip, path.join(root, uuid, action.Icon + ".png"));
-			this.actions.push(i);
-			allActions[i.uuid] = i;
-			categories[this.category].push(i);
+			let a = new Action(
+				action.Name, action.UUID, this.uuid, action.Tooltip,
+				path.join(root, uuid, action.Icon + ".png"),
+				action.PropertyInspectorPath ? path.join(root, uuid, action.PropertyInspectorPath) : this.propertyInspector
+			);
+			this.actions.push(a);
+			allActions[a.uuid] = a;
+			categories[this.category].push(a);
 		});
 
-		const info = {
+		this.info = {
 			"application": {
 				"font": "Rubik",
 				"language": "en",
@@ -94,12 +99,12 @@ class StreamDeckPlugin {
 			this.window.once("ready-to-show", () => {
 				this.window.title = this.name;
 				this.window.webContents.executeJavaScript(`
-				connectElgatoStreamDeckSocket(${store.get("webSocketPort")}, "${this.uuid}", "register", \`${JSON.stringify(info)}\`);
+				connectElgatoStreamDeckSocket(${store.get("webSocketPort")}, "${this.uuid}", "register", \`${JSON.stringify(this.info)}\`);
 				`);
 			});
 		} else {
 			this.process = spawn(path.join(root, uuid, codePath), [
-				"-port", store.get("webSocketPort"), "-pluginUUID", this.uuid, "-registerEvent", "register", "-info", JSON.stringify(info)
+				"-port", store.get("webSocketPort"), "-pluginUUID", this.uuid, "-registerEvent", "register", "-info", JSON.stringify(this.info)
 			]);
 		}
 	}
@@ -117,14 +122,6 @@ class StreamDeckPluginManager {
 			.filter((item) => item.isDirectory())
 			.map((item) => item.name);
 		this.plugins = {};
-		this.server = null;
-	}
-
-	start() {
-		this.pluginIds.forEach((uuid) => {
-			let pl = new StreamDeckPlugin(this.pluginsDir, uuid);
-			this.plugins[uuid] = pl;
-		});
 		
 		this.server = new WebSocketServer({ port: store.get("webSocketPort") });
 		this.server.on("connection", (ws) => {
@@ -134,6 +131,11 @@ class StreamDeckPluginManager {
 					this.plugins[data.uuid].socket = ws;
 				}
 			})
+		});
+
+		this.pluginIds.forEach((uuid) => {
+			let pl = new StreamDeckPlugin(this.pluginsDir, uuid);
+			this.plugins[uuid] = pl;
 		});
 	}
 
@@ -150,5 +152,4 @@ class StreamDeckPluginManager {
 }
 
 const pluginManager = new StreamDeckPluginManager();
-pluginManager.start();
 module.exports = { pluginManager };
