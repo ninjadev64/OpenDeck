@@ -1,22 +1,24 @@
-const store = require("./store");
-const { BrowserWindow } = require("electron");
+const { BrowserWindow, ipcMain } = require("electron");
 const { keys } = require("./shared");
 const { pluginManager } = require("./plugins");
 
-class PropertyInspector {
-    constructor(action, path, key) {
-        this.action = action;
-        this.window = new BrowserWindow({
-            autoHideMenuBar: true,
-            width: 300,
-            height: 200,
-            // show: false
-        });
-        this.window.loadFile(path);
+const store = require("./store");
+const WebSocketServer = require("ws").Server;
 
-        const info = pluginManager.plugins[action.plugin].info;
-        const actionInfo = {
-            action: action.uuid,
+class PropertyInspector {
+	constructor(action, path, key) {
+		this.action = action;
+		this.window = new BrowserWindow({
+			autoHideMenuBar: true,
+			width: 400,
+			height: 250,
+			show: false
+		});
+		this.window.loadFile(path);
+
+		const info = pluginManager.plugins[action.plugin].info;
+		const actionInfo = {
+			action: action.uuid,
 			context: key,
 			device: 0,
 			payload: {
@@ -27,37 +29,54 @@ class PropertyInspector {
 				},
 				isInMultiAction: false
 			}
-        }
+		}
 
-        this.window.once("ready-to-show", () => {
-            this.window.title = this.name;
-            this.window.webContents.executeJavaScript(`
-            connectElgatoStreamDeckSocket(${store.get("propertyInspectorPort")}, ${key}, "registerPropertyInspector", \`${JSON.stringify(info)}\`, \`${JSON.stringify(actionInfo)}\`);
-            `);
-        });
-    }
+		this.window.once("ready-to-show", () => {
+			this.window.title = action.name;
+			this.window.webContents.executeJavaScript(`
+				connectElgatoStreamDeckSocket(
+					${store.get("propertyInspectorPort")},
+					${key},
+					"registerPropertyInspector",
+					\`${JSON.stringify(info)}\`,
+					\`${JSON.stringify(actionInfo)}\`
+				);
+			`);
+		});
+		this.window.on("close", (event) => {
+			event.preventDefault();
+			this.window.hide();
+		});
+	}
 }
 
 class PropertyInspectorManager {
-    constructor() {
-        this.all = {};
-        this.server = new WebSocketServer({ port: store.get("propertyInspectorPort") });
+	constructor() {
+		this.all = {};
+		this.server = new WebSocketServer({ port: store.get("propertyInspectorPort") });
 		this.server.on("connection", (ws) => {
 			ws.on("message", (data) => {
 				data = JSON.parse(data);
 				if (data.event == "registerPropertyInspector") {
-					this.all[data.uuid].socket = ws;
+					this.all[parseInt(data.uuid)].socket = ws;
 				}
 			})
 		});
-    }
+		ipcMain.on("openPropertyInspector", (_event, key) => {
+			this.all[key].window.show();
+		});
+	}
 
-    register(key) {
-        if (this.all[key] != undefined) {
-            this.all[key].socket.close();
-        }
-        this.all[key] = new PropertyInspector(keys[key], action.propertyInspector, key);
-    }
+	register(key) {
+		this.all[key] = new PropertyInspector(keys[key], keys[key].propertyInspector, key);
+	}
+
+	unregister(key) {
+		if (this.all[key].socket != undefined) {
+			this.all[key].socket.close();
+		}
+		this.all[key].window.destroy();
+	}
 }
 
 const propertyInspectorManager = new PropertyInspectorManager();

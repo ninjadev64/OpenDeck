@@ -19,11 +19,16 @@ var categories = { };
 function updateKey(key, action) {
 	const { eventHandler } = require("./event");
 	const { propertyInspectorManager } = require("./propertyinspector");
-	eventHandler.willDisappear(key);
-	keys[key] = allActions[action];
+	if (action == undefined) {
+		eventHandler.willDisappear(key);
+		propertyInspectorManager.unregister(key);
+		keys[key] = undefined;
+	} else {
+		keys[key] = allActions[action];
+		eventHandler.willAppear(key);
+		propertyInspectorManager.register(key);
+	}
 	store.set("keys", keys);
-	eventHandler.willAppear(key);
-	propertyInspectorManager.register(key);
 }
 
 module.exports = { keys, allActions, categories, Action, updateKey };

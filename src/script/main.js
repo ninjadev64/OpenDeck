@@ -55,6 +55,7 @@ app.whenReady().then(() => {
 
 	require("./plugins");
 	require("./serial");
+	require("./propertyinspector");
 
 	app.on("activate", () => {
 		if (BrowserWindow.getAllWindows().length === 0) createWindow()

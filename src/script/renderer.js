@@ -61,6 +61,9 @@ function drop(ev) {
 			eve.target.remove();
 			ipcRenderer.send("keyUpdate", parseInt(ev.target.id), undefined);
 		});
+		e.addEventListener("contextmenu", () => {
+			ipcRenderer.send("openPropertyInspector", parseInt(ev.target.id));
+		});
 		ev.target.appendChild(e);
 		ipcRenderer.send("keyUpdate", parseInt(ev.target.id), ev.dataTransfer.getData("text"));
 	}
@@ -82,6 +85,9 @@ for (const [index, action] of store.get("keys").entries()) {
 		image.remove();
 		ipcRenderer.send("keyUpdate", index, undefined);
 	});
-
+	image.addEventListener("contextmenu", () => {
+		ipcRenderer.send("openPropertyInspector", index);
+	});
 	div.appendChild(image);
+	ipcRenderer.send("keyUpdate", index, action.uuid);
 }

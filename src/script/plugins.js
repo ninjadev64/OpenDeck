@@ -24,7 +24,7 @@ class StreamDeckPlugin {
 		this.category = manifest.Category || "Custom";
 		this.actions = [];
 		this.socket = null;
-		this.propertyInspector = manifest.PropertyInspectorPath ? path.join(root, uuid, manifest.PropertyInspectorPath) : "../markup/empty.html";
+		this.propertyInspector = manifest.PropertyInspectorPath ? path.join(root, uuid, manifest.PropertyInspectorPath) : path.join(__dirname, "../markup/empty.html");
 		
 		if (categories[this.category] == undefined) categories[this.category] = [];
 		manifest.Actions.forEach((action) => {
@@ -99,12 +99,20 @@ class StreamDeckPlugin {
 			this.window.once("ready-to-show", () => {
 				this.window.title = this.name;
 				this.window.webContents.executeJavaScript(`
-				connectElgatoStreamDeckSocket(${store.get("webSocketPort")}, "${this.uuid}", "register", \`${JSON.stringify(this.info)}\`);
+					connectElgatoStreamDeckSocket(
+						${store.get("webSocketPort")},
+						"${this.uuid}",
+						"register",
+						\`${JSON.stringify(this.info)}\`
+					);
 				`);
 			});
 		} else {
 			this.process = spawn(path.join(root, uuid, codePath), [
-				"-port", store.get("webSocketPort"), "-pluginUUID", this.uuid, "-registerEvent", "register", "-info", JSON.stringify(this.info)
+				"-port", store.get("webSocketPort"),
+				"-pluginUUID", this.uuid,
+				"-registerEvent", "register",
+				"-info", JSON.stringify(this.info)
 			]);
 		}
 	}
