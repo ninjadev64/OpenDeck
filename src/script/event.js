@@ -1,7 +1,12 @@
+const { shell } = require("electron");
 const { pluginManager } = require("./plugins");
 const { keys } = require("./shared");
 
+const log = require("electron-log");
+
 class EventHandler {
+	// Outbound events
+
 	keyDown(key) {
 		let action = keys[key];
 		if (action == undefined) return;
@@ -100,6 +105,36 @@ class EventHandler {
 			event: "deviceDidDisconnect",
 			device: 0
 		});
+	}
+
+	propertyInspectorDidAppear(key) {
+		let action = keys[key];
+		pluginManager.sendEvent(action.plugin, {
+			event: "propertyInspectorDidAppear",
+			action: action.uuid,
+			context: key,
+			device: 0
+		});
+	}
+
+	propertyInspectorDidDisappear(key) {
+		let action = keys[key];
+		pluginManager.sendEvent(action.plugin, {
+			event: "propertyInspectorDidDisappear",
+			action: action.uuid,
+			context: key,
+			device: 0
+		});
+	}
+
+	// Inbound events
+
+	openUrl(data) {
+		shell.openExternal(data.payload.url);
+	}
+
+	logMessage(data) {
+		log.debug(data.payload.message);
 	}
 }
 

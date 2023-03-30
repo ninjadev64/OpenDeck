@@ -9,7 +9,7 @@ SerialPort.list().then((ports) => { store.set("allPorts", ports); });
 
 class SerialInterface {
 	constructor(ws) {
-		this.lastPressed = 0;
+		this.lastKey = 0;
 
 		if (ws) { // Mock an OceanDeck over a WebSocket connection
 			this.server = new WebSocketServer({ port: 1925 });
@@ -32,16 +32,16 @@ class SerialInterface {
 	}
 
 	handle(data) {
-		if (data.button <= 0) {
-			if (this.lastPressed > 0) {
-				eventHandler.keyUp(this.lastPressed);
-				this.lastPressed = 0;
+		if (data.key <= 0) {
+			if (this.lastKey > 0) {
+				eventHandler.keyUp(this.lastKey);
+				this.lastKey = 0;
 			}
 			return;
 		}
 
-		this.lastPressed = data.button;
-		eventHandler.keyDown(data.button);
+		this.lastKey = data.key;
+		eventHandler.keyDown(data.key);
 	}
 }
 

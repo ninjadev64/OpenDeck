@@ -3,6 +3,7 @@ const { keys } = require("./shared");
 const { pluginManager } = require("./plugins");
 
 const store = require("./store");
+const { eventHandler } = require("./event");
 const WebSocketServer = require("ws").Server;
 
 class PropertyInspector {
@@ -46,6 +47,7 @@ class PropertyInspector {
 		this.window.on("close", (event) => {
 			event.preventDefault();
 			this.window.hide();
+			eventHandler.propertyInspectorDidDisappear(key);
 		});
 	}
 }
@@ -64,6 +66,7 @@ class PropertyInspectorManager {
 		});
 		ipcMain.on("openPropertyInspector", (_event, key) => {
 			this.all[key].window.show();
+			eventHandler.propertyInspectorDidAppear(key);
 		});
 	}
 
