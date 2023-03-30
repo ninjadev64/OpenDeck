@@ -5,24 +5,24 @@ int lastSlider1;
 int lastSlider2;
 
 void setup() {
-	pinMode(2, INPUT);
-	pinMode(3, INPUT);
-	pinMode(4, INPUT);
+  pinMode(2, INPUT);
+  pinMode(3, INPUT);
+  pinMode(4, INPUT);
 
-	digitalWrite(2, HIGH);
-	digitalWrite(3, HIGH);
-	digitalWrite(4, HIGH);
+  digitalWrite(2, HIGH);
+  digitalWrite(3, HIGH);
+  digitalWrite(4, HIGH);
 
-	Serial.begin(57600);
+  Serial.begin(57600);
 }
 
 void loop() {
-	StaticJsonDocument<16> doc;
+  StaticJsonDocument<16> doc;
 
   int key = 0;
-	/**/ if (digitalRead(2) == LOW) key = 1;
-	else if (digitalRead(3) == LOW) key = 2;
-	else if (digitalRead(4) == LOW) key = 3;
+  /**/ if (digitalRead(2) == LOW) key = 1;
+  else if (digitalRead(3) == LOW) key = 2;
+  else if (digitalRead(4) == LOW) key = 3;
   if (key != lastKey) {
     lastKey = key;
     doc["key"] = key;
@@ -36,16 +36,16 @@ void loop() {
 
   /*
   int s2 = round(analogRead(A1) / 6.81);
-	if (s2 != lastSlider2) {
+  if (s2 != lastSlider2) {
     lastSlider2 = s2;
     doc["slider2"] = s2;
   }
   */
 
-	String output = "";
-	serializeJson(doc, output);
+  String output = "";
+  serializeJson(doc, output);
   if (output == "null") return;
-	Serial.println(output);
+  Serial.println(output);
 
-	delay(50);
+  delay(50);
 }
