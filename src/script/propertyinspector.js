@@ -68,6 +68,9 @@ class PropertyInspectorManager {
 			this.all[key].window.show();
 			eventHandler.propertyInspectorDidAppear(key);
 		});
+		ipcMain.on("openPropertyInspectorSlider", (_event, slider) => {
+			//
+		});
 	}
 
 	register(key) {

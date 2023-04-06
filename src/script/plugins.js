@@ -31,7 +31,8 @@ class StreamDeckPlugin {
 			let a = new Action(
 				action.Name, action.UUID, this.uuid, action.Tooltip,
 				path.join(root, uuid, action.Icon + ".png"),
-				action.PropertyInspectorPath ? path.join(root, uuid, action.PropertyInspectorPath) : this.propertyInspector
+				action.PropertyInspectorPath ? path.join(root, uuid, action.PropertyInspectorPath) : this.propertyInspector,
+				action.Controllers || [ "Keypad" ]
 			);
 			this.actions.push(a);
 			allActions[a.uuid] = a;

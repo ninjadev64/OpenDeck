@@ -1,6 +1,6 @@
 const { shell } = require("electron");
 const { pluginManager } = require("./plugins");
-const { keys } = require("./shared");
+const { keys, sliders } = require("./shared");
 
 const log = require("electron-log");
 
@@ -41,6 +41,26 @@ class EventHandler {
 					column: key % 3
 				},
 				isInMultiAction: false
+			}
+		});
+	}
+
+	dialRotate(slider, value) {
+		let action = sliders[slider];
+		if (action == undefined) return;
+		pluginManager.sendEvent(action.plugin, {
+			event: "dialRotate",
+			action: action.uuid,
+			context: `s${slider}`,
+			device: 0,
+			payload: {
+				settings: {},
+				coordinates: {
+					column: slider,
+					row: 0
+				},
+				ticks: value * 1.92,
+				pressed: false
 			}
 		});
 	}

@@ -62,6 +62,20 @@ button, input, select {
 	text-align: center;
 }
 
+.slider {
+	width: 40px;
+	height: 330px;
+	border: 2px solid #f2f2f2;
+	border-radius: 5px;
+	margin: 10px;
+	text-align: center;
+	vertical-align: middle;
+}
+.slider img {
+	width: 35px;
+	height: 35px;
+}
+
 .plugin-card {
 	display: inline-block;
 	padding: 10px;

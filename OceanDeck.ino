@@ -1,8 +1,8 @@
 #include "ArduinoJson.h";
 
 int lastKey;
+int lastSlider0;
 int lastSlider1;
-int lastSlider2;
 
 void setup() {
   pinMode(2, INPUT);
@@ -28,17 +28,17 @@ void loop() {
     doc["key"] = key;
   }
 
-  int s1 = round(analogRead(A0) / 6.81);
-  if (s1 != lastSlider1) {
-    lastSlider1 = s1;
-    doc["slider1"] = s1;
+  int s0 = round(analogRead(A0) / 6.81);
+  if (s0 != lastSlider0) {
+    lastSlider0 = s0;
+    doc["slider0"] = s0;
   }
 
   /*
-  int s2 = round(analogRead(A1) / 6.81);
-  if (s2 != lastSlider2) {
-    lastSlider2 = s2;
-    doc["slider2"] = s2;
+  int s1 = round(analogRead(A1) / 6.81);
+  if (s1 != lastSlider1) {
+    lastSlider1 = s1;
+    doc["slider1"] = s1;
   }
   */
 

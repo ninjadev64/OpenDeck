@@ -5,6 +5,10 @@ const schema = {
             undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined
         ]
 	},
+	sliders: {
+		type: "array",
+		default: [ undefined, undefined ]
+	},
 	serialPort: {
 		type: "string"
 	},

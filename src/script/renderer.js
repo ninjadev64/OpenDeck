@@ -3,6 +3,21 @@ const store = require("../script/store");
 
 let actionList = document.getElementById("action-list");
 
+let dragging;
+document.addEventListener("dragend", () => { dragging = undefined; });
+
+function createIcon(action) {
+	let image = document.createElement("img");
+	image.src = action.icon;
+	image.id = action.uuid;
+	image.alt = action.tooltip;
+	image.className = "icon";
+	image.draggable = true;
+	image.action = action;
+	image.addEventListener("dragstart", () => { dragging = image; });
+	return image;
+}
+
 ipcRenderer.on("categories", (_, categories) => {
 	for (const [category, actions] of Object.entries(categories)) {
 		let heading = document.createElement("h3");
@@ -13,13 +28,7 @@ ipcRenderer.on("categories", (_, categories) => {
 			let div = document.createElement("div");
 			div.className = "action";
 
-			let image = document.createElement("img");
-			image.src = action.icon;
-			image.id = action.uuid;
-			image.alt = action.tooltip;
-			image.className = "icon";
-			image.draggable = true;
-			image.addEventListener("dragstart", (ev) => { ev.dataTransfer.setData("text", action.uuid); });
+			let image = createIcon(action);
 
 			let span = document.createElement("span");
 			span.innerText = action.name;
@@ -48,25 +57,61 @@ ipcRenderer.on("categories", (_, categories) => {
 });
 
 Array.from(document.getElementsByClassName("key")).forEach((div) => {
-	div.addEventListener("dragover", (ev) => { ev.preventDefault(); });
+	div.addEventListener("dragover", (ev) => { dragover(ev); });
+	div.addEventListener("drop", (ev) => { drop(ev); });
+});
+Array.from(document.getElementsByClassName("slider")).forEach((div) => {
+	div.addEventListener("dragover", (ev) => { dragover(ev); });
 	div.addEventListener("drop", (ev) => { drop(ev); });
 });
 
+function dragover(ev) {
+	let e = dragging;
+	if (ev.target.children.length != 0) return;
+	if (ev.target.classList.contains("key")) {
+		if (!e.action.controllers.includes("Keypad")) return;
+	} else if (ev.target.classList.contains("slider")) {
+		if (!e.action.controllers.includes("Encoder")) return;
+	} else {
+		return;
+	}
+	ev.preventDefault();
+}
+
 function drop(ev) {
-	if (!ev.target.classList.contains("key")) return;
-	if (ev.target.children.length == 0) {
-		ev.preventDefault();
-		let e = document.getElementById(ev.dataTransfer.getData("text")).cloneNode();
-		e.addEventListener("click", (eve) => {
-			eve.target.remove();
-			ipcRenderer.send("keyUpdate", parseInt(ev.target.id), undefined);
+	if (ev.target.children.length != 0) return;
+
+	let e = dragging.cloneNode();
+	e.action = dragging.action;
+	e.addEventListener("click", (e) => {
+		e.target.remove();
+	});
+
+	if (ev.target.classList.contains("key")) {
+		if (!e.action.controllers.includes("Keypad")) return;
+		e.addEventListener("click", () => {
+			ipcRenderer.send("keyUpdate", parseInt(ev.target.getAttribute("data-n")), undefined);
 		});
 		e.addEventListener("contextmenu", () => {
-			ipcRenderer.send("openPropertyInspector", parseInt(ev.target.id));
+			ipcRenderer.send("openPropertyInspector", parseInt(ev.target.getAttribute("data-n")));
 		});
-		ev.target.appendChild(e);
-		ipcRenderer.send("keyUpdate", parseInt(ev.target.id), ev.dataTransfer.getData("text"));
+		ipcRenderer.send("keyUpdate", parseInt(ev.target.getAttribute("data-n")), dragging.id);
+	} else if (ev.target.classList.contains("slider")) {
+		if (!e.action.controllers.includes("Encoder")) return;
+		e.addEventListener("click", () => {
+			ipcRenderer.send("sliderUpdate", parseInt(ev.target.getAttribute("data-n")), undefined);
+		});
+		e.addEventListener("contextmenu", () => {
+			ipcRenderer.send("openPropertyInspectorSlider", parseInt(ev.target.getAttribute("data-n")));
+		});
+		ipcRenderer.send("sliderUpdate", parseInt(ev.target.getAttribute("data-n")), dragging.id);
+	} else {
+		return;
 	}
+	
+	ev.target.appendChild(e);
+	
+	ev.preventDefault();
 }
 
 for (const [index, action] of store.get("keys").entries()) {
@@ -74,13 +119,7 @@ for (const [index, action] of store.get("keys").entries()) {
 	if (div == null) continue;
 	
 	if (action == undefined) continue;
-	let image = document.createElement("img");
-	image.src = action.icon;
-	image.id = action.uuid;
-	image.alt = action.tooltip;
-	image.className = "icon";
-	image.draggable = true;
-	image.addEventListener("dragstart", (ev) => { ev.dataTransfer.setData("text", action.uuid); });
+	let image = createIcon(action);
 	image.addEventListener("click", () => {
 		image.remove();
 		ipcRenderer.send("keyUpdate", index, undefined);

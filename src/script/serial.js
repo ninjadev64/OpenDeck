@@ -37,11 +37,17 @@ class SerialInterface {
 				eventHandler.keyUp(this.lastKey);
 				this.lastKey = 0;
 			}
-			return;
+		} else {
+			this.lastKey = data.key;
+			eventHandler.keyDown(data.key);
 		}
 
-		this.lastKey = data.key;
-		eventHandler.keyDown(data.key);
+		if (data.slider0) {
+			eventHandler.dialRotate(0, data.slider0);
+		}
+		if (data.slider1) {
+			eventHandler.dialRotate(1, data.slider1);
+		}
 	}
 }
 
