@@ -1,43 +1,45 @@
 const { BrowserWindow, ipcMain } = require("electron");
-const { keys, sliders } = require("./shared");
 const { pluginManager } = require("./plugins");
 
 const store = require("./store");
 const { eventHandler } = require("./event");
+const { getInstanceByContext } = require("./shared");
 const WebSocketServer = require("ws").Server;
 
 class PropertyInspector {
-	constructor(action, path, context) {
-		this.action = action;
+	constructor(instance) {
+		this.action = instance.action;
+		this.context = instance.context;
+		this.path = this.action.propertyInspector;
 		this.window = new BrowserWindow({
 			autoHideMenuBar: true,
 			width: 400,
 			height: 250,
 			show: false
 		});
-		this.window.loadFile(path);
+		this.window.loadFile(this.path);
 
-		const info = pluginManager.plugins[action.plugin].info;
+		const info = pluginManager.plugins[this.action.plugin].info;
 		const actionInfo = {
-			action: action.uuid,
-			context: context,
+			action: this.action.uuid,
+			context: this.context,
 			device: 0,
 			payload: {
 				settings: {},
 				coordinates: {
-					row: Math.floor((context - 1) / 3),
-					column: (context - 1) % 3
+					row: Math.floor((this.context - 1) / 3),
+					column: (this.context - 1) % 3
 				},
 				isInMultiAction: false
 			}
 		}
 
 		this.window.once("ready-to-show", () => {
-			this.window.title = action.name;
+			this.window.title = this.action.name;
 			this.window.webContents.executeJavaScript(`
 				connectElgatoStreamDeckSocket(
 					${store.get("propertyInspectorPort")},
-					"${context}",
+					"${this.context}",
 					"registerPropertyInspector",
 					\`${JSON.stringify(info)}\`,
 					\`${JSON.stringify(actionInfo)}\`
@@ -47,7 +49,7 @@ class PropertyInspector {
 		this.window.on("close", (event) => {
 			event.preventDefault();
 			this.window.hide();
-			eventHandler.propertyInspectorDidDisappear(context, action);
+			eventHandler.propertyInspectorDidDisappear(instance);
 		});
 	}
 }
@@ -70,23 +72,20 @@ class PropertyInspectorManager {
 		});
 		ipcMain.on("openPropertyInspector", (_event, context) => {
 			this.all[context].window.show();
-			eventHandler.propertyInspectorDidAppear(context, this.all[context].action);
+			eventHandler.propertyInspectorDidAppear(getInstanceByContext(context));
 		});
 	}
 
-	registerKey(key) {
-		this.all[key] = new PropertyInspector(keys[key], keys[key].propertyInspector, key);
+	register(instance) {
+		this.all[instance.context] = new PropertyInspector(instance);
 	}
 
-	registerSlider(slider) {
-		this.all[`s${slider}`] = new PropertyInspector(sliders[slider], sliders[slider].propertyInspector, `s${slider}`);
-	}
-
-	unregister(context) {
-		if (this.all[context].socket != undefined) {
-			this.all[context].socket.close();
+	unregister(instance) {
+		let propertyInspector = this.all[instance.context];
+		if (propertyInspector.socket != undefined) {
+			propertyInspector.socket.close();
 		}
-		this.all[context].window.destroy();
+		propertyInspector.window.destroy();
 	}
 }
 

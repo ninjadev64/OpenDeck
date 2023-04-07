@@ -90,59 +90,73 @@ function drop(ev) {
 
 	if (ev.target.classList.contains("key")) {
 		if (!e.action.controllers.includes("Keypad")) return;
-		e.addEventListener("click", () => {
-			ipcRenderer.send("keyUpdate", parseInt(ev.target.getAttribute("data-n")), undefined);
+
+		ipcRenderer.send("createInstance", e.action.uuid, parseInt(ev.target.id), "Keypad");
+		ipcRenderer.once("instanceCreated", (_event, instance) => {
+			e.instance = instance;
+			e.addEventListener("click", () => {
+				ipcRenderer.send("keyUpdate", instance.context, undefined);
+			});
+			e.addEventListener("contextmenu", () => {
+				ipcRenderer.send("openPropertyInspector", instance.context);
+			});
+			ev.target.appendChild(e);
 		});
-		e.addEventListener("contextmenu", () => {
-			ipcRenderer.send("openPropertyInspector", parseInt(ev.target.getAttribute("data-n")));
-		});
-		ipcRenderer.send("keyUpdate", parseInt(ev.target.getAttribute("data-n")), dragging.id);
 	} else if (ev.target.classList.contains("slider")) {
 		if (!e.action.controllers.includes("Encoder")) return;
-		e.addEventListener("click", () => {
-			ipcRenderer.send("sliderUpdate", parseInt(ev.target.getAttribute("data-n")), undefined);
+
+		ipcRenderer.send("createInstance", e.action.uuid, ev.target.id, "Encoder");
+		ipcRenderer.once("instanceCreated", (_event, instance) => {
+			e.instance = instance;
+			e.addEventListener("click", () => {
+				ipcRenderer.send("sliderUpdate", instance.context, undefined);
+			});
+			e.addEventListener("contextmenu", () => {
+				ipcRenderer.send("openPropertyInspector", instance.context);
+			});
+			ev.target.appendChild(e);
 		});
-		e.addEventListener("contextmenu", () => {
-			ipcRenderer.send("openPropertyInspector", `s${ev.target.getAttribute("data-n")}`);
-		});
-		ipcRenderer.send("sliderUpdate", parseInt(ev.target.getAttribute("data-n")), dragging.id);
 	} else {
 		return;
 	}
 	
-	ev.target.appendChild(e);
-	
 	ev.preventDefault();
 }
 
-for (const [index, action] of store.get("keys").entries()) {
-	let div = document.querySelector(`div.key[data-n="${index}"]`);
-	if (div == null) continue;
+store.get("keys").forEach((instance) => {
+	if (instance == undefined) return;
+
+	let div = document.getElementById(instance.context.toString());
+	if (div == null) return;
 	
-	if (action == undefined) continue;
+	let action = instance.action;
 	let image = createIcon(action);
+	image.instance = instance;
 	image.addEventListener("click", () => {
 		image.remove();
-		ipcRenderer.send("keyUpdate", index, undefined);
+		ipcRenderer.send("keyUpdate", instance.context, undefined);
 	});
 	image.addEventListener("contextmenu", () => {
-		ipcRenderer.send("openPropertyInspector", index);
+		ipcRenderer.send("openPropertyInspector", instance.context);
 	});
 	div.appendChild(image);
-	ipcRenderer.send("keyUpdate", index, action.uuid);
-}
-for (const [index, action] of store.get("sliders").entries()) {
-	let div = document.querySelector(`div.slider[data-n="${index}"]`);
+	ipcRenderer.send("keyUpdate", instance.context, instance);
+});
+store.get("sliders").forEach((instance) => {
+	if (instance == undefined) return;
+
+	let div = document.getElementById(instance.context);
 	
-	if (action == undefined) continue;
+	let action = instance.action;
 	let image = createIcon(action);
+	image.instance = instance;
 	image.addEventListener("click", () => {
 		image.remove();
-		ipcRenderer.send("sliderUpdate", index, undefined);
+		ipcRenderer.send("sliderUpdate", instance.context, undefined);
 	});
 	image.addEventListener("contextmenu", () => {
-		ipcRenderer.send("openPropertyInspector", `s${index}`);
+		ipcRenderer.send("openPropertyInspector", instance.context);
 	});
 	div.appendChild(image);
-	ipcRenderer.send("sliderUpdate", index, action.uuid);
-}
+	ipcRenderer.send("sliderUpdate", instance.context, instance);
+});

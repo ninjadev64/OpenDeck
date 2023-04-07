@@ -1,4 +1,5 @@
 const store = require("./store");
+const { ipcMain } = require("electron");
 
 class Action {
 	constructor(name, uuid, plugin, tooltip, icon, propertyInspector, controllers) {
@@ -9,6 +10,25 @@ class Action {
 		this.icon = icon;
 		this.propertyInspector = propertyInspector;
 		this.controllers = controllers;
+		this.states = [];
+	}
+}
+
+class ActionState {
+	constructor(action, data) {
+		this.image = data.Image == "actionDefaultImage" ? action.icon : data.Image;
+		this.name = data.Name;
+		this.title = data.Title;
+	}
+}
+
+class ActionInstance {
+	constructor(action, context, type) {
+		this.action = action;
+		this.context = context;
+		this.type = type;
+		this.index = type == "Keypad" ? context : type == "Encoder" ? parseInt(context.slice(1)) : undefined;
+		this.state = 0;
 	}
 }
 
@@ -18,31 +38,40 @@ var sliders = store.get("sliders");
 var allActions = { };
 var categories = { };
 
-function updateKey(key, action) {
+function updateKey(key, instance) {
 	const { eventHandler } = require("./event");
 	const { propertyInspectorManager } = require("./propertyinspector");
-	if (action == undefined) {
-		eventHandler.willDisappear(key);
-		propertyInspectorManager.unregister(key);
+	if (instance == undefined) {
+		eventHandler.willDisappear(keys[key]);
+		propertyInspectorManager.unregister(keys[key]);
 		keys[key] = undefined;
 	} else {
-		keys[key] = allActions[action];
-		eventHandler.willAppear(key);
-		propertyInspectorManager.registerKey(key);
+		keys[key] = instance;
+		eventHandler.willAppear(instance);
+		propertyInspectorManager.register(instance);
 	}
 	store.set("keys", keys);
 }
-function updateSlider(slider, action) {
+function updateSlider(slider, instance) {
 	const { serialInterface } = require("./serial");
 	const { propertyInspectorManager } = require("./propertyinspector");
-	serialInterface.lastSliders[slider] = 0;
-	sliders[slider] = allActions[action];
-	if (action == undefined) {
-		propertyInspectorManager.unregister(`s${slider}`);
+	let index = parseInt(slider.slice(1));
+	serialInterface.lastSliders[index] = 0;
+	if (instance == undefined) {
+		propertyInspectorManager.unregister(sliders[index]);
 	} else {
-		propertyInspectorManager.registerSlider(slider);
+		propertyInspectorManager.register(instance);
 	}
+	sliders[index] = instance;
 	store.set("sliders", sliders);
 }
 
-module.exports = { keys, sliders, allActions, categories, Action, updateKey, updateSlider };
+function getInstanceByContext(context) {
+	if (context.toString().startsWith("s")) {
+		return sliders[parseInt(context.slice(1))];
+	} else {
+		return keys[parseInt(context)];
+	}
+}
+
+module.exports = { keys, sliders, allActions, categories, Action, ActionInstance, ActionState, updateKey, updateSlider, getInstanceByContext };

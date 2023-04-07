@@ -1,7 +1,7 @@
 const { app, ipcMain, BrowserWindow, Tray, Menu } = require("electron");
 const path = require("path");
 
-const { keys, allActions, categories, updateKey, updateSlider } = require("./shared");
+const { allActions, categories, updateKey, updateSlider, ActionInstance } = require("./shared");
 
 let isQuitting = false;
 let tray;
@@ -18,15 +18,24 @@ const createWindow = () => {
   
 	win.loadFile(path.join(__dirname, "../markup/index.html"));
 
+	ipcMain.on("createInstance", (_event, action, context, type) => {
+		let instance = new ActionInstance(allActions[action], context, type);
+		switch (type) {
+			case "Keypad": updateKey(context, instance); break;
+			case "Encoder": updateSlider(context, instance); break;
+		}
+		win.webContents.send("instanceCreated", instance);
+	});
+	
+	ipcMain.on("keyUpdate", (_event, key, instance) => {
+		updateKey(key, instance);
+	});
+	ipcMain.on("sliderUpdate", (_event, slider, instance) => {
+		updateSlider(slider, instance);
+	});
+	
 	ipcMain.on("requestCategories", () => {
 		win.webContents.send("categories", categories);
-	});
-	const { eventHandler } = require("./event");
-	ipcMain.on("keyUpdate", (_event, key, action) => {
-		updateKey(key, action);
-	});
-	ipcMain.on("sliderUpdate", (_event, slider, action) => {
-		updateSlider(slider, action);
 	});
 
 	tray = new Tray(path.join(__dirname, "../assets/icon.png"));

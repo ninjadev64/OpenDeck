@@ -8,11 +8,11 @@ class EventHandler {
 	// Outbound events
 
 	keyDown(key) {
-		let action = keys[key];
-		if (action == undefined) return;
-		pluginManager.sendEvent(action.plugin, {
+		let instance = keys[key];
+		if (instance == undefined) return;
+		pluginManager.sendEvent(instance.action.plugin, {
 			event: "keyDown",
-			action: action.uuid,
+			action: instance.action.uuid,
 			context: key,
 			device: 0,
 			payload: {
@@ -27,11 +27,11 @@ class EventHandler {
 	}
 
 	keyUp(key) {
-		let action = keys[key];
-		if (action == undefined) return;
-		pluginManager.sendEvent(action.plugin, {
+		let instance = keys[key];
+		if (instance == undefined) return;
+		pluginManager.sendEvent(instance.action.plugin, {
 			event: "keyUp",
-			action: action.uuid,
+			action: instance.action.uuid,
 			context: key,
 			device: 0,
 			payload: {
@@ -46,11 +46,11 @@ class EventHandler {
 	}
 
 	dialRotate(slider, value) {
-		let action = sliders[slider];
-		if (action == undefined) return;
-		pluginManager.sendEvent(action.plugin, {
+		let instance = sliders[slider];
+		if (instance == undefined) return;
+		pluginManager.sendEvent(instance.action.plugin, {
 			event: "dialRotate",
-			action: action.uuid,
+			action: instance.action.uuid,
 			context: `s${slider}`,
 			device: 0,
 			payload: {
@@ -65,40 +65,36 @@ class EventHandler {
 		});
 	}
 
-	willAppear(key) {
-		let action = keys[key];
-		if (action == undefined) return;
-		pluginManager.sendEvent(action.plugin, {
+	willAppear(instance) {
+		pluginManager.sendEvent(instance.action.plugin, {
 			event: "willAppear",
-			action: action.uuid,
-			context: key,
+			action: instance.action.uuid,
+			context: instance.context,
 			device: 0,
 			payload: {
 				controller: "Keypad",
 				settings: {},
 				coordinates: {
-					row: Math.floor((key - 1) / 3),
-					column: (key - 1) % 3
+					row: Math.floor((instance.index - 1) / 3),
+					column: (instance.index - 1) % 3
 				},
 				isInMultiAction: false
 			}
 		});
 	}
 
-	willDisappear(key) {
-		let action = keys[key];
-		if (action == undefined) return;
-		pluginManager.sendEvent(action.plugin, {
+	willDisappear(instance) {
+		pluginManager.sendEvent(instance.action.plugin, {
 			event: "willDisappear",
-			action: action.uuid,
-			context: key,
+			action: instance.action.uuid,
+			context: instance.context,
 			device: 0,
 			payload: {
 				controller: "Keypad",
 				settings: {},
 				coordinates: {
-					row: Math.floor((key - 1) / 3),
-					column: (key - 1) % 3
+					row: Math.floor((instance.index - 1) / 3),
+					column: (instance.index - 1) % 3
 				},
 				isInMultiAction: false
 			}
@@ -127,20 +123,20 @@ class EventHandler {
 		});
 	}
 
-	propertyInspectorDidAppear(context, action) {
-		pluginManager.sendEvent(action.plugin, {
+	propertyInspectorDidAppear(instance) {
+		pluginManager.sendEvent(instance.action.plugin, {
 			event: "propertyInspectorDidAppear",
-			action: action.uuid,
-			context: context,
+			action: instance.action.uuid,
+			context: instance.context,
 			device: 0
 		});
 	}
 
-	propertyInspectorDidDisappear(context, action) {
-		pluginManager.sendEvent(action.plugin, {
+	propertyInspectorDidDisappear(instance) {
+		pluginManager.sendEvent(instance.action.plugin, {
 			event: "propertyInspectorDidDisappear",
-			action: action.uuid,
-			context: context,
+			action: instance.action.uuid,
+			context: instance.context,
 			device: 0
 		});
 	}
