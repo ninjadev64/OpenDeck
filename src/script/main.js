@@ -61,7 +61,7 @@ app.whenReady().then(() => {
 	require("./propertyinspector");
 
 	app.on("activate", () => {
-		if (BrowserWindow.getAllWindows().length === 0) createWindow()
+		if (BrowserWindow.getAllWindows().length == 0) createWindow();
 	});
 });
 

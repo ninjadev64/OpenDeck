@@ -28,14 +28,20 @@ function updateKey(key, action) {
 	} else {
 		keys[key] = allActions[action];
 		eventHandler.willAppear(key);
-		propertyInspectorManager.register(key);
+		propertyInspectorManager.registerKey(key);
 	}
 	store.set("keys", keys);
 }
 function updateSlider(slider, action) {
 	const { serialInterface } = require("./serial");
+	const { propertyInspectorManager } = require("./propertyinspector");
 	serialInterface.lastSliders[slider] = 0;
 	sliders[slider] = allActions[action];
+	if (action == undefined) {
+		propertyInspectorManager.unregister(`s${slider}`);
+	} else {
+		propertyInspectorManager.registerSlider(slider);
+	}
 	store.set("sliders", sliders);
 }
 

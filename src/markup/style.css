@@ -48,16 +48,16 @@ button, input, select {
 	margin-right: 15px;
 }
 .icon {
-	width: 75px;
-	height: 75px;
+	width: 78px;
+	height: 78px;
 }
 
 .key {
-	width: 75px;
-	height: 75px;
+	width: 78px;
+	height: 78px;
 	border: 2px solid #f2f2f2;
 	border-radius: 5px;
-	padding: 10px;
+	padding: 5px;
 	margin: 10px;
 	text-align: center;
 }

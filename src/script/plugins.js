@@ -29,9 +29,10 @@ class StreamDeckPlugin {
 		
 		if (categories[this.category] == undefined) categories[this.category] = [];
 		manifest.Actions.forEach((action) => {
+			let iconPath = path.join(root, uuid, action.Icon);
 			let a = new Action(
 				action.Name, action.UUID, this.uuid, action.Tooltip,
-				path.join(root, uuid, action.Icon + ".png"),
+				fs.existsSync(iconPath + "@2x.png") ? iconPath + "@2x.png" : iconPath + ".png",
 				action.PropertyInspectorPath ? path.join(root, uuid, action.PropertyInspectorPath) : this.propertyInspector,
 				action.Controllers || [ "Keypad" ]
 			);
@@ -131,6 +132,7 @@ class StreamDeckPlugin {
 		this.socket = socket;
 		this.queue.forEach((item) => {
 			this.socket.send(item);
+			this.queue.shift();
 		});
 	}
 }

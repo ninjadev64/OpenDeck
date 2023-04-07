@@ -1,5 +1,5 @@
 const { BrowserWindow, ipcMain } = require("electron");
-const { keys } = require("./shared");
+const { keys, sliders } = require("./shared");
 const { pluginManager } = require("./plugins");
 
 const store = require("./store");
@@ -7,7 +7,7 @@ const { eventHandler } = require("./event");
 const WebSocketServer = require("ws").Server;
 
 class PropertyInspector {
-	constructor(action, path, key) {
+	constructor(action, path, context) {
 		this.action = action;
 		this.window = new BrowserWindow({
 			autoHideMenuBar: true,
@@ -20,13 +20,13 @@ class PropertyInspector {
 		const info = pluginManager.plugins[action.plugin].info;
 		const actionInfo = {
 			action: action.uuid,
-			context: key,
+			context: context,
 			device: 0,
 			payload: {
 				settings: {},
 				coordinates: {
-					row: Math.floor(key / 3) + 1,
-					column: key % 3
+					row: Math.floor((context - 1) / 3),
+					column: (context - 1) % 3
 				},
 				isInMultiAction: false
 			}
@@ -37,7 +37,7 @@ class PropertyInspector {
 			this.window.webContents.executeJavaScript(`
 				connectElgatoStreamDeckSocket(
 					${store.get("propertyInspectorPort")},
-					${key},
+					"${context}",
 					"registerPropertyInspector",
 					\`${JSON.stringify(info)}\`,
 					\`${JSON.stringify(actionInfo)}\`
@@ -47,7 +47,7 @@ class PropertyInspector {
 		this.window.on("close", (event) => {
 			event.preventDefault();
 			this.window.hide();
-			eventHandler.propertyInspectorDidDisappear(key);
+			eventHandler.propertyInspectorDidDisappear(context, action);
 		});
 	}
 }
@@ -60,28 +60,33 @@ class PropertyInspectorManager {
 			ws.on("message", (data) => {
 				data = JSON.parse(data);
 				if (data.event == "registerPropertyInspector") {
-					this.all[parseInt(data.uuid)].socket = ws;
+					if (data.uuid.startsWith("s")) {
+						this.all[data.uuid].socket = ws;
+					} else {
+						this.all[parseInt(data.uuid)].socket = ws;
+					}
 				}
 			})
 		});
-		ipcMain.on("openPropertyInspector", (_event, key) => {
-			this.all[key].window.show();
-			eventHandler.propertyInspectorDidAppear(key);
-		});
-		ipcMain.on("openPropertyInspectorSlider", (_event, slider) => {
-			//
+		ipcMain.on("openPropertyInspector", (_event, context) => {
+			this.all[context].window.show();
+			eventHandler.propertyInspectorDidAppear(context, this.all[context].action);
 		});
 	}
 
-	register(key) {
+	registerKey(key) {
 		this.all[key] = new PropertyInspector(keys[key], keys[key].propertyInspector, key);
 	}
 
-	unregister(key) {
-		if (this.all[key].socket != undefined) {
-			this.all[key].socket.close();
+	registerSlider(slider) {
+		this.all[`s${slider}`] = new PropertyInspector(sliders[slider], sliders[slider].propertyInspector, `s${slider}`);
+	}
+
+	unregister(context) {
+		if (this.all[context].socket != undefined) {
+			this.all[context].socket.close();
 		}
-		this.all[key].window.destroy();
+		this.all[context].window.destroy();
 	}
 }
 

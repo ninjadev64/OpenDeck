@@ -103,7 +103,7 @@ function drop(ev) {
 			ipcRenderer.send("sliderUpdate", parseInt(ev.target.getAttribute("data-n")), undefined);
 		});
 		e.addEventListener("contextmenu", () => {
-			ipcRenderer.send("openPropertyInspectorSlider", parseInt(ev.target.getAttribute("data-n")));
+			ipcRenderer.send("openPropertyInspector", `s${ev.target.getAttribute("data-n")}`);
 		});
 		ipcRenderer.send("sliderUpdate", parseInt(ev.target.getAttribute("data-n")), dragging.id);
 	} else {
@@ -141,7 +141,7 @@ for (const [index, action] of store.get("sliders").entries()) {
 		ipcRenderer.send("sliderUpdate", index, undefined);
 	});
 	image.addEventListener("contextmenu", () => {
-		ipcRenderer.send("openPropertyInspectorSlider", index);
+		ipcRenderer.send("openPropertyInspector", `s${index}`);
 	});
 	div.appendChild(image);
 	ipcRenderer.send("sliderUpdate", index, action.uuid);

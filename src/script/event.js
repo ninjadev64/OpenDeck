@@ -18,8 +18,8 @@ class EventHandler {
 			payload: {
 				settings: {},
 				coordinates: {
-					row: Math.floor(key / 3) + 1,
-					column: key % 3
+					row: Math.floor((key - 1) / 3),
+					column: (key - 1) % 3
 				},
 				isInMultiAction: false
 			}
@@ -37,8 +37,8 @@ class EventHandler {
 			payload: {
 				settings: {},
 				coordinates: {
-					row: Math.floor(key / 3) + 1,
-					column: key % 3
+					row: Math.floor((key - 1) / 3),
+					column: (key - 1) % 3
 				},
 				isInMultiAction: false
 			}
@@ -77,8 +77,8 @@ class EventHandler {
 				controller: "Keypad",
 				settings: {},
 				coordinates: {
-					row: Math.floor(key / 3) + 1,
-					column: key % 3
+					row: Math.floor((key - 1) / 3),
+					column: (key - 1) % 3
 				},
 				isInMultiAction: false
 			}
@@ -97,8 +97,8 @@ class EventHandler {
 				controller: "Keypad",
 				settings: {},
 				coordinates: {
-					row: Math.floor(key / 3) + 1,
-					column: key % 3
+					row: Math.floor((key - 1) / 3),
+					column: (key - 1) % 3
 				},
 				isInMultiAction: false
 			}
@@ -127,22 +127,20 @@ class EventHandler {
 		});
 	}
 
-	propertyInspectorDidAppear(key) {
-		let action = keys[key];
+	propertyInspectorDidAppear(context, action) {
 		pluginManager.sendEvent(action.plugin, {
 			event: "propertyInspectorDidAppear",
 			action: action.uuid,
-			context: key,
+			context: context,
 			device: 0
 		});
 	}
 
-	propertyInspectorDidDisappear(key) {
-		let action = keys[key];
+	propertyInspectorDidDisappear(context, action) {
 		pluginManager.sendEvent(action.plugin, {
 			event: "propertyInspectorDidDisappear",
 			action: action.uuid,
-			context: key,
+			context: context,
 			device: 0
 		});
 	}
