@@ -59,7 +59,7 @@ class EventHandler {
 					column: slider,
 					row: 0
 				},
-				ticks: value * 1.92,
+				ticks: value,
 				pressed: false
 			}
 		});

@@ -33,7 +33,10 @@ function updateKey(key, action) {
 	store.set("keys", keys);
 }
 function updateSlider(slider, action) {
+	const { serialInterface } = require("./serial");
+	serialInterface.lastSliders[slider] = 0;
 	sliders[slider] = allActions[action];
+	store.set("sliders", sliders);
 }
 
 module.exports = { keys, sliders, allActions, categories, Action, updateKey, updateSlider };

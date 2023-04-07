@@ -18,7 +18,7 @@ const createWindow = () => {
   
 	win.loadFile(path.join(__dirname, "../markup/index.html"));
 
-	win.once("ready-to-show", () => {
+	ipcMain.on("requestCategories", () => {
 		win.webContents.send("categories", categories);
 	});
 	const { eventHandler } = require("./event");

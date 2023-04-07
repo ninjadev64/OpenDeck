@@ -18,6 +18,7 @@ function createIcon(action) {
 	return image;
 }
 
+ipcRenderer.send("requestCategories");
 ipcRenderer.on("categories", (_, categories) => {
 	for (const [category, actions] of Object.entries(categories)) {
 		let heading = document.createElement("h3");
@@ -115,7 +116,7 @@ function drop(ev) {
 }
 
 for (const [index, action] of store.get("keys").entries()) {
-	let div = document.getElementById(`${index}`);
+	let div = document.querySelector(`div.key[data-n="${index}"]`);
 	if (div == null) continue;
 	
 	if (action == undefined) continue;
@@ -129,4 +130,19 @@ for (const [index, action] of store.get("keys").entries()) {
 	});
 	div.appendChild(image);
 	ipcRenderer.send("keyUpdate", index, action.uuid);
+}
+for (const [index, action] of store.get("sliders").entries()) {
+	let div = document.querySelector(`div.slider[data-n="${index}"]`);
+	
+	if (action == undefined) continue;
+	let image = createIcon(action);
+	image.addEventListener("click", () => {
+		image.remove();
+		ipcRenderer.send("sliderUpdate", index, undefined);
+	});
+	image.addEventListener("contextmenu", () => {
+		ipcRenderer.send("openPropertyInspectorSlider", index);
+	});
+	div.appendChild(image);
+	ipcRenderer.send("sliderUpdate", index, action.uuid);
 }

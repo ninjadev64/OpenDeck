@@ -10,6 +10,7 @@ SerialPort.list().then((ports) => { store.set("allPorts", ports); });
 class SerialInterface {
 	constructor(ws) {
 		this.lastKey = 0;
+		this.lastSliders = [ 0, 0 ];
 
 		if (ws) { // Mock an OceanDeck over a WebSocket connection
 			this.server = new WebSocketServer({ port: 1925 });
@@ -43,13 +44,15 @@ class SerialInterface {
 		}
 
 		if (data.slider0) {
-			eventHandler.dialRotate(0, data.slider0);
+			eventHandler.dialRotate(0, data.slider0 - this.lastSliders[0]);
+			this.lastSliders[0] = data.slider0;
 		}
 		if (data.slider1) {
-			eventHandler.dialRotate(1, data.slider1);
+			eventHandler.dialRotate(1, data.slider1 - this.lastSliders[1]);
+			this.lastSliders[1] = data.slider1;
 		}
 	}
 }
 
-const serialInterface = new SerialInterface(true);
+const serialInterface = new SerialInterface(false);
 module.exports = { serialInterface };

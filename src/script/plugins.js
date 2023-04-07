@@ -24,6 +24,7 @@ class StreamDeckPlugin {
 		this.category = manifest.Category || "Custom";
 		this.actions = [];
 		this.socket = null;
+		this.queue = [];
 		this.propertyInspector = manifest.PropertyInspectorPath ? path.join(root, uuid, manifest.PropertyInspectorPath) : path.join(__dirname, "../markup/empty.html");
 		
 		if (categories[this.category] == undefined) categories[this.category] = [];
@@ -92,8 +93,8 @@ class StreamDeckPlugin {
 			this.window = new BrowserWindow({
 				autoHideMenuBar: true,
 				icon: path.join(root, uuid, this.iconPath + ".png"),
-				width: 300,
-				height: 200,
+				width: 600,
+				height: 400,
 				show: false
 			});
 			this.window.loadFile(path.join(root, uuid, codePath));
@@ -117,6 +118,21 @@ class StreamDeckPlugin {
 			]);
 		}
 	}
+
+	send(data) {
+		if (this.socket != null) {
+			this.socket.send(data);
+		} else {
+			this.queue.push(data);
+		}
+	}
+
+	setSocket(socket) {
+		this.socket = socket;
+		this.queue.forEach((item) => {
+			this.socket.send(item);
+		});
+	}
 }
 
 class StreamDeckPluginManager {
@@ -137,7 +153,7 @@ class StreamDeckPluginManager {
 			ws.on("message", (data) => {
 				data = JSON.parse(data);
 				if (data.event == "register") {
-					this.plugins[data.uuid].socket = ws;
+					this.plugins[data.uuid].setSocket(ws);
 				}
 			})
 		});
@@ -149,13 +165,13 @@ class StreamDeckPluginManager {
 	}
 
 	async sendEvent(plugin, data) {
-		this.plugins[plugin].socket.send(JSON.stringify(data));
+		this.plugins[plugin].send(JSON.stringify(data));
 	}
 
 	async sendGlobalEvent(data) {
 		data = JSON.stringify(data);
 		Object.values(this.plugins).forEach((plugin) => {
-			plugin.socket.send(data);
+			plugin.send(data);
 		});
 	}
 }

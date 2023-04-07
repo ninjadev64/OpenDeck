@@ -28,15 +28,15 @@ void loop() {
     doc["key"] = key;
   }
 
-  int s0 = round(analogRead(A0) / 6.81);
-  if (s0 != lastSlider0) {
+  int s0 = round(analogRead(A0) / 3.546875);
+  if (abs(s0 - lastSlider0) > 2) {
     lastSlider0 = s0;
     doc["slider0"] = s0;
   }
 
   /*
-  int s1 = round(analogRead(A1) / 6.81);
-  if (s1 != lastSlider1) {
+  int s1 = round(analogRead(A1) / 3.546875);
+  if (abs(s1 - lastSlider1) > 2) {
     lastSlider1 = s1;
     doc["slider1"] = s1;
   }

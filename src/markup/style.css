@@ -72,8 +72,11 @@ button, input, select {
 	vertical-align: middle;
 }
 .slider img {
-	width: 35px;
-	height: 35px;
+	width: 37.5px;
+	height: 37.5px;
+	position: absolute;
+	top: 165px;
+	margin-left: -18.75px;
 }
 
 .plugin-card {
