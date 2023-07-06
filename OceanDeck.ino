@@ -4,14 +4,13 @@ int lastKey;
 int lastSlider0;
 int lastSlider1;
 
-void setup() {
-  pinMode(2, INPUT);
-  pinMode(3, INPUT);
-  pinMode(4, INPUT);
+int keys[] = { 15, 2, 4, 5, 10, 19, 21, 22, 23 };
 
-  digitalWrite(2, HIGH);
-  digitalWrite(3, HIGH);
-  digitalWrite(4, HIGH);
+void setup() {
+  for (int i = 0; i < 9; i++) {
+    pinMode(keys[i], INPUT);
+    digitalWrite(keys[i], HIGH);
+  }
 
   Serial.begin(57600);
 }
@@ -20,27 +19,28 @@ void loop() {
   StaticJsonDocument<16> doc;
 
   int key = 0;
-  /**/ if (digitalRead(2) == LOW) key = 1;
-  else if (digitalRead(3) == LOW) key = 2;
-  else if (digitalRead(4) == LOW) key = 3;
+  for (int i = 0; i < 9; i++) {
+    if (digitalRead(keys[i]) == LOW) {
+      key = i;
+      break;
+    }
+  }
   if (key != lastKey) {
     lastKey = key;
     doc["key"] = key;
   }
 
-  int s0 = round(analogRead(A0) / 3.546875);
+  int s0 = analogRead(34) / 40.95;
   if (abs(s0 - lastSlider0) > 2) {
     lastSlider0 = s0;
-    doc["slider0"] = s0;
+    doc["slider0"] = round(s0);
   }
 
-  /*
-  int s1 = round(analogRead(A1) / 3.546875);
+  int s1 = analogRead(35) / 40.95;
   if (abs(s1 - lastSlider1) > 2) {
     lastSlider1 = s1;
-    doc["slider1"] = s1;
+    doc["slider1"] = round(s1);
   }
-  */
 
   String output = "";
   serializeJson(doc, output);
