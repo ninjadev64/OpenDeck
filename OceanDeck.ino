@@ -4,13 +4,16 @@ int lastKey;
 int lastSlider0;
 int lastSlider1;
 
-int keys[] = { 15, 2, 4, 5, 10, 19, 21, 22, 23 };
+int keys[] = { 15, 27, 4, 5, 18, 19, 21, 22, 23 };
 
 void setup() {
   for (int i = 0; i < 9; i++) {
-    pinMode(keys[i], INPUT);
+    pinMode(keys[i], INPUT_PULLUP);
     digitalWrite(keys[i], HIGH);
   }
+
+  pinMode(34, INPUT);
+  pinMode(35, INPUT);
 
   Serial.begin(57600);
 }
@@ -21,7 +24,7 @@ void loop() {
   int key = 0;
   for (int i = 0; i < 9; i++) {
     if (digitalRead(keys[i]) == LOW) {
-      key = i;
+      key = i + 1;
       break;
     }
   }
@@ -30,14 +33,14 @@ void loop() {
     doc["key"] = key;
   }
 
-  int s0 = analogRead(34) / 40.95;
-  if (abs(s0 - lastSlider0) > 2) {
+  int s0 = analogRead(34);
+  if (abs(s0 - lastSlider0) > 50) {
     lastSlider0 = s0;
     doc["slider0"] = round(s0);
   }
 
-  int s1 = analogRead(35) / 40.95;
-  if (abs(s1 - lastSlider1) > 2) {
+  int s1 = analogRead(35);
+  if (abs(s1 - lastSlider1) > 50) {
     lastSlider1 = s1;
     doc["slider1"] = round(s1);
   }
