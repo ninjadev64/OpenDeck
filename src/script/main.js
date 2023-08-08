@@ -6,8 +6,10 @@ const { allActions, categories, updateKey, updateSlider, ActionInstance } = requ
 let isQuitting = false;
 let tray;
 
+let mainWindow;
+
 const createWindow = () => {
-	const win = new BrowserWindow({
+	mainWindow = new BrowserWindow({
 		webPreferences: {
 			nodeIntegration: true,
 			contextIsolation: false,
@@ -16,7 +18,7 @@ const createWindow = () => {
 		icon: path.join(__dirname, "../assets/icon.png")
 	});
   
-	win.loadFile(path.join(__dirname, "../markup/index.html"));
+	mainWindow.loadFile(path.join(__dirname, "../markup/index.html"));
 
 	ipcMain.on("createInstance", (_event, action, context, type) => {
 		let instance = new ActionInstance(allActions[action], context, type);
@@ -24,7 +26,7 @@ const createWindow = () => {
 			case "Keypad": updateKey(context, instance); break;
 			case "Encoder": updateSlider(context, instance); break;
 		}
-		win.webContents.send("instanceCreated", instance);
+		mainWindow.webContents.send("instanceCreated", instance);
 	});
 	
 	ipcMain.on("keyUpdate", (_event, key, instance) => {
@@ -35,14 +37,14 @@ const createWindow = () => {
 	});
 	
 	ipcMain.on("requestCategories", () => {
-		win.webContents.send("categories", categories);
+		mainWindow.webContents.send("categories", categories);
 	});
 
 	tray = new Tray(path.join(__dirname, "../assets/icon.png"));
 	tray.setContextMenu(Menu.buildFromTemplate([
 		{
 			label: "Open", click: () => {
-				win.show();
+				mainWindow.show();
 			}
 		},
 		{
@@ -53,10 +55,10 @@ const createWindow = () => {
 		}
 	]));
 
-	win.on("close", (event) => {
+	mainWindow.on("close", (event) => {
 		if (!isQuitting) {
 			event.preventDefault();
-			win.hide();
+			mainWindow.hide();
 			event.returnValue = false;
 		}
 	});
@@ -68,12 +70,14 @@ app.whenReady().then(() => {
 	require("./plugins");
 	require("./serial");
 	require("./propertyinspector");
-
-	app.on("activate", () => {
-		if (BrowserWindow.getAllWindows().length == 0) createWindow();
-	});
 });
 
 app.on("before-quit", () => {
 	isQuitting = true;
 });
+
+function getMainWindow() {
+	return mainWindow;
+}
+
+module.exports = { getMainWindow };

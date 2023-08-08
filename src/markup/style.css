@@ -54,6 +54,7 @@ button, input, select {
 }
 
 .key {
+	position: relative;
 	width: 78px;
 	height: 78px;
 	border: 2px solid #f2f2f2;
@@ -100,4 +101,13 @@ button, input, select {
 	float: right;
 	position: relative;
 	bottom: 8px;
+}
+
+.flash {
+	position: absolute;
+	width: 64px;
+	height: 64px;
+	top: calc(50% - 32px);
+	left: calc(50% - 32px);
+	transition: opacity 1s;
 }

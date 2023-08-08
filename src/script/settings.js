@@ -15,7 +15,7 @@ document.getElementById("open-plugins").addEventListener("click", () => {
 
 let serialPort = document.getElementById("serial-port");
 store.get("allPorts").forEach((port) => {
-	if (port.vendorId === "2341" && port.productId === "0043") {
+	if (port.vendorId === "10c4" && port.productId === "ea60") {
 		serialPort.insertAdjacentHTML("beforeend", `<option value=${port.path}> ${port.path} </option>`);
 	}
 });

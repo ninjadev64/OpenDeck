@@ -3,6 +3,7 @@ const { pluginManager } = require("./plugins");
 const { keys, sliders } = require("./shared");
 
 const log = require("electron-log");
+const { getMainWindow } = require("./main");
 
 class EventHandler {
 	// Outbound events
@@ -149,6 +150,14 @@ class EventHandler {
 
 	logMessage(data) {
 		log.debug(data.payload.message);
+	}
+
+	showAlert({ context }) {
+		getMainWindow().webContents.send("showAlert", context);
+	}
+
+	showOk({ context }) {
+		getMainWindow().webContents.send("showOk", context);
 	}
 }
 

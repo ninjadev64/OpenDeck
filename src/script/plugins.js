@@ -152,10 +152,14 @@ class StreamDeckPluginManager {
 		
 		this.server = new WebSocketServer({ port: store.get("webSocketPort") });
 		this.server.on("connection", (ws) => {
+			const { eventHandler } = require("./event");
 			ws.on("message", (data) => {
 				data = JSON.parse(data);
 				if (data.event == "register") {
 					this.plugins[data.uuid].setSocket(ws);
+				} else {
+					let f = eventHandler[data.event];
+					if (f) f(data);
 				}
 			})
 		});

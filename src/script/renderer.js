@@ -160,3 +160,21 @@ store.get("sliders").forEach((instance) => {
 	div.appendChild(image);
 	ipcRenderer.send("sliderUpdate", instance.context, instance);
 });
+
+function flash(key, image) {
+	let div = document.getElementById(key.toString());
+	let img = document.createElement("img");
+	img.src = image;
+	img.classList.add("flash");
+	div.appendChild(img);
+	setTimeout(() => img.style.opacity = "0", 1000);
+	setTimeout(() => img.remove(), 2500);
+}
+
+ipcRenderer.on("showAlert", (_event, context) => {
+	flash(context, "../assets/alert.png");
+});
+
+ipcRenderer.on("showOk", (_event, context) => {
+	flash(context, "../assets/check.png");
+});
