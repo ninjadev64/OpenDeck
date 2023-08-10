@@ -88,7 +88,7 @@ class StreamDeckPlugin {
 			case "linux":
 				manifest.CodePathLin && (codePath = manifest.CodePathLin); break;
 		}
-		if (codePath == undefined) codePath = manifest.CodePath;
+		if (!codePath) codePath = manifest.CodePath;
 		
 		if (codePath.endsWith(".html")) {
 			this.window = new BrowserWindow({
@@ -121,7 +121,7 @@ class StreamDeckPlugin {
 	}
 
 	send(data) {
-		if (this.socket != null) {
+		if (this.socket) {
 			this.socket.send(data);
 		} else {
 			this.queue.push(data);
@@ -159,9 +159,9 @@ class StreamDeckPluginManager {
 					this.plugins[data.uuid].setSocket(ws);
 				} else {
 					let f = eventHandler[data.event];
-					if (f) f(data);
+					if (f) f.bind(eventHandler)(data, false);
 				}
-			})
+			});
 		});
 
 		this.pluginIds.forEach((uuid) => {

@@ -1,9 +1,11 @@
 const { shell } = require("electron");
 const { pluginManager } = require("./plugins");
-const { keys, sliders } = require("./shared");
+const { propertyInspectorManager } = require("./propertyinspector");
+const { keys, sliders, getInstanceByContext } = require("./shared");
 
 const log = require("electron-log");
 const { getMainWindow } = require("./main");
+const store = require("./store");
 
 class EventHandler {
 	// Outbound events
@@ -142,14 +144,71 @@ class EventHandler {
 		});
 	}
 
-	// Inbound events
-
-	openUrl(data) {
-		shell.openExternal(data.payload.url);
+	didReceiveSettings(instance, propertyInspector) {
+		let data = {
+			event: "didReceiveSettings",
+			action: instance.action.uuid,
+			context: instance.context,
+			device: 0,
+			payload: {
+				settings: store.get("actionSettings." + instance.context),
+				coordinates: {
+					row: Math.floor((instance.index - 1) / 3),
+					column: (instance.index - 1) % 3
+				},
+				isInMultiAction: false
+			}
+		}
+		if (propertyInspector) {
+			propertyInspectorManager.sendEvent(instance.context, data);
+		} else {
+			pluginManager.sendEvent(instance.action.plugin, data);
+		}
 	}
 
-	logMessage(data) {
-		log.debug(data.payload.message);
+	didReceiveGlobalSettings(instance, propertyInspector) {
+		let data = {
+			event: "didReceiveGlobalSettings",
+			payload: {
+				settings: store.get("pluginSettings." + plugin.uuid.replaceAll(".", "¬")),
+			}
+		}
+		if (propertyInspector) {
+			propertyInspectorManager.sendEvent(instance.context, data);
+		} else {
+			pluginManager.sendEvent(instance.action.plugin, data);
+		}
+	}
+
+	// Inbound events
+
+	setSettings({ context, payload }, fromPropertyInspector) {
+		let instance = getInstanceByContext(context);
+		store.set("actionSettings." + instance.context, payload);
+		this.didReceiveSettings(instance, !fromPropertyInspector);
+	}
+
+	getSettings({ context }, fromPropertyInspector) {
+		this.didReceiveSettings(getInstanceByContext(context), fromPropertyInspector)
+	}
+
+	setGlobalSettings({ context, payload }, fromPropertyInspector) {
+		let plugin = fromPropertyInspector ? propertyInspectorManager.all[context].action.plugin : pluginManager.plugins[context];
+		store.set("pluginSettings." + plugin.uuid.replaceAll(".", "¬"), payload);
+		this.didReceiveGlobalSettings(plugin, !fromPropertyInspector);
+	}
+
+	getGlobalSettings({ context }, fromPropertyInspector) {
+		let plugin = fromPropertyInspector ? propertyInspectorManager.all[context].action.plugin : pluginManager.plugins[context];
+		this.didReceiveGlobalSettings(plugin, fromPropertyInspector)
+	}
+
+	openUrl({ payload: { url } }) {
+		shell.openExternal(url);
+	}
+
+	logMessage({ payload: { message } }) {
+		log.debug(message);
 	}
 
 	showAlert({ context }) {

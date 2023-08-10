@@ -26,6 +26,14 @@ const schema = {
 	},
 	userDataPath: {
 		type: "string"
+	},
+	actionSettings: {
+		type: "object",
+		default: { }
+	},
+	pluginSettings: {
+		type: "object",
+		default: { }
 	}
 }
 

@@ -2,7 +2,6 @@ const { BrowserWindow, ipcMain } = require("electron");
 const { pluginManager } = require("./plugins");
 
 const store = require("./store");
-const { eventHandler } = require("./event");
 const { getInstanceByContext } = require("./shared");
 const WebSocketServer = require("ws").Server;
 
@@ -11,6 +10,8 @@ class PropertyInspector {
 		this.action = instance.action;
 		this.context = instance.context;
 		this.path = this.action.propertyInspector;
+		this.socket = null;
+		this.queue = [];
 		this.window = new BrowserWindow({
 			autoHideMenuBar: true,
 			width: 400,
@@ -49,7 +50,24 @@ class PropertyInspector {
 		this.window.on("close", (event) => {
 			event.preventDefault();
 			this.window.hide();
+			const { eventHandler } = require("./event");
 			eventHandler.propertyInspectorDidDisappear(instance);
+		});
+	}
+
+	send(data) {
+		if (this.socket) {
+			this.socket.send(data);
+		} else {
+			this.queue.push(data);
+		}
+	}
+
+	setSocket(socket) {
+		this.socket = socket;
+		this.queue.forEach((item) => {
+			this.socket.send(item);
+			this.queue.shift();
 		});
 	}
 }
@@ -59,19 +77,24 @@ class PropertyInspectorManager {
 		this.all = {};
 		this.server = new WebSocketServer({ port: store.get("propertyInspectorPort") });
 		this.server.on("connection", (ws) => {
+			const { eventHandler } = require("./event");
 			ws.on("message", (data) => {
 				data = JSON.parse(data);
 				if (data.event == "registerPropertyInspector") {
 					if (data.uuid.startsWith("s")) {
-						this.all[data.uuid].socket = ws;
+						this.all[data.uuid].setSocket(ws);
 					} else {
-						this.all[parseInt(data.uuid)].socket = ws;
+						this.all[parseInt(data.uuid)].setSocket(ws);
 					}
+				} else {
+					let f = eventHandler[data.event];
+					if (f) f.bind(eventHandler)(data, true);
 				}
-			})
+			});
 		});
 		ipcMain.on("openPropertyInspector", (_event, context) => {
 			this.all[context].window.show();
+			const { eventHandler } = require("./event");
 			eventHandler.propertyInspectorDidAppear(getInstanceByContext(context));
 		});
 	}
@@ -82,10 +105,14 @@ class PropertyInspectorManager {
 
 	unregister(instance) {
 		let propertyInspector = this.all[instance.context];
-		if (propertyInspector.socket != undefined) {
+		if (propertyInspector.socket) {
 			propertyInspector.socket.close();
 		}
 		propertyInspector.window.destroy();
+	}
+
+	async sendEvent(context, data) {
+		this.all[context].send(JSON.stringify(data));
 	}
 }
 
