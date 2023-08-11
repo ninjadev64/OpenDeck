@@ -4,7 +4,7 @@ const path = require("path");
 const store = require("./store");
 const WebSocketServer = require("ws").Server;
 
-const { allActions, categories, Action } = require("./shared");
+const { allActions, categories, Action, ActionState } = require("./shared");
 
 const { app, BrowserWindow } = require("electron");
 const { spawn } = require("child_process");
@@ -30,11 +30,23 @@ class StreamDeckPlugin {
 		if (categories[this.category] == undefined) categories[this.category] = [];
 		manifest.Actions.forEach((action) => {
 			let iconPath = path.join(root, uuid, action.Icon);
+			iconPath = fs.existsSync(iconPath + "@2x.png") ? iconPath + "@2x.png" : iconPath + ".png";
+			let states = [];
+			action.States.forEach((state) => {
+				if (state.Image == "actionDefaultImage") {
+					state.Image = iconPath;
+				} else {
+					state.Image = path.join(root, uuid, state.Image);
+					state.Image = fs.existsSync(state.Image + "@2x.png") ? state.Image + "@2x.png" : state.Image + ".png";
+				}
+				states.push(new ActionState(state, action.Name));
+			});
 			let a = new Action(
 				action.Name, action.UUID, this.uuid, action.Tooltip,
-				fs.existsSync(iconPath + "@2x.png") ? iconPath + "@2x.png" : iconPath + ".png",
+				iconPath,
 				action.PropertyInspectorPath ? path.join(root, uuid, action.PropertyInspectorPath) : this.propertyInspector,
-				action.Controllers || [ "Keypad" ]
+				action.Controllers || [ "Keypad" ],
+				states
 			);
 			this.actions.push(a);
 			allActions[a.uuid] = a;

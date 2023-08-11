@@ -8,6 +8,17 @@ const { getMainWindow } = require("./main");
 const store = require("./store");
 
 class EventHandler {
+	updateState(instance) {
+		if (instance.context.toString().startsWith("s")) {
+			sliders[parseInt(instance.context.slice(1))] = instance;
+			store.set("sliders", sliders);
+		} else {
+			keys[instance.context] = instance;
+			store.set("keys", keys);
+		}
+		getMainWindow().webContents.send("updateState", instance);
+	}
+
 	// Outbound events
 
 	keyDown(key) {
@@ -46,6 +57,11 @@ class EventHandler {
 				isInMultiAction: false
 			}
 		});
+		instance.state += 1;
+		if (instance.state >= instance.states.length) {
+			instance.state = 0;
+		}
+		this.updateState(instance);
 	}
 
 	dialRotate(slider, value) {
@@ -75,7 +91,7 @@ class EventHandler {
 			context: instance.context,
 			device: 0,
 			payload: {
-				controller: "Keypad",
+				controller: instance.type,
 				settings: {},
 				coordinates: {
 					row: Math.floor((instance.index - 1) / 3),
@@ -93,7 +109,7 @@ class EventHandler {
 			context: instance.context,
 			device: 0,
 			payload: {
-				controller: "Keypad",
+				controller: instance.type,
 				settings: {},
 				coordinates: {
 					row: Math.floor((instance.index - 1) / 3),
@@ -151,7 +167,7 @@ class EventHandler {
 			context: instance.context,
 			device: 0,
 			payload: {
-				settings: store.get("actionSettings." + instance.context),
+				settings: store.get("actionSettings." + instance.context) ?? {},
 				coordinates: {
 					row: Math.floor((instance.index - 1) / 3),
 					column: (instance.index - 1) % 3
@@ -170,7 +186,7 @@ class EventHandler {
 		let data = {
 			event: "didReceiveGlobalSettings",
 			payload: {
-				settings: store.get("pluginSettings." + plugin.uuid.replaceAll(".", "¬")),
+				settings: store.get("pluginSettings." + plugin.uuid.replaceAll(".", "¬")) ?? {},
 			}
 		}
 		if (propertyInspector) {
@@ -209,6 +225,26 @@ class EventHandler {
 
 	logMessage({ payload: { message } }) {
 		log.debug(message);
+	}
+
+	setTitle({ context, payload: { title, state } }) {
+		let instance = getInstanceByContext(context);
+		if (state) instance.states[state].title = title;
+		else instance.states.forEach((state) => state.title = title);
+		this.updateState(instance);
+	}
+
+	setImage({ context, payload: { image, state } }) {
+		let instance = getInstanceByContext(context);
+		if (state) instance.states[state].image = image;
+		else instance.states.forEach((state) => state.image = image);
+		this.updateState(instance);
+	}
+
+	setState({ context, payload: { state } }) {
+		let instance = getInstanceByContext(context);
+		instance.state = state;
+		this.updateState(instance);
 	}
 
 	showAlert({ context }) {

@@ -29,11 +29,11 @@ const schema = {
 	},
 	actionSettings: {
 		type: "object",
-		default: { }
+		default: {}
 	},
 	pluginSettings: {
 		type: "object",
-		default: { }
+		default: {}
 	}
 }
 

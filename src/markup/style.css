@@ -65,6 +65,7 @@ button, input, select {
 }
 
 .slider {
+	position: relative;
 	width: 40px;
 	height: 330px;
 	border: 2px solid #f2f2f2;
@@ -77,8 +78,13 @@ button, input, select {
 	width: 37.5px;
 	height: 37.5px;
 	position: absolute;
-	top: 165px;
+	top: 50%;
+	transform: translateY(-50%);
 	margin-left: -18.75px;
+}
+.slider span {
+	font-size: 24px !important;
+	padding-bottom: 60px !important;
 }
 
 .plugin-card {

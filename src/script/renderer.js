@@ -18,6 +18,52 @@ function createIcon(action) {
 	return image;
 }
 
+function updateState(instance) {
+	let div = document.getElementById(instance.context.toString());
+	if (!div) {
+		div = document.createElement("div");
+		div.id = instance.context.toString();
+		div.instance = instance;
+		div.addEventListener("click", () => {
+			if (instance.context.toString().startsWith("s")) {
+				ipcRenderer.send("sliderUpdate", instance.context, undefined);
+			} else {
+				ipcRenderer.send("keyUpdate", instance.context, undefined);
+			}
+			div.remove();
+		});
+		div.addEventListener("contextmenu", () => {
+			ipcRenderer.send("openPropertyInspector", instance.context);
+		});
+		console.log(instance);
+		document.getElementById("c" + instance.context).appendChild(div);
+	}
+	div.textContent = "";
+	let state = instance.states[instance.state];
+	let image = document.createElement("img");
+	image.src = state.image;
+	image.alt = instance.action.tooltip;
+	image.className = "icon";
+	div.appendChild(image);
+	let title = document.createElement("span");
+	title.innerText = state.title;
+	title.style.position = "absolute";
+	title.style.left = "50%";
+	switch (state.titleAlignment) {
+		case "top": title.style.top = "0"; break;
+		case "middle": title.style.top = "50%"; break;
+		case "bottom": title.style.top = "100%"; break;
+	}
+	title.style.transform = "translate(-50%, -50%)";
+	title.style.opacity = state.showTitle ? 1 : 0;
+	title.style.color = state.titleColour;
+	title.style.fontWeight = state.titleFontStyle.toLowerCase().includes("bold") ? "bold" : "normal";
+	title.style.fontStyle = state.titleFontStyle.toLowerCase().includes("italic") ? "italic" : "normal";
+	title.style.fontSize = state.titleFontSize + "px";
+	title.style.textDecorationLine = state.titleUnderline ? "underline" : "none";
+	div.appendChild(title);
+}
+
 ipcRenderer.send("requestCategories");
 ipcRenderer.on("categories", (_, categories) => {
 	for (const [category, actions] of Object.entries(categories)) {
@@ -90,79 +136,37 @@ function drop(ev) {
 
 	if (ev.target.classList.contains("key")) {
 		if (!e.action.controllers.includes("Keypad")) return;
-
-		ipcRenderer.send("createInstance", e.action.uuid, parseInt(ev.target.id), "Keypad");
-		ipcRenderer.once("instanceCreated", (_event, instance) => {
-			e.instance = instance;
-			e.addEventListener("click", () => {
-				ipcRenderer.send("keyUpdate", instance.context, undefined);
-			});
-			e.addEventListener("contextmenu", () => {
-				ipcRenderer.send("openPropertyInspector", instance.context);
-			});
-			ev.target.appendChild(e);
-		});
+		ipcRenderer.send("createInstance", e.action.uuid, parseInt(ev.target.id.slice(1)), "Keypad");
 	} else if (ev.target.classList.contains("slider")) {
 		if (!e.action.controllers.includes("Encoder")) return;
-
-		ipcRenderer.send("createInstance", e.action.uuid, ev.target.id, "Encoder");
-		ipcRenderer.once("instanceCreated", (_event, instance) => {
-			e.instance = instance;
-			e.addEventListener("click", () => {
-				ipcRenderer.send("sliderUpdate", instance.context, undefined);
-			});
-			e.addEventListener("contextmenu", () => {
-				ipcRenderer.send("openPropertyInspector", instance.context);
-			});
-			ev.target.appendChild(e);
-		});
+		ipcRenderer.send("createInstance", e.action.uuid, ev.target.id.slice(1), "Encoder");
 	} else {
 		return;
 	}
+	ipcRenderer.once("instanceCreated", (_event, instance) => {
+		updateState(instance);
+	});
 	
 	ev.preventDefault();
 }
 
 store.get("keys").forEach((instance) => {
 	if (instance == undefined) return;
-
-	let div = document.getElementById(instance.context.toString());
-	if (div == null) return;
-	
-	let action = instance.action;
-	let image = createIcon(action);
-	image.instance = instance;
-	image.addEventListener("click", () => {
-		image.remove();
-		ipcRenderer.send("keyUpdate", instance.context, undefined);
-	});
-	image.addEventListener("contextmenu", () => {
-		ipcRenderer.send("openPropertyInspector", instance.context);
-	});
-	div.appendChild(image);
+	updateState(instance);
 	ipcRenderer.send("keyUpdate", instance.context, instance);
 });
 store.get("sliders").forEach((instance) => {
 	if (instance == undefined) return;
-
-	let div = document.getElementById(instance.context);
-	
-	let action = instance.action;
-	let image = createIcon(action);
-	image.instance = instance;
-	image.addEventListener("click", () => {
-		image.remove();
-		ipcRenderer.send("sliderUpdate", instance.context, undefined);
-	});
-	image.addEventListener("contextmenu", () => {
-		ipcRenderer.send("openPropertyInspector", instance.context);
-	});
-	div.appendChild(image);
+	updateState(instance);
 	ipcRenderer.send("sliderUpdate", instance.context, instance);
 });
 
-function flash(key, image) {
-	let div = document.getElementById(key.toString());
+ipcRenderer.on("updateState", (_event, instance) => {
+	updateState(instance);
+});
+
+function flash(context, image) {
+	let div = document.getElementById(context.toString());
 	let img = document.createElement("img");
 	img.src = image;
 	img.classList.add("flash");
