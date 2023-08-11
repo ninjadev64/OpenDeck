@@ -2,6 +2,9 @@ const { app, ipcMain, BrowserWindow, Tray, Menu } = require("electron");
 const path = require("path");
 
 const { allActions, categories, updateKey, updateSlider, ActionInstance } = require("./shared");
+const store = require("./store");
+
+const AutoLaunch = require('auto-launch');
 
 let isQuitting = false;
 let tray;
@@ -70,6 +73,19 @@ app.whenReady().then(() => {
 	require("./plugins");
 	require("./serial");
 	require("./propertyinspector");
+
+	let autoLaunch = new AutoLaunch({
+		name: "OceanDesktop",
+		isHidden: true
+	});
+	autoLaunch.isEnabled().then((isEnabled) => {
+		if (store.get("autoLaunch") && !isEnabled) autoLaunch.enable();
+		if (!store.get("autoLaunch") && isEnabled) autoLaunch.disable();
+	});
+
+	app.on("activate", () => {
+		mainWindow.show();
+	});
 });
 
 app.on("before-quit", () => {

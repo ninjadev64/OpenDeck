@@ -33,14 +33,14 @@ void loop() {
     doc["key"] = key;
   }
 
-  int s0 = analogRead(34);
-  if (abs(s0 - lastSlider0) > 50) {
+  int s0 = analogRead(34) / 21.328125;
+  if (abs(s0 - lastSlider0) > 5) {
     lastSlider0 = s0;
     doc["slider0"] = round(s0);
   }
 
-  int s1 = analogRead(35);
-  if (abs(s1 - lastSlider1) > 50) {
+  int s1 = analogRead(35) / 21.328125;
+  if (abs(s1 - lastSlider1) > 5) {
     lastSlider1 = s1;
     doc["slider1"] = round(s1);
   }

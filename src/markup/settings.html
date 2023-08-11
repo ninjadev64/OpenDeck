@@ -9,10 +9,14 @@
 	<body>
 		<button id="open-plugins"> Plugins directory </button>
 		<hr />
-		<table>
+		<table id="settings">
 			<tr>
 				<td><label for="serial-port"> Serial port </label></td>
 				<td><select id="serial-port"></select></td>
+			</tr>
+			<tr>
+				<td><label for="autolaunch"> Launch on startup </label></td>
+				<td><input id="autolaunch" type="checkbox"></input></td>
 			</tr>
 			<tr>
 				<td><label for="websocket-port"> WebSocket port </label></td>

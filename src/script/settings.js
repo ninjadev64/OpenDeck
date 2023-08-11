@@ -19,19 +19,28 @@ store.get("allPorts").forEach((port) => {
 		serialPort.insertAdjacentHTML("beforeend", `<option value=${port.path}> ${port.path} </option>`);
 	}
 });
+let autoLaunch = document.getElementById("autolaunch");
 let webSocketPort = document.getElementById("websocket-port");
 let propertyInspectorPort = document.getElementById("propertyinspector-port");
 const options = {
 	"serialPort": serialPort,
+	"autoLaunch": autoLaunch,
 	"webSocketPort": webSocketPort,
 	"propertyInspectorPort": propertyInspectorPort
 }
 for (const [key, value] of Object.entries(options)) {
-	value.value = store.get(key);
+	switch (value.type) {
+		case "checkbox": value.checked = store.get(key);
+		default: value.value = store.get(key).toString();
+	}
 }
 function applyChanges() {
 	for (const [key, value] of Object.entries(options)) {
-		store.set(key, value.value);
+		switch (value.type) {
+			case "number": store.set(key, parseInt(value.value)); break;
+			case "checkbox": store.set(key, value.checked); break;
+			default: store.set(key, value.value); break;
+		}
 	}
 	alert("Changes have been applied. You may need to restart OceanDesktop for them to take effect.");
 }

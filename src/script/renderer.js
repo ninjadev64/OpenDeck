@@ -35,7 +35,6 @@ function updateState(instance) {
 		div.addEventListener("contextmenu", () => {
 			ipcRenderer.send("openPropertyInspector", instance.context);
 		});
-		console.log(instance);
 		document.getElementById("c" + instance.context).appendChild(div);
 	}
 	div.textContent = "";
@@ -166,7 +165,7 @@ ipcRenderer.on("updateState", (_event, instance) => {
 });
 
 function flash(context, image) {
-	let div = document.getElementById(context.toString());
+	let div = document.getElementById("c" + context);
 	let img = document.createElement("img");
 	img.src = image;
 	img.classList.add("flash");

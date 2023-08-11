@@ -27,6 +27,10 @@ const schema = {
 	userDataPath: {
 		type: "string"
 	},
+	autoLaunch: {
+		type: "boolean",
+		default: true
+	},
 	actionSettings: {
 		type: "object",
 		default: {}

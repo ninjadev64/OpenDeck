@@ -25,6 +25,14 @@ button, input, select {
 	border-radius: 5px;
 }
 
+input[type="checkbox"] {
+	transform: scale(1.6);
+}
+
+#settings tr {
+	height: 32px;
+}
+
 .actionList {
 	width: 250px;
 	height: 100vh;
