@@ -1,7 +1,7 @@
 const { shell } = require("electron");
 const { pluginManager } = require("./plugins");
 const { propertyInspectorManager } = require("./propertyinspector");
-const { keys, sliders, getInstanceByContext } = require("./shared");
+const { currentProfile, parseContext, getInstanceByContext, getCoordinatesByContext } = require("./shared");
 
 const log = require("electron-log");
 const { getMainWindow } = require("./main");
@@ -9,51 +9,41 @@ const store = require("./store");
 
 class EventHandler {
 	updateState(instance) {
-		if (instance.context.toString().startsWith("s")) {
-			sliders[parseInt(instance.context.slice(1))] = instance;
-			store.set("sliders", sliders);
-		} else {
-			keys[instance.context] = instance;
-			store.set("keys", keys);
-		}
+		let context = parseContext(instance.context);
+		currentProfile[context.type][context.position][context.index] = instance;
+		store.set("profiles." + store.get("selectedProfile"), currentProfile);
 		getMainWindow().webContents.send("updateState", instance);
 	}
 
 	// Outbound events
 
 	keyDown(key) {
-		let instance = keys[key];
+		let instance = currentProfile.key[key][0];
 		if (instance == undefined) return;
 		pluginManager.sendEvent(instance.action.plugin, {
 			event: "keyDown",
 			action: instance.action.uuid,
-			context: key,
+			context: instance.context,
 			device: 0,
 			payload: {
 				settings: {},
-				coordinates: {
-					row: Math.floor((key - 1) / 3),
-					column: (key - 1) % 3
-				},
+				coordinates: getCoordinatesByContext(instance.context),
 				isInMultiAction: false
 			}
 		});
 	}
 
 	keyUp(key) {
-		let instance = keys[key];
+		let instance = currentProfile.key[key][0];
 		if (instance == undefined) return;
 		pluginManager.sendEvent(instance.action.plugin, {
 			event: "keyUp",
 			action: instance.action.uuid,
-			context: key,
+			context: instance.context,
 			device: 0,
 			payload: {
 				settings: {},
-				coordinates: {
-					row: Math.floor((key - 1) / 3),
-					column: (key - 1) % 3
-				},
+				coordinates: getCoordinatesByContext(instance.context),
 				isInMultiAction: false
 			}
 		});
@@ -65,19 +55,16 @@ class EventHandler {
 	}
 
 	dialRotate(slider, value) {
-		let instance = sliders[slider];
+		let instance = currentProfile.slider[slider][0];
 		if (instance == undefined) return;
 		pluginManager.sendEvent(instance.action.plugin, {
 			event: "dialRotate",
 			action: instance.action.uuid,
-			context: `s${slider}`,
+			context: instance.context,
 			device: 0,
 			payload: {
 				settings: {},
-				coordinates: {
-					column: slider,
-					row: 0
-				},
+				coordinates: getCoordinatesByContext(instance.context),
 				ticks: value,
 				pressed: false
 			}
@@ -91,12 +78,9 @@ class EventHandler {
 			context: instance.context,
 			device: 0,
 			payload: {
-				controller: instance.type,
+				controller: instance.type == "slider" ? "Encoder" : "Keypad",
 				settings: {},
-				coordinates: {
-					row: Math.floor((instance.index - 1) / 3),
-					column: (instance.index - 1) % 3
-				},
+				coordinates: getCoordinatesByContext(instance.context),
 				isInMultiAction: false
 			}
 		});
@@ -109,12 +93,9 @@ class EventHandler {
 			context: instance.context,
 			device: 0,
 			payload: {
-				controller: instance.type,
+				controller: instance.type == "slider" ? "Encoder" : "Keypad",
 				settings: {},
-				coordinates: {
-					row: Math.floor((instance.index - 1) / 3),
-					column: (instance.index - 1) % 3
-				},
+				coordinates: getCoordinatesByContext(instance.context),
 				isInMultiAction: false
 			}
 		});
@@ -167,11 +148,8 @@ class EventHandler {
 			context: instance.context,
 			device: 0,
 			payload: {
-				settings: store.get("actionSettings." + instance.context) ?? {},
-				coordinates: {
-					row: Math.floor((instance.index - 1) / 3),
-					column: (instance.index - 1) % 3
-				},
+				settings: instance.settings ?? {},
+				coordinates: getCoordinatesByContext(instance.context),
 				isInMultiAction: false
 			}
 		}
@@ -200,12 +178,13 @@ class EventHandler {
 
 	setSettings({ context, payload }, fromPropertyInspector) {
 		let instance = getInstanceByContext(context);
-		store.set("actionSettings." + instance.context, payload);
+		instance.settings = payload;
+		this.updateState(instance);
 		this.didReceiveSettings(instance, !fromPropertyInspector);
 	}
 
 	getSettings({ context }, fromPropertyInspector) {
-		this.didReceiveSettings(getInstanceByContext(context), fromPropertyInspector)
+		this.didReceiveSettings(getInstanceByContext(context), fromPropertyInspector);
 	}
 
 	setGlobalSettings({ context, payload }, fromPropertyInspector) {

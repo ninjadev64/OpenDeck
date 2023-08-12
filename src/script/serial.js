@@ -41,12 +41,12 @@ class SerialInterface {
 	handle(data) {
 		if (data.key <= 0) {
 			if (this.lastKey > 0) {
-				eventHandler.keyUp(this.lastKey);
+				eventHandler.keyUp(this.lastKey - 1);
 				this.lastKey = 0;
 			}
 		} else {
 			this.lastKey = data.key;
-			eventHandler.keyDown(data.key);
+			eventHandler.keyDown(data.key - 1);
 		}
 
 		if (data.slider0) {

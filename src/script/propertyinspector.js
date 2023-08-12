@@ -2,7 +2,7 @@ const { BrowserWindow, ipcMain } = require("electron");
 const { pluginManager } = require("./plugins");
 
 const store = require("./store");
-const { getInstanceByContext, error } = require("./shared");
+const { getInstanceByContext, getCoordinatesByContext, error } = require("./shared");
 const WebSocketServer = require("ws").Server;
 
 class PropertyInspector {
@@ -27,10 +27,7 @@ class PropertyInspector {
 			device: 0,
 			payload: {
 				settings: {},
-				coordinates: {
-					row: Math.floor((this.context - 1) / 3),
-					column: (this.context - 1) % 3
-				},
+				coordinates: getCoordinatesByContext(this.context),
 				isInMultiAction: false
 			}
 		}
@@ -85,11 +82,7 @@ class PropertyInspectorManager {
 			ws.on("message", (data) => {
 				data = JSON.parse(data);
 				if (data.event == "registerPropertyInspector") {
-					if (data.uuid.startsWith("s")) {
-						this.all[data.uuid].setSocket(ws);
-					} else {
-						this.all[parseInt(data.uuid)].setSocket(ws);
-					}
+					this.all[data.uuid].setSocket(ws);
 				} else {
 					let f = eventHandler[data.event];
 					if (f) f.bind(eventHandler)(data, true);

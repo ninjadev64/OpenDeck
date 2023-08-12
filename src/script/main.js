@@ -1,7 +1,7 @@
 const { app, ipcMain, BrowserWindow, Tray, Menu } = require("electron");
 const path = require("path");
 
-const { allActions, categories, updateKey, updateSlider, ActionInstance } = require("./shared");
+const { allActions, categories, updateSlot, ActionInstance } = require("./shared");
 const store = require("./store");
 
 const AutoLaunch = require('auto-launch');
@@ -23,20 +23,14 @@ const createWindow = () => {
   
 	mainWindow.loadFile(path.join(__dirname, "../markup/index.html"));
 
-	ipcMain.on("createInstance", (_event, action, context, type) => {
-		let instance = new ActionInstance(allActions[action], context, type);
-		switch (type) {
-			case "Keypad": updateKey(context, instance); break;
-			case "Encoder": updateSlider(context, instance); break;
-		}
+	ipcMain.on("createInstance", (_event, action, type, position, index) => {
+		let instance = new ActionInstance(allActions[action], store.get("selectedProfile"), type, position, index);
+		updateSlot(instance.context, instance);
 		mainWindow.webContents.send("instanceCreated", instance);
 	});
 	
-	ipcMain.on("keyUpdate", (_event, key, instance) => {
-		updateKey(key, instance);
-	});
-	ipcMain.on("sliderUpdate", (_event, slider, instance) => {
-		updateSlider(slider, instance);
+	ipcMain.on("slotUpdate", (_event, context, instance) => {
+		updateSlot(context, instance);
 	});
 	
 	ipcMain.on("requestCategories", () => {

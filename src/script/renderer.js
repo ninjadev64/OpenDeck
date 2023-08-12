@@ -25,17 +25,13 @@ function updateState(instance) {
 		div.id = instance.context.toString();
 		div.instance = instance;
 		div.addEventListener("click", () => {
-			if (instance.context.toString().startsWith("s")) {
-				ipcRenderer.send("sliderUpdate", instance.context, undefined);
-			} else {
-				ipcRenderer.send("keyUpdate", instance.context, undefined);
-			}
+			ipcRenderer.send("slotUpdate", instance.context, undefined);
 			div.remove();
 		});
 		div.addEventListener("contextmenu", () => {
 			ipcRenderer.send("openPropertyInspector", instance.context);
 		});
-		document.getElementById("c" + instance.context).appendChild(div);
+		document.getElementById(instance.type + instance.position).appendChild(div);
 	}
 	div.textContent = "";
 	let state = instance.states[instance.state];
@@ -136,10 +132,10 @@ function drop(ev) {
 
 	if (ev.target.classList.contains("key")) {
 		if (!e.action.controllers.includes("Keypad")) return;
-		ipcRenderer.send("createInstance", e.action.uuid, parseInt(ev.target.id.slice(1)), "Keypad");
+		ipcRenderer.send("createInstance", e.action.uuid, "key", parseInt(ev.target.id.slice(-1)), 0);
 	} else if (ev.target.classList.contains("slider")) {
 		if (!e.action.controllers.includes("Encoder")) return;
-		ipcRenderer.send("createInstance", e.action.uuid, ev.target.id.slice(1), "Encoder");
+		ipcRenderer.send("createInstance", e.action.uuid, "slider", parseInt(ev.target.id.slice(-1)), 0);
 	} else {
 		return;
 	}
@@ -150,23 +146,19 @@ function drop(ev) {
 	ev.preventDefault();
 }
 
-store.get("keys").forEach((instance) => {
+[].concat(store.get("profiles." + store.get("selectedProfile") + ".key"), store.get("profiles." + store.get("selectedProfile") + ".slider")).forEach((position) => { position.forEach((instance) => {
 	if (instance == undefined) return;
 	updateState(instance);
-	ipcRenderer.send("keyUpdate", instance.context, instance);
-});
-store.get("sliders").forEach((instance) => {
-	if (instance == undefined) return;
-	updateState(instance);
-	ipcRenderer.send("sliderUpdate", instance.context, instance);
-});
+	ipcRenderer.send("slotUpdate", instance.context, instance);
+})});
 
 ipcRenderer.on("updateState", (_event, instance) => {
 	updateState(instance);
 });
 
 function flash(context, image) {
-	let div = document.getElementById("c" + context);
+	context = context.split(".");
+	let div = document.getElementById(context[1] + context[2]);
 	let img = document.createElement("img");
 	img.src = image;
 	img.classList.add("flash");

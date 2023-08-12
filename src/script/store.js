@@ -1,13 +1,18 @@
+let randomDefaultProfileId = Date.now().toString(36) + Math.random().toString(36).substring(2);
 const schema = {
-	keys: {
-		type: "array",
-        default: [
-            undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined
-        ]
+	profiles: {
+		type: "object",
+		default: {
+			[randomDefaultProfileId]: {
+				name: "Profile 0",
+				key: [ [ null ], [ null ], [ null ], [ null ], [ null ], [ null ], [ null ], [ null ], [ null ] ],
+				slider: [ [ null ], [ null ] ]
+			}
+		}
 	},
-	sliders: {
-		type: "array",
-		default: [ undefined, undefined ]
+	selectedProfile: {
+		type: "string",
+		default: randomDefaultProfileId
 	},
 	serialPort: {
 		type: "string"
@@ -30,10 +35,6 @@ const schema = {
 	autoLaunch: {
 		type: "boolean",
 		default: true
-	},
-	actionSettings: {
-		type: "object",
-		default: {}
 	},
 	pluginSettings: {
 		type: "object",

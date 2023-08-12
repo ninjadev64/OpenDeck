@@ -4,6 +4,11 @@ const log = require("electron-log");
 const dialog = require("dialog");
 const { exit } = require("process");
 
+function parseContext(context) {
+	context = context.split(".");
+	return { profile: context[0], type: context[1], position: parseInt(context[2]), index: parseInt(context[3]) };
+}
+
 class Action {
 	constructor(name, uuid, plugin, tooltip, icon, propertyInspector, controllers, states, visibleInActionsList) {
 		this.name = name;
@@ -34,61 +39,58 @@ class ActionState {
 }
 
 class ActionInstance {
-	constructor(action, context, type) {
+	constructor(action, profile, type, position, index) {
 		this.action = action;
-		this.context = context;
+
+		this.profile = profile;
 		this.type = type;
-		this.index = type == "Keypad" ? context : type == "Encoder" ? parseInt(context.slice(1)) : undefined;
+		this.position = position;
+		this.index = index;
+		this.context = `${profile}.${type}.${position}.${index}`;
+		
 		this.state = 0;
 		this.states = JSON.parse(JSON.stringify(action.states));
+
+		this.settings = {};
 	}
 }
-
-var keys = store.get("keys");
-var sliders = store.get("sliders");
 
 var allActions = {};
 var categories = {};
 
-function updateKey(key, instance) {
+var currentProfile = store.get("profiles." + store.get("selectedProfile"));
+
+function updateSlot(context, instance) {
+	context = parseContext(context);
 	const { eventHandler } = require("./event");
 	const { propertyInspectorManager } = require("./propertyinspector");
-	store.set("actionSettings." + key, {});
+	if (context.type == "slider") {
+		const { serialInterface } = require("./serial");
+		serialInterface.lastSliders[index] = 0;
+	}
+	let position = currentProfile[context.type][context.position];
 	if (instance == undefined) {
-		eventHandler.willDisappear(keys[key]);
-		propertyInspectorManager.unregister(keys[key]);
-		keys[key] = undefined;
+		eventHandler.willDisappear(position[context.index]);
+		propertyInspectorManager.unregister(position[context.index]);
+		position[context.index] = null;
 	} else {
-		keys[key] = instance;
+		position[context.index] = instance;
 		eventHandler.willAppear(instance);
 		propertyInspectorManager.register(instance);
 	}
-	store.set("keys", keys);
-}
-function updateSlider(slider, instance) {
-	const { eventHandler } = require("./event");
-	const { serialInterface } = require("./serial");
-	const { propertyInspectorManager } = require("./propertyinspector");
-	store.set("actionSettings." + slider, {});
-	let index = parseInt(slider.slice(1));
-	serialInterface.lastSliders[index] = 0;
-	if (instance == undefined) {
-		eventHandler.willDisappear(sliders[index]);
-		propertyInspectorManager.unregister(sliders[index]);
-		sliders[index] = undefined;
-	} else {
-		sliders[index] = instance;
-		eventHandler.willAppear(instance);
-		propertyInspectorManager.register(instance);
-	}
-	store.set("sliders", sliders);
+	store.set("profiles." + store.get("selectedProfile"), currentProfile);
 }
 
 function getInstanceByContext(context) {
-	if (context.toString().startsWith("s")) {
-		return sliders[parseInt(context.slice(1))];
-	} else {
-		return keys[parseInt(context)];
+	context = parseContext(context);
+	return currentProfile[context.type][context.position][context.index];
+}
+
+function getCoordinatesByContext(context) {
+	context = parseContext(context);
+	return {
+		row: Math.floor(context.position / 3),
+		column: context.position % 3
 	}
 }
 
@@ -99,4 +101,4 @@ function error(message, fatal) {
 	});
 }
 
-module.exports = { keys, sliders, allActions, categories, Action, ActionInstance, ActionState, updateKey, updateSlider, getInstanceByContext, error };
+module.exports = { allActions, categories, currentProfile, Action, ActionInstance, ActionState, updateSlot, parseContext, getInstanceByContext, getCoordinatesByContext, error };
