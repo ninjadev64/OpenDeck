@@ -2,6 +2,7 @@ const store = require("../script/store");
 
 const { platform } = require("os");
 const { spawn } = require("child_process");
+const dialog = require("dialog");
 
 document.getElementById("open-plugins").addEventListener("click", () => {
 	var explorer;
@@ -31,7 +32,7 @@ const options = {
 for (const [key, value] of Object.entries(options)) {
 	switch (value.type) {
 		case "checkbox": value.checked = store.get(key);
-		default: value.value = store.get(key).toString();
+		default: value.value = store.get(key);
 	}
 }
 function applyChanges() {
@@ -42,6 +43,6 @@ function applyChanges() {
 			default: store.set(key, value.value); break;
 		}
 	}
-	alert("Changes have been applied. You may need to restart OceanDesktop for them to take effect.");
+	dialog.info("Changes have been applied. You may need to restart OceanDesktop for them to take effect.", "Success");
 }
 document.getElementById("apply-changes").addEventListener("click", applyChanges);

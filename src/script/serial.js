@@ -3,6 +3,7 @@ const { SerialPort } = require("serialport");
 const { ReadlineParser } = require("@serialport/parser-readline");
 
 const store = require("./store");
+const { error } = require("./shared");
 const WebSocketServer = require("ws").Server;
 
 SerialPort.list().then((ports) => { store.set("allPorts", ports); });
@@ -22,7 +23,12 @@ class SerialInterface {
 				ws.on("close", eventHandler.deviceDidDisconnect);
 			});
 		} else { // Use serial as normal
-			this.port = new SerialPort({ path: store.get("serialPort"), baudRate: 57600 });
+			try {
+				this.port = new SerialPort({ path: store.get("serialPort"), baudRate: 57600 });
+			} catch {
+				error("An error occurred. Make sure you have a serial port selected!", false);
+				return;
+			}
 			this.parser = this.port.pipe(new ReadlineParser({ delimiter: "\r\n" }));
 			eventHandler.deviceDidConnect();
 			this.parser.on("data", (data) => {

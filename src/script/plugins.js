@@ -4,7 +4,7 @@ const path = require("path");
 const store = require("./store");
 const WebSocketServer = require("ws").Server;
 
-const { allActions, categories, Action, ActionState } = require("./shared");
+const { allActions, categories, Action, ActionState, error } = require("./shared");
 
 const { app, BrowserWindow } = require("electron");
 const { spawn } = require("child_process");
@@ -29,6 +29,7 @@ class StreamDeckPlugin {
 		
 		if (categories[this.category] == undefined) categories[this.category] = [];
 		manifest.Actions.forEach((action) => {
+			if (!action.Icon) action.Icon = action.States[0].Image;
 			let iconPath = path.join(root, uuid, action.Icon);
 			iconPath = fs.existsSync(iconPath + "@2x.png") ? iconPath + "@2x.png" : iconPath + ".png";
 			let states = [];
@@ -46,7 +47,8 @@ class StreamDeckPlugin {
 				iconPath,
 				action.PropertyInspectorPath ? path.join(root, uuid, action.PropertyInspectorPath) : this.propertyInspector,
 				action.Controllers || [ "Keypad" ],
-				states
+				states,
+				action.VisibleInActionsList == false ? false : true
 			);
 			this.actions.push(a);
 			allActions[a.uuid] = a;
@@ -101,7 +103,11 @@ class StreamDeckPlugin {
 				manifest.CodePathLin && (codePath = manifest.CodePathLin); break;
 		}
 		if (!codePath) codePath = manifest.CodePath;
-		
+		if (!codePath) {
+			error(`The plugin ${uuid} is not supported on the platform "${os.platform()}"!`, false);
+			return;
+		}
+
 		if (codePath.endsWith(".html")) {
 			this.window = new BrowserWindow({
 				autoHideMenuBar: true,
@@ -163,6 +169,11 @@ class StreamDeckPluginManager {
 		this.plugins = {};
 		
 		this.server = new WebSocketServer({ port: store.get("webSocketPort") });
+		this.server.on("error", () => {
+			error("An error occurred. Is an instance of OceanDesktop already running? Make sure your configured ports are free.", true);
+			return;
+		});
+
 		this.server.on("connection", (ws) => {
 			const { eventHandler } = require("./event");
 			ws.on("message", (data) => {

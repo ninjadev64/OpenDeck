@@ -1,7 +1,11 @@
 const store = require("./store");
 
+const log = require("electron-log");
+const dialog = require("dialog");
+const { exit } = require("process");
+
 class Action {
-	constructor(name, uuid, plugin, tooltip, icon, propertyInspector, controllers, states) {
+	constructor(name, uuid, plugin, tooltip, icon, propertyInspector, controllers, states, visibleInActionsList) {
 		this.name = name;
 		this.uuid = uuid;
 		this.plugin = plugin;
@@ -10,6 +14,7 @@ class Action {
 		this.propertyInspector = propertyInspector;
 		this.controllers = controllers;
 		this.states = states;
+		this.visibleInActionsList = visibleInActionsList;
 	}
 }
 
@@ -87,4 +92,11 @@ function getInstanceByContext(context) {
 	}
 }
 
-module.exports = { keys, sliders, allActions, categories, Action, ActionInstance, ActionState, updateKey, updateSlider, getInstanceByContext };
+function error(message, fatal) {
+	log.error(message);
+	dialog.err(message, "Error - OceanDesktop", () => {
+		if (fatal) exit(1);
+	});
+}
+
+module.exports = { keys, sliders, allActions, categories, Action, ActionInstance, ActionState, updateKey, updateSlider, getInstanceByContext, error };

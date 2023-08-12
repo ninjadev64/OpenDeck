@@ -3,6 +3,7 @@ const { get } = require("https");
 const { createWriteStream, unlink } = require("fs");
 const AdmZip = require("adm-zip");
 const store = require("../script/store");
+const dialog = require("dialog");
 
 function download(url, dest, cb) {
 	var file = createWriteStream(dest);
@@ -25,7 +26,7 @@ function install(plugin) {
 			new AdmZip(path).extractAllToAsync(join(store.get("userDataPath"), "Plugins"), true, false, (err) => {
 				if (err) throw err;
 				unlink(path, (err) => { if (err) throw err; });
-				alert(`Successfully downloaded and unpacked plugin "${plugin.name}"!`);
+				dialog.info(`Successfully downloaded and unpacked plugin "${plugin.name}"!`, "Success");
 			});
 		});
 	}

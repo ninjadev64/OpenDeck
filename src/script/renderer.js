@@ -71,6 +71,7 @@ ipcRenderer.on("categories", (_, categories) => {
 		actionList.appendChild(heading);
 		
 		actions.forEach((action) => {
+			if (!action.visibleInActionsList) return;
 			let div = document.createElement("div");
 			div.className = "action";
 

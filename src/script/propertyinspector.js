@@ -2,7 +2,7 @@ const { BrowserWindow, ipcMain } = require("electron");
 const { pluginManager } = require("./plugins");
 
 const store = require("./store");
-const { getInstanceByContext } = require("./shared");
+const { getInstanceByContext, error } = require("./shared");
 const WebSocketServer = require("ws").Server;
 
 class PropertyInspector {
@@ -76,6 +76,10 @@ class PropertyInspectorManager {
 	constructor() {
 		this.all = {};
 		this.server = new WebSocketServer({ port: store.get("propertyInspectorPort") });
+		this.server.on("error", () => {
+			error("An error occurred. Is an instance of OceanDesktop already running? Make sure your configured ports are free.", true);
+			return;
+		});
 		this.server.on("connection", (ws) => {
 			const { eventHandler } = require("./event");
 			ws.on("message", (data) => {
