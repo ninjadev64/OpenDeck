@@ -79,7 +79,7 @@ function updateSlot(context, instance) {
 	const { propertyInspectorManager } = require("./propertyinspector");
 	if (context.type == "slider") {
 		const { serialInterface } = require("./serial");
-		serialInterface.lastSliders[index] = 0;
+		serialInterface.lastSliders[context.index] = 0;
 	}
 	let position = getProfile()[context.type][context.position];
 	if (instance == undefined) {

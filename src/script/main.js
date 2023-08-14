@@ -1,4 +1,5 @@
 const { app, ipcMain, BrowserWindow, Tray, Menu } = require("electron");
+const { exit } = require("process");
 const path = require("path");
 
 const { allActions, categories, setProfile, updateSlot, ActionInstance } = require("./shared");
@@ -67,6 +68,7 @@ const createWindow = () => {
 			label: "Quit", click: () => {
 				isQuitting = true;
 				app.quit();
+				exit(0);
 			}
 		}
 	]));
