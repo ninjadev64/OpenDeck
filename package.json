@@ -22,8 +22,9 @@
 	},
 	"devDependencies": {
 		"@electron-forge/cli": "^6.0.0-beta.66",
-		"@electron-forge/maker-deb": "^6.0.0-beta.66",
 		"@electron-forge/maker-squirrel": "^6.0.0-beta.66",
+		"@electron-forge/maker-dmg": "^6.0.0-beta.66",
+		"@electron-forge/maker-deb": "^6.0.0-beta.66",
 		"@electron-forge/maker-zip": "^6.0.0-beta.66",
 		"electron": "^20.2.0"
 	},
@@ -40,14 +41,19 @@
 					}
 				},
 				{
-					"name": "@electron-forge/maker-zip",
-					"platforms": [
-						"darwin"
-					]
+					"name": "@electron-forge/maker-dmg",
+					"config": {
+						"name": "OceanDesktop"
+					}
 				},
 				{
 					"name": "@electron-forge/maker-deb",
-					"config": {}
+					"config": {
+						"productName": "OceanDesktop"
+					}
+				},
+				{
+					"name": "@electron-forge/maker-zip"
 				}
 			]
 		}
