@@ -1,7 +1,7 @@
 const { shell } = require("electron");
 const { pluginManager } = require("./plugins");
 const { propertyInspectorManager } = require("./propertyinspector");
-const { currentProfile, parseContext, getInstanceByContext, getCoordinatesByContext } = require("./shared");
+const { getProfile, updateProfile, parseContext, getInstanceByContext, getCoordinatesByContext } = require("./shared");
 
 const log = require("electron-log");
 const { getMainWindow } = require("./main");
@@ -10,15 +10,15 @@ const store = require("./store");
 class EventHandler {
 	updateState(instance) {
 		let context = parseContext(instance.context);
-		currentProfile[context.type][context.position][context.index] = instance;
-		store.set("profiles." + store.get("selectedProfile"), currentProfile);
+		getProfile()[context.type][context.position][context.index] = instance;
+		updateProfile();
 		getMainWindow().webContents.send("updateState", instance);
 	}
 
 	// Outbound events
 
 	keyDown(key) {
-		let instance = currentProfile.key[key][0];
+		let instance = getProfile().key[key][0];
 		if (instance == undefined) return;
 		pluginManager.sendEvent(instance.action.plugin, {
 			event: "keyDown",
@@ -26,7 +26,7 @@ class EventHandler {
 			context: instance.context,
 			device: 0,
 			payload: {
-				settings: {},
+				settings: instance.settings,
 				coordinates: getCoordinatesByContext(instance.context),
 				isInMultiAction: false
 			}
@@ -34,7 +34,7 @@ class EventHandler {
 	}
 
 	keyUp(key) {
-		let instance = currentProfile.key[key][0];
+		let instance = getProfile().key[key][0];
 		if (instance == undefined) return;
 		pluginManager.sendEvent(instance.action.plugin, {
 			event: "keyUp",
@@ -42,7 +42,7 @@ class EventHandler {
 			context: instance.context,
 			device: 0,
 			payload: {
-				settings: {},
+				settings: instance.settings,
 				coordinates: getCoordinatesByContext(instance.context),
 				isInMultiAction: false
 			}
@@ -55,7 +55,7 @@ class EventHandler {
 	}
 
 	dialRotate(slider, value) {
-		let instance = currentProfile.slider[slider][0];
+		let instance = getProfile().slider[slider][0];
 		if (instance == undefined) return;
 		pluginManager.sendEvent(instance.action.plugin, {
 			event: "dialRotate",
@@ -63,7 +63,7 @@ class EventHandler {
 			context: instance.context,
 			device: 0,
 			payload: {
-				settings: {},
+				settings: instance.settings,
 				coordinates: getCoordinatesByContext(instance.context),
 				ticks: value,
 				pressed: false
@@ -79,7 +79,7 @@ class EventHandler {
 			device: 0,
 			payload: {
 				controller: instance.type == "slider" ? "Encoder" : "Keypad",
-				settings: {},
+				settings: instance.settings,
 				coordinates: getCoordinatesByContext(instance.context),
 				isInMultiAction: false
 			}
@@ -94,7 +94,7 @@ class EventHandler {
 			device: 0,
 			payload: {
 				controller: instance.type == "slider" ? "Encoder" : "Keypad",
-				settings: {},
+				settings: instance.settings,
 				coordinates: getCoordinatesByContext(instance.context),
 				isInMultiAction: false
 			}
@@ -148,7 +148,7 @@ class EventHandler {
 			context: instance.context,
 			device: 0,
 			payload: {
-				settings: instance.settings ?? {},
+				settings: instance.settings,
 				coordinates: getCoordinatesByContext(instance.context),
 				isInMultiAction: false
 			}

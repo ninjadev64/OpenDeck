@@ -75,7 +75,7 @@ class PropertyInspectorManager {
 		this.server = new WebSocketServer({ port: store.get("propertyInspectorPort") });
 		this.server.on("error", () => {
 			error("An error occurred. Is an instance of OceanDesktop already running? Make sure your configured ports are free.", true);
-			return;
+			this.server.close();
 		});
 		this.server.on("connection", (ws) => {
 			const { eventHandler } = require("./event");

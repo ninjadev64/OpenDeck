@@ -4,7 +4,7 @@ const schema = {
 		type: "object",
 		default: {
 			[randomDefaultProfileId]: {
-				name: "Profile 0",
+				name: "Default",
 				key: [ [ null ], [ null ], [ null ], [ null ], [ null ], [ null ], [ null ], [ null ], [ null ] ],
 				slider: [ [ null ], [ null ] ]
 			}

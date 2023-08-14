@@ -2,12 +2,15 @@
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
-		<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-eval'" />
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'" />
 		<link rel="stylesheet" href="style.css" />
 		<title> OceanDesktop </title>
 	</head>
 	<body>
-		<div id="action-list" class="actionList"></div>
+		<div id="action-list">
+			<select id="profile"></select>
+			<hr />
+		</div>
 		<table>
 			<tr>
 				<td rowspan="3"><div class="slider" id="slider0"></div></td>

@@ -16,7 +16,7 @@ h1, h2, h3, h4, h5, h6, header {
 	margin-bottom: 10px;
 }
 
-p, span, label, small {
+p, span, label, small, li {
 	color: #f2f2f2;
 }
 
@@ -33,7 +33,7 @@ input[type="checkbox"] {
 	height: 32px;
 }
 
-.actionList {
+#action-list {
 	width: 250px;
 	height: 100vh;
 	float: right;
@@ -41,6 +41,22 @@ input[type="checkbox"] {
 	padding-right: 10px;
 	border-left: 1px solid white;
 	overflow-y: auto;
+}
+
+#profile {
+	margin-top: 8px;
+	width: 100%;
+}
+
+#create-profile {
+	margin-top: 8px;
+	margin-left: 8px;
+}
+
+.deleteProfile {
+	width: 24px;
+	height: 24px;
+	transform: translate(5px, 5px);
 }
 
 .action {

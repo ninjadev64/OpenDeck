@@ -1,5 +1,4 @@
 const { ipcRenderer } = require("electron");
-const store = require("../script/store");
 
 let actionList = document.getElementById("action-list");
 
@@ -23,6 +22,7 @@ function updateState(instance) {
 	if (!div) {
 		div = document.createElement("div");
 		div.id = instance.context.toString();
+		div.className = "instance";
 		div.instance = instance;
 		div.addEventListener("click", () => {
 			ipcRenderer.send("slotUpdate", instance.context, undefined);
@@ -59,7 +59,6 @@ function updateState(instance) {
 	div.appendChild(title);
 }
 
-ipcRenderer.send("requestCategories");
 ipcRenderer.on("categories", (_, categories) => {
 	for (const [category, actions] of Object.entries(categories)) {
 		let heading = document.createElement("h3");
@@ -98,6 +97,7 @@ ipcRenderer.on("categories", (_, categories) => {
 	settings.style = "position: absolute; bottom: 10px; right: 30px;";
 	actionList.append(settings);
 });
+ipcRenderer.send("requestCategories");
 
 Array.from(document.getElementsByClassName("key")).forEach((div) => {
 	div.addEventListener("dragover", (ev) => { dragover(ev); });
@@ -146,11 +146,44 @@ function drop(ev) {
 	ev.preventDefault();
 }
 
-[].concat(store.get("profiles." + store.get("selectedProfile") + ".key"), store.get("profiles." + store.get("selectedProfile") + ".slider")).forEach((position) => { position.forEach((instance) => {
-	if (instance == undefined) return;
-	updateState(instance);
-	ipcRenderer.send("slotUpdate", instance.context, instance);
-})});
+let selectedProfile;
+let profileManager;
+let profileSelect = document.getElementById("profile");
+profileSelect.addEventListener("change", () => {
+	if (profileSelect.value == "manager") {
+		if (!profileManager || profileManager.closed) {
+			profileManager = window.open("profiles.html", undefined, "nodeIntegration=yes,contextIsolation=no,autoHideMenuBar=yes,alwaysOnTop=yes");
+		} else {
+			profileManager.focus();
+		}
+		profileSelect.value = selectedProfile;
+	} else {
+		ipcRenderer.send("profileUpdate", profileSelect.value);
+	}
+});
+ipcRenderer.on("profiles", (_event, profiles, selected) => {
+	selectedProfile = selected;
+	Array.from(document.getElementsByClassName("instance")).forEach((e) => e.remove());
+	[].concat(profiles[selectedProfile].key, profiles[selectedProfile].slider).forEach((position) => { position.forEach((instance) => {
+		if (!instance) return;
+		updateState(instance);
+		ipcRenderer.send("slotUpdate", instance.context, instance);
+	})});
+
+	profileSelect.textContent = "";
+	for (const [id, profile] of Object.entries(profiles)) {
+		let o = document.createElement("option");
+		o.value = id;
+		o.innerText = profile.name;
+		if (id == selectedProfile) o.selected = true;
+		profileSelect.appendChild(o);
+	}
+	let manager = document.createElement("option");
+	manager.value = "manager";
+	manager.innerText = "Manage profiles...";
+	profileSelect.appendChild(manager);
+});
+ipcRenderer.send("requestProfiles");
 
 ipcRenderer.on("updateState", (_event, instance) => {
 	updateState(instance);

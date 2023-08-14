@@ -60,6 +60,19 @@ var categories = {};
 
 var currentProfile = store.get("profiles." + store.get("selectedProfile"));
 
+function setProfile(id) {
+	store.set("selectedProfile", id);
+	currentProfile = store.get("profiles." + store.get("selectedProfile"));
+}
+
+function getProfile() {
+	return currentProfile;
+}
+
+function updateProfile() {
+	store.set("profiles." + store.get("selectedProfile"), getProfile());
+}
+
 function updateSlot(context, instance) {
 	context = parseContext(context);
 	const { eventHandler } = require("./event");
@@ -68,7 +81,7 @@ function updateSlot(context, instance) {
 		const { serialInterface } = require("./serial");
 		serialInterface.lastSliders[index] = 0;
 	}
-	let position = currentProfile[context.type][context.position];
+	let position = getProfile()[context.type][context.position];
 	if (instance == undefined) {
 		eventHandler.willDisappear(position[context.index]);
 		propertyInspectorManager.unregister(position[context.index]);
@@ -78,12 +91,12 @@ function updateSlot(context, instance) {
 		eventHandler.willAppear(instance);
 		propertyInspectorManager.register(instance);
 	}
-	store.set("profiles." + store.get("selectedProfile"), currentProfile);
+	updateProfile();
 }
 
 function getInstanceByContext(context) {
 	context = parseContext(context);
-	return currentProfile[context.type][context.position][context.index];
+	return getProfile()[context.type][context.position][context.index];
 }
 
 function getCoordinatesByContext(context) {
@@ -101,4 +114,4 @@ function error(message, fatal) {
 	});
 }
 
-module.exports = { allActions, categories, currentProfile, Action, ActionInstance, ActionState, updateSlot, parseContext, getInstanceByContext, getCoordinatesByContext, error };
+module.exports = { allActions, categories, Action, ActionInstance, ActionState, setProfile, getProfile, updateProfile, updateSlot, parseContext, getInstanceByContext, getCoordinatesByContext, error };

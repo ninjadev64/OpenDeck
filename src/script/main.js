@@ -1,7 +1,7 @@
 const { app, ipcMain, BrowserWindow, Tray, Menu } = require("electron");
 const path = require("path");
 
-const { allActions, categories, updateSlot, ActionInstance } = require("./shared");
+const { allActions, categories, setProfile, updateSlot, ActionInstance } = require("./shared");
 const store = require("./store");
 
 const AutoLaunch = require('auto-launch');
@@ -35,6 +35,25 @@ const createWindow = () => {
 	
 	ipcMain.on("requestCategories", () => {
 		mainWindow.webContents.send("categories", categories);
+	});
+
+	ipcMain.on("requestProfiles", () => {
+		mainWindow.webContents.send("profiles", store.get("profiles"), store.get("selectedProfile"));
+	});
+
+	ipcMain.on("createProfile", (_event, name, id) => {
+		store.set("profiles." + id, {
+			name,
+			key: [ [ null ], [ null ], [ null ], [ null ], [ null ], [ null ], [ null ], [ null ], [ null ] ],
+			slider: [ [ null ], [ null ] ]
+		});
+		mainWindow.webContents.send("profiles", store.get("profiles"), store.get("selectedProfile"));
+		return 0;
+	});
+
+	ipcMain.on("profileUpdate", (_event, id) => {
+		setProfile(id);
+		mainWindow.webContents.send("profiles", store.get("profiles"), id);
 	});
 
 	tray = new Tray(path.join(__dirname, "../assets/icon.png"));

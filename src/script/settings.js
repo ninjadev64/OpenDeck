@@ -20,7 +20,7 @@ store.get("allPorts").forEach((port) => {
 		serialPort.insertAdjacentHTML("beforeend", `<option value=${port.path}> ${port.path} </option>`);
 	}
 });
-let autoLaunch = document.getElementById("autolaunch");
+let autoLaunch = document.getElementById("auto-launch");
 let webSocketPort = document.getElementById("websocket-port");
 let propertyInspectorPort = document.getElementById("propertyinspector-port");
 const options = {

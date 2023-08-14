@@ -44,7 +44,7 @@ class SerialInterface {
 				eventHandler.keyUp(this.lastKey - 1);
 				this.lastKey = 0;
 			}
-		} else {
+		} else if (data.key) {
 			this.lastKey = data.key;
 			eventHandler.keyDown(data.key - 1);
 		}
