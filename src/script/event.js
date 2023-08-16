@@ -233,6 +233,26 @@ class EventHandler {
 	showOk({ context }) {
 		getMainWindow().webContents.send("showOk", context);
 	}
+
+	sendToPropertyInspector({ context, payload }) {
+		let instance = getInstanceByContext(context);
+		propertyInspectorManager.sendEvent(instance.context, {
+			event: "sendToPropertyInspector",
+			action: instance.action.uuid,
+			context: instance.context,
+			payload: payload
+		});
+	}
+
+	sendToPlugin({ context, payload }) {
+		let instance = getInstanceByContext(context);
+		pluginManager.sendEvent(instance.action.plugin, {
+			event: "sendToPlugin",
+			action: instance.action.uuid,
+			context: instance.context,
+			payload: payload
+		});
+	}
 }
 
 const eventHandler = new EventHandler();
