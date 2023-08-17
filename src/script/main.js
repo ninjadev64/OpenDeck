@@ -1,6 +1,13 @@
+if (require("electron-squirrel-startup")) return;
+
 const { app, ipcMain, BrowserWindow, Tray, Menu } = require("electron");
 const { exit } = require("process");
 const path = require("path");
+
+if (!app.requestSingleInstanceLock()) {
+	app.quit();
+	exit(0);
+}
 
 const { allActions, categories, setProfile, updateSlot, ActionInstance } = require("./shared");
 const store = require("./store");
@@ -67,6 +74,14 @@ function createWindow() {
 
 	app.on("activate", () => {
 		mainWindow.show();
+		mainWindow.restore();
+		mainWindow.focus();
+	});
+
+	app.on("second-instance", () => {
+		mainWindow.show();
+		mainWindow.restore();
+		mainWindow.focus();
 	});
 }
 
