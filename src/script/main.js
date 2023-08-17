@@ -12,7 +12,7 @@ let tray;
 
 let mainWindow;
 
-const createWindow = () => {
+function createWindow() {
 	mainWindow = new BrowserWindow({
 		webPreferences: {
 			nodeIntegration: true,
@@ -57,6 +57,22 @@ const createWindow = () => {
 		mainWindow.webContents.send("profiles", store.get("profiles"), id);
 	});
 
+	mainWindow.on("close", (event) => {
+		if (!isQuitting) {
+			event.preventDefault();
+			mainWindow.hide();
+			event.returnValue = false;
+		}
+	});
+
+	app.on("activate", () => {
+		mainWindow.show();
+	});
+}
+
+app.whenReady().then(() => {
+	createWindow();
+
 	tray = new Tray(path.join(__dirname, "../assets/icon.png"));
 	tray.setContextMenu(Menu.buildFromTemplate([
 		{
@@ -73,33 +89,17 @@ const createWindow = () => {
 		}
 	]));
 
-	mainWindow.on("close", (event) => {
-		if (!isQuitting) {
-			event.preventDefault();
-			mainWindow.hide();
-			event.returnValue = false;
-		}
-	});
-}
-
-app.whenReady().then(() => {
-	createWindow();
-
 	require("./plugins");
 	require("./serial");
 	require("./propertyinspector");
 
 	let autoLaunch = new AutoLaunch({
-		name: "OceanDesktop",
+		name: "OpenDeck",
 		isHidden: true
 	});
 	autoLaunch.isEnabled().then((isEnabled) => {
 		if (store.get("autoLaunch") && !isEnabled) autoLaunch.enable();
 		if (!store.get("autoLaunch") && isEnabled) autoLaunch.disable();
-	});
-
-	app.on("activate", () => {
-		mainWindow.show();
 	});
 });
 

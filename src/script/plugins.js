@@ -7,7 +7,7 @@ const WebSocketServer = require("ws").Server;
 const { allActions, categories, Action, ActionState, error } = require("./shared");
 
 const { app, BrowserWindow } = require("electron");
-const { spawn } = require("child_process");
+const { spawn, execSync } = require("child_process");
 const { version } = require("../../package.json");
 
 class StreamDeckPlugin {
@@ -26,6 +26,13 @@ class StreamDeckPlugin {
 		this.socket = null;
 		this.queue = [];
 		this.propertyInspector = manifest.PropertyInspectorPath ? path.join(root, uuid, manifest.PropertyInspectorPath) : path.join(__dirname, "../markup/empty.html");
+
+		this.applicationsToMonitor = [];
+		switch (os.platform()) {
+			case "win32": this.applicationsToMonitor = manifest.ApplicationsToMonitor.windows ?? []; break;
+			case "darwin": this.applicationsToMonitor = manifest.ApplicationsToMonitor.mac ?? []; break;
+			case "linux": this.applicationsToMonitor = manifest.ApplicationsToMonitor.linux ?? []; break;
+		}
 		
 		if (categories[this.category] == undefined) categories[this.category] = [];
 		manifest.Actions.forEach((action) => {
@@ -170,7 +177,7 @@ class StreamDeckPluginManager {
 		
 		this.server = new WebSocketServer({ port: store.get("webSocketPort") });
 		this.server.on("error", () => {
-			error("An error occurred. Is an instance of OceanDesktop already running? Make sure your configured ports are free.", true);
+			error("An error occurred. Is an instance of OpenDeck already running? Make sure your configured ports are free.", true);
 			this.server.close();
 		});
 
@@ -190,6 +197,53 @@ class StreamDeckPluginManager {
 		this.pluginIds.forEach((uuid) => {
 			let pl = new StreamDeckPlugin(this.pluginsDir, uuid);
 			this.plugins[uuid] = pl;
+		});
+
+		this.applicationMonitors = {};
+		this.applicationCounts = {};
+		this.lastPollTime = Infinity;
+		Object.values(this.plugins).forEach((plugin) => {
+			plugin.applicationsToMonitor.forEach((application) => {
+				if (!this.applicationMonitors[application]) this.applicationMonitors[application] = [];
+				this.applicationMonitors[application].push(plugin);
+				this.applicationCounts[application] = 0;
+			});
+		});
+		import("ps-list").then((pslist) => {
+			setInterval(() => {
+				let now = Date.now();
+				if (now > (this.lastPollTime + 2500)) {
+					this.sendGlobalEvent({ event: "systemDidWakeUp" });
+				}
+				this.lastPollTime = now;
+				let counts = {};
+				pslist.default().then((processes) => {
+					processes.forEach((process) => {
+						let p = process.name;
+						if (os.platform() == "darwin") {
+							let s = process.cmd.split("/Contents/MacOS");
+							if (s.length < 2) return;
+							p = execSync(`defaults read ${s[0]}/Contents/Info.plist CFBundleIdentifier`);
+						}
+						if (!this.applicationMonitors[p]) return;
+						if (!counts[p]) counts[p] = 0;
+						counts[p] += 1;
+					});
+
+					const { eventHandler } = require("./event");
+					for (const [key, value] of Object.entries(this.applicationCounts)) {
+						if (!counts[key]) counts[key] = 0;
+						if (counts[key] == value) continue;
+						this.applicationMonitors[key].forEach((plugin) => {
+							for (let i = 0; i < Math.abs(counts[key] - value); i++) {
+								if (value < counts[key]) eventHandler.applicationDidLaunch(key, plugin.uuid);
+								else eventHandler.applicationDidTerminate(key, plugin.uuid);
+							}
+						});
+						this.applicationCounts[key] = counts[key];
+					}
+				});
+			}, 1000);
 		});
 	}
 

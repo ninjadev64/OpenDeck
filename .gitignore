@@ -3,8 +3,3 @@ package-lock.json
 
 configs.js
 out/
-
-.vscode/arduino.json
-.vscode/c_cpp_properties.json
-
-pcb/

@@ -16,6 +16,7 @@ class EventHandler {
 	}
 
 	// Outbound events
+	// Reference: https://docs.elgato.com/sdk/plugins/events-received
 
 	keyDown(key) {
 		let instance = getProfile().key[key][0];
@@ -123,6 +124,24 @@ class EventHandler {
 		});
 	}
 
+	applicationDidLaunch(application, plugin) {
+		pluginManager.sendEvent(plugin, {
+			event: "applicationDidLaunch",
+			payload: {
+				application
+			}
+		});
+	}
+
+	applicationDidTerminate(application, plugin) {
+		pluginManager.sendEvent(plugin, {
+			event: "applicationDidTerminate",
+			payload: {
+				application
+			}
+		});
+	}
+
 	propertyInspectorDidAppear(instance) {
 		pluginManager.sendEvent(instance.action.plugin, {
 			event: "propertyInspectorDidAppear",
@@ -175,6 +194,7 @@ class EventHandler {
 	}
 
 	// Inbound events
+	// Reference: https://docs.elgato.com/sdk/plugins/events-sent
 
 	setSettings({ context, payload }, fromPropertyInspector) {
 		let instance = getInstanceByContext(context);

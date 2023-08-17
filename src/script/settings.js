@@ -43,6 +43,6 @@ function applyChanges() {
 			default: store.set(key, value.value); break;
 		}
 	}
-	dialog.info("Changes have been applied. You may need to restart OceanDesktop for them to take effect.", "Success");
+	dialog.info("Changes have been applied. You may need to restart OpenDeck for them to take effect.", "Success");
 }
 document.getElementById("apply-changes").addEventListener("click", applyChanges);

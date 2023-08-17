@@ -109,7 +109,7 @@ function getCoordinatesByContext(context) {
 
 function error(message, fatal) {
 	log.error(message);
-	dialog.err(message, "Error - OceanDesktop", () => {
+	dialog.err(message, "Error - OpenDeck", () => {
 		if (fatal) exit(1);
 	});
 }
