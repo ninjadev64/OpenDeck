@@ -179,17 +179,21 @@ class EventHandler {
 		}
 	}
 
-	didReceiveGlobalSettings(instance, propertyInspector) {
+	didReceiveGlobalSettings(plugin, propertyInspector) {
 		let data = {
 			event: "didReceiveGlobalSettings",
 			payload: {
-				settings: store.get("pluginSettings." + plugin.uuid.replaceAll(".", "¬")) ?? {},
+				settings: store.get("pluginSettings." + plugin.replaceAll(".", "¬")) ?? {},
 			}
 		}
 		if (propertyInspector) {
-			propertyInspectorManager.sendEvent(instance.context, data);
+			Object.values(propertyInspectorManager.all).forEach((propertyInspector) => {
+				if (propertyInspector.action.plugin == plugin) {
+					propertyInspectorManager.sendEvent(propertyInspector.context, data);
+				}
+			});
 		} else {
-			pluginManager.sendEvent(instance.action.plugin, data);
+			pluginManager.sendEvent(plugin, data);
 		}
 	}
 
@@ -208,13 +212,13 @@ class EventHandler {
 	}
 
 	setGlobalSettings({ context, payload }, fromPropertyInspector) {
-		let plugin = fromPropertyInspector ? propertyInspectorManager.all[context].action.plugin : pluginManager.plugins[context];
-		store.set("pluginSettings." + plugin.uuid.replaceAll(".", "¬"), payload);
+		let plugin = fromPropertyInspector ? propertyInspectorManager.all[context].action.plugin : pluginManager.plugins[context].uuid;
+		store.set("pluginSettings." + plugin.replaceAll(".", "¬"), payload);
 		this.didReceiveGlobalSettings(plugin, !fromPropertyInspector);
 	}
 
 	getGlobalSettings({ context }, fromPropertyInspector) {
-		let plugin = fromPropertyInspector ? propertyInspectorManager.all[context].action.plugin : pluginManager.plugins[context];
+		let plugin = fromPropertyInspector ? propertyInspectorManager.all[context].action.plugin : pluginManager.plugins[context].uuid;
 		this.didReceiveGlobalSettings(plugin, fromPropertyInspector)
 	}
 

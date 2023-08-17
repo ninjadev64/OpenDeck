@@ -28,24 +28,26 @@ class StreamDeckPlugin {
 		this.propertyInspector = manifest.PropertyInspectorPath ? path.join(root, uuid, manifest.PropertyInspectorPath) : path.join(__dirname, "../markup/empty.html");
 
 		this.applicationsToMonitor = [];
-		switch (os.platform()) {
-			case "win32": this.applicationsToMonitor = manifest.ApplicationsToMonitor.windows ?? []; break;
-			case "darwin": this.applicationsToMonitor = manifest.ApplicationsToMonitor.mac ?? []; break;
-			case "linux": this.applicationsToMonitor = manifest.ApplicationsToMonitor.linux ?? []; break;
+		if (manifest.ApplicationsToMonitor) {
+			switch (os.platform()) {
+				case "win32": this.applicationsToMonitor = manifest.ApplicationsToMonitor.windows ?? []; break;
+				case "darwin": this.applicationsToMonitor = manifest.ApplicationsToMonitor.mac ?? []; break;
+				case "linux": this.applicationsToMonitor = manifest.ApplicationsToMonitor.linux ?? []; break;
+			}
 		}
 		
 		if (categories[this.category] == undefined) categories[this.category] = [];
 		manifest.Actions.forEach((action) => {
 			if (!action.Icon) action.Icon = action.States[0].Image;
 			let iconPath = path.join(root, uuid, action.Icon);
-			iconPath = fs.existsSync(iconPath + "@2x.png") ? iconPath + "@2x.png" : iconPath + ".png";
+			iconPath = fs.existsSync(iconPath + ".svg") ? iconPath + ".svg" : (fs.existsSync(iconPath + "@2x.png") ? iconPath + "@2x.png" : iconPath + ".png");
 			let states = [];
 			action.States.forEach((state) => {
 				if (state.Image == "actionDefaultImage") {
 					state.Image = iconPath;
 				} else {
 					state.Image = path.join(root, uuid, state.Image);
-					state.Image = fs.existsSync(state.Image + "@2x.png") ? state.Image + "@2x.png" : state.Image + ".png";
+					state.Image = fs.existsSync(state.Image + ".svg") ? state.Image + ".svg" : (fs.existsSync(state.Image + "@2x.png") ? state.Image + "@2x.png" : state.Image + ".png");
 				}
 				states.push(new ActionState(state, action.Name));
 			});
