@@ -4,7 +4,7 @@ const path = require("path");
 const store = require("./store");
 const WebSocketServer = require("ws").Server;
 
-const { allActions, categories, Action, ActionState, error } = require("./shared");
+const { allActions, categories, Action, ActionState, error, getIcon } = require("./shared");
 
 const { app, BrowserWindow } = require("electron");
 const { spawn, execSync } = require("child_process");
@@ -39,15 +39,13 @@ class StreamDeckPlugin {
 		if (categories[this.category] == undefined) categories[this.category] = [];
 		manifest.Actions.forEach((action) => {
 			if (!action.Icon) action.Icon = action.States[0].Image;
-			let iconPath = path.join(root, uuid, action.Icon);
-			iconPath = fs.existsSync(iconPath + ".svg") ? iconPath + ".svg" : (fs.existsSync(iconPath + "@2x.png") ? iconPath + "@2x.png" : iconPath + ".png");
+			let iconPath = getIcon(path.join(root, uuid, action.Icon));
 			let states = [];
 			action.States.forEach((state) => {
 				if (state.Image == "actionDefaultImage") {
 					state.Image = iconPath;
 				} else {
-					state.Image = path.join(root, uuid, state.Image);
-					state.Image = fs.existsSync(state.Image + ".svg") ? state.Image + ".svg" : (fs.existsSync(state.Image + "@2x.png") ? state.Image + "@2x.png" : state.Image + ".png");
+					state.Image = getIcon(path.join(root, uuid, state.Image));
 				}
 				states.push(new ActionState(state, action.Name));
 			});
@@ -102,16 +100,12 @@ class StreamDeckPlugin {
 			]
 		}
 
-		let codePath;
+		let codePath = manifest.CodePath;
 		switch (os.platform()) {
-			case "win32":
-				manifest.CodePathWin && (codePath = manifest.CodePathWin); break;
-			case "darwin":
-				manifest.CodePathMac && (codePath = manifest.CodePathMac); break;
-			case "linux":
-				manifest.CodePathLin && (codePath = manifest.CodePathLin); break;
+			case "win32": manifest.CodePathWin && (codePath = manifest.CodePathWin); break;
+			case "darwin": manifest.CodePathMac && (codePath = manifest.CodePathMac); break;
+			case "linux": manifest.CodePathLin && (codePath = manifest.CodePathLin); break;
 		}
-		if (!codePath) codePath = manifest.CodePath;
 		if (!codePath) {
 			error(`The plugin ${uuid} is not supported on the platform "${os.platform()}"!`, false);
 			return;
@@ -138,6 +132,7 @@ class StreamDeckPlugin {
 				`);
 			});
 		} else {
+			if (["darwin", "linux"].includes(os.platform())) execSync(`chmod +x "${path.join(root, uuid, codePath)}"`);
 			this.process = spawn(path.join(root, uuid, codePath), [
 				"-port", store.get("webSocketPort"),
 				"-pluginUUID", this.uuid,
@@ -204,6 +199,7 @@ class StreamDeckPluginManager {
 		this.applicationMonitors = {};
 		this.applicationCounts = {};
 		this.lastPollTime = Infinity;
+		if (os.platform() == "darwin") this.bundleIDs = store.get("bundleIDs");
 		Object.values(this.plugins).forEach((plugin) => {
 			plugin.applicationsToMonitor.forEach((application) => {
 				if (!this.applicationMonitors[application]) this.applicationMonitors[application] = [];
@@ -212,39 +208,44 @@ class StreamDeckPluginManager {
 			});
 		});
 		import("ps-list").then((pslist) => {
-			setInterval(() => {
+			setInterval(async () => {
 				let now = Date.now();
 				if (now > (this.lastPollTime + 2500)) {
 					this.sendGlobalEvent({ event: "systemDidWakeUp" });
 				}
 				this.lastPollTime = now;
+				
 				let counts = {};
-				pslist.default().then((processes) => {
-					processes.forEach((process) => {
-						let p = process.name;
-						if (os.platform() == "darwin") {
-							let s = process.cmd.split("/Contents/MacOS");
-							if (s.length < 2) return;
-							p = execSync(`defaults read ${s[0]}/Contents/Info.plist CFBundleIdentifier`);
+				let processes = await pslist.default();
+				processes.forEach((process) => {
+					let p = process.name;
+					if (os.platform() == "darwin") {
+						let s = process.cmd.split("/Contents/MacOS");
+						if (s.length < 2) return;
+						if (!this.bundleIDs[s[0]]) {
+							try { this.bundleIDs[s[0]] = execSync(`defaults read "${s[0]}/Contents/Info.plist" CFBundleIdentifier`).toString().trim(); }
+							catch (err) { this.bundleIDs[s[0]] = "No bundle ID"; }
+							store.set("bundleIDs", this.bundleIDs);
 						}
-						if (!this.applicationMonitors[p]) return;
-						if (!counts[p]) counts[p] = 0;
-						counts[p] += 1;
-					});
-
-					const { eventHandler } = require("./event");
-					for (const [key, value] of Object.entries(this.applicationCounts)) {
-						if (!counts[key]) counts[key] = 0;
-						if (counts[key] == value) continue;
-						this.applicationMonitors[key].forEach((plugin) => {
-							for (let i = 0; i < Math.abs(counts[key] - value); i++) {
-								if (value < counts[key]) eventHandler.applicationDidLaunch(key, plugin.uuid);
-								else eventHandler.applicationDidTerminate(key, plugin.uuid);
-							}
-						});
-						this.applicationCounts[key] = counts[key];
+						p = this.bundleIDs[s[0]];
 					}
+					if (!this.applicationMonitors[p]) return;
+					if (!counts[p]) counts[p] = 0;
+					counts[p] += 1;
 				});
+
+				const { eventHandler } = require("./event");
+				for (const [key, value] of Object.entries(this.applicationCounts)) {
+					if (!counts[key]) counts[key] = 0;
+					if (counts[key] == value) continue;
+					this.applicationMonitors[key].forEach((plugin) => {
+						for (let i = 0; i < Math.abs(counts[key] - value); i++) {
+							if (value < counts[key]) eventHandler.applicationDidLaunch(key, plugin.uuid);
+							else eventHandler.applicationDidTerminate(key, plugin.uuid);
+						}
+					});
+					this.applicationCounts[key] = counts[key];
+				}
 			}, 1000);
 		});
 	}

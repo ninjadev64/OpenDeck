@@ -3,10 +3,17 @@ const store = require("./store");
 const log = require("electron-log");
 const dialog = require("dialog");
 const { exit } = require("process");
+const { existsSync } = require("fs");
 
 function parseContext(context) {
 	context = context.split(".");
 	return { profile: context[0], type: context[1], position: parseInt(context[2]), index: parseInt(context[3]) };
+}
+
+function getIcon(path) {
+	if (existsSync(path + ".svg")) return path + ".svg";
+	else if (existsSync(path + "@2x.png")) return path + "@2x.png";
+	else return path + ".png";
 }
 
 class Action {
@@ -114,4 +121,4 @@ function error(message, fatal) {
 	});
 }
 
-module.exports = { allActions, categories, Action, ActionInstance, ActionState, setProfile, getProfile, updateProfile, updateSlot, parseContext, getInstanceByContext, getCoordinatesByContext, error };
+module.exports = { allActions, categories, Action, ActionInstance, ActionState, parseContext, getIcon, setProfile, getProfile, updateProfile, updateSlot, getInstanceByContext, getCoordinatesByContext, error };

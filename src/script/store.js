@@ -39,6 +39,10 @@ const schema = {
 	pluginSettings: {
 		type: "object",
 		default: {}
+	},
+	bundleIDs: {
+		type: "object",
+		default: {}
 	}
 }
 

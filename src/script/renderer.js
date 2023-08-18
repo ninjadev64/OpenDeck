@@ -36,6 +36,9 @@ function updateState(instance) {
 	div.textContent = "";
 	let state = instance.states[instance.state];
 	let image = document.createElement("img");
+	if (state.image.startsWith("data:image/svg+xml,")) {
+		state.image = "data:image/svg+xml;base64," + Buffer.from(state.image.substring(state.image.indexOf(",") + 1).replace(/\;$/, "")).toString("base64");
+	}
 	image.src = state.image;
 	image.alt = instance.action.tooltip;
 	image.className = "icon";
