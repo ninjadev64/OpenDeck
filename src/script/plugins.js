@@ -42,7 +42,7 @@ class StreamDeckPlugin {
 			let iconPath = getIcon(path.join(root, uuid, action.Icon));
 			let states = [];
 			action.States.forEach((state) => {
-				if (state.Image == "actionDefaultImage") {
+				if (!state.Image || state.Image == "actionDefaultImage") {
 					state.Image = iconPath;
 				} else {
 					state.Image = getIcon(path.join(root, uuid, state.Image));
@@ -106,7 +106,7 @@ class StreamDeckPlugin {
 			case "darwin": manifest.CodePathMac && (codePath = manifest.CodePathMac); break;
 			case "linux": manifest.CodePathLin && (codePath = manifest.CodePathLin); break;
 		}
-		if (!codePath) {
+		if (!codePath || !fs.existsSync(path.join(root, uuid, codePath))) {
 			error(`The plugin ${uuid} is not supported on the platform "${os.platform()}"!`, false);
 			return;
 		}

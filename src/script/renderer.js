@@ -26,7 +26,6 @@ function updateState(instance) {
 		div.instance = instance;
 		div.addEventListener("click", () => {
 			ipcRenderer.send("slotUpdate", instance.context, undefined);
-			div.remove();
 		});
 		div.addEventListener("contextmenu", () => {
 			ipcRenderer.send("openPropertyInspector", instance.context);
@@ -36,9 +35,6 @@ function updateState(instance) {
 	div.textContent = "";
 	let state = instance.states[instance.state];
 	let image = document.createElement("img");
-	if (state.image.startsWith("data:image/svg+xml,")) {
-		state.image = "data:image/svg+xml;base64," + Buffer.from(state.image.substring(state.image.indexOf(",") + 1).replace(/\;$/, "")).toString("base64");
-	}
 	image.src = state.image;
 	image.alt = instance.action.tooltip;
 	image.className = "icon";
@@ -85,7 +81,7 @@ ipcRenderer.on("categories", (_, categories) => {
 	}
 
 	let pluginStore = document.createElement("button");
-	pluginStore.innerText = "Open plugin store";
+	pluginStore.innerText = "Manage plugins";
 	pluginStore.addEventListener("click", () => {
 		window.open("pluginstore.html", undefined, "nodeIntegration=yes,contextIsolation=no,autoHideMenuBar=yes");
 	});
@@ -97,7 +93,7 @@ ipcRenderer.on("categories", (_, categories) => {
 	settings.addEventListener("click", () => {
 		window.open("settings.html", undefined, "nodeIntegration=yes,contextIsolation=no");
 	});
-	settings.style = "position: absolute; bottom: 10px; right: 30px;";
+	settings.style = "position: absolute; bottom: 10px; right: 45px;";
 	actionList.append(settings);
 });
 ipcRenderer.send("requestCategories");
@@ -127,24 +123,15 @@ function dragover(ev) {
 function drop(ev) {
 	if (ev.target.children.length != 0) return;
 
-	let e = dragging.cloneNode();
-	e.action = dragging.action;
-	e.addEventListener("click", (e) => {
-		e.target.remove();
-	});
-
 	if (ev.target.classList.contains("key")) {
-		if (!e.action.controllers.includes("Keypad")) return;
-		ipcRenderer.send("createInstance", e.action.uuid, "key", parseInt(ev.target.id.slice(-1)), 0);
+		if (!dragging.action.controllers.includes("Keypad")) return;
+		ipcRenderer.send("createInstance", dragging.action.uuid, "key", parseInt(ev.target.id.slice(-1)), 0);
 	} else if (ev.target.classList.contains("slider")) {
-		if (!e.action.controllers.includes("Encoder")) return;
-		ipcRenderer.send("createInstance", e.action.uuid, "slider", parseInt(ev.target.id.slice(-1)), 0);
+		if (!dragging.action.controllers.includes("Encoder")) return;
+		ipcRenderer.send("createInstance", dragging.action.uuid, "slider", parseInt(ev.target.id.slice(-1)), 0);
 	} else {
 		return;
 	}
-	ipcRenderer.once("instanceCreated", (_event, instance) => {
-		updateState(instance);
-	});
 	
 	ev.preventDefault();
 }
@@ -169,7 +156,6 @@ ipcRenderer.on("profiles", (_event, profiles, selected) => {
 	Array.from(document.getElementsByClassName("instance")).forEach((e) => e.remove());
 	[].concat(profiles[selectedProfile].key, profiles[selectedProfile].slider).forEach((position) => { position.forEach((instance) => {
 		if (!instance) return;
-		updateState(instance);
 		ipcRenderer.send("slotUpdate", instance.context, instance);
 	})});
 
@@ -188,8 +174,9 @@ ipcRenderer.on("profiles", (_event, profiles, selected) => {
 });
 ipcRenderer.send("requestProfiles");
 
-ipcRenderer.on("updateState", (_event, instance) => {
-	updateState(instance);
+ipcRenderer.on("updateState", (_event, context, instance) => {
+	if (!instance) document.getElementById(context).remove();
+	else updateState(instance);
 });
 
 function flash(context, image) {

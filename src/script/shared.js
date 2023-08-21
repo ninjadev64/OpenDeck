@@ -68,6 +68,10 @@ var categories = {};
 var currentProfile = store.get("profiles." + store.get("selectedProfile"));
 
 function setProfile(id) {
+	const { eventHandler } = require("./event");
+	currentProfile.key.forEach((slot) => slot.forEach((instance) => {
+		if (instance) eventHandler.willDisappear(instance);
+	}));
 	store.set("selectedProfile", id);
 	currentProfile = store.get("profiles." + store.get("selectedProfile"));
 }

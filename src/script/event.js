@@ -12,7 +12,7 @@ class EventHandler {
 		let context = parseContext(instance.context);
 		getProfile()[context.type][context.position][context.index] = instance;
 		updateProfile();
-		getMainWindow().webContents.send("updateState", instance);
+		getMainWindow().webContents.send("updateState", instance.context, instance);
 	}
 
 	// Outbound events
@@ -239,8 +239,18 @@ class EventHandler {
 
 	setImage({ context, payload: { image, state } }) {
 		let instance = getInstanceByContext(context);
-		if (state) instance.states[state].image = image;
-		else instance.states.forEach((state) => state.image = image);
+		let svgxmlre = /data:image\/svg\+xml,([^;]+)/;
+		let base64re = /data:image\/(apng|avif|gif|jpeg|png|svg\+xml|webp|bmp|x-icon|tiff);base64,([A-Za-z0-9+/]+={0,2})?/;
+		if (image) {
+			if (svgxmlre.test(image)) image = "data:image/svg+xml;base64," + Buffer.from(svgxmlre.exec(image)[1]).toString("base64");
+			if (base64re.test(image)) {
+				let e = base64re.exec(image);
+				if (!e[2]) image = undefined;
+				else image = e[0];
+			}
+		}
+		if (state >= 0) instance.states[state].image = image ?? instance.action.states[state].image;
+		else instance.states.forEach((state, index) => state.image = image ?? instance.action.states[index].image);
 		this.updateState(instance);
 	}
 

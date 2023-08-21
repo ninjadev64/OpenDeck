@@ -1,12 +1,10 @@
 if (require("electron-squirrel-startup")) return;
 
 const { app, ipcMain, BrowserWindow, Tray, Menu } = require("electron");
-const { exit } = require("process");
 const path = require("path");
 
 if (!app.requestSingleInstanceLock()) {
-	app.quit();
-	exit(0);
+	app.exit();
 }
 
 const { allActions, categories, setProfile, updateSlot, ActionInstance } = require("./shared");
@@ -34,11 +32,12 @@ function createWindow() {
 	ipcMain.on("createInstance", (_event, action, type, position, index) => {
 		let instance = new ActionInstance(allActions[action], store.get("selectedProfile"), type, position, index);
 		updateSlot(instance.context, instance);
-		mainWindow.webContents.send("instanceCreated", instance);
+		mainWindow.webContents.send("updateState", instance.context, instance);
 	});
 	
 	ipcMain.on("slotUpdate", (_event, context, instance) => {
 		updateSlot(context, instance);
+		mainWindow.webContents.send("updateState", context, instance);
 	});
 	
 	ipcMain.on("requestCategories", () => {
@@ -98,8 +97,7 @@ app.whenReady().then(() => {
 		{
 			label: "Quit", click: () => {
 				isQuitting = true;
-				app.quit();
-				exit(0);
+				app.exit();
 			}
 		}
 	]));
