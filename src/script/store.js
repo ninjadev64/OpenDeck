@@ -1,21 +1,8 @@
 let randomDefaultProfileId = Date.now().toString(36) + Math.random().toString(36).substring(2);
 const schema = {
-	profiles: {
+	devices: {
 		type: "object",
-		default: {
-			[randomDefaultProfileId]: {
-				name: "Default",
-				key: [ [ null ], [ null ], [ null ], [ null ], [ null ], [ null ], [ null ], [ null ], [ null ] ],
-				slider: [ [ null ], [ null ] ]
-			}
-		}
-	},
-	selectedProfile: {
-		type: "string",
-		default: randomDefaultProfileId
-	},
-	serialPort: {
-		type: "string"
+		default: {}
 	},
 	webSocketPort: {
 		type: "number",

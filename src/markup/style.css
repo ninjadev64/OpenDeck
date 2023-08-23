@@ -33,14 +33,21 @@ input[type="checkbox"] {
 	height: 32px;
 }
 
-#profile {
+#profile, #device {
 	margin-top: 8px;
 	width: 100%;
 }
 
-#create-profile {
+#device-selector {
 	margin-top: 8px;
 	margin-left: 8px;
+	width: 200px;
+}
+
+#create-profile {
+	float: right;
+	margin-top: 8px;
+	margin-right: 8px;
 }
 
 .deleteProfile {

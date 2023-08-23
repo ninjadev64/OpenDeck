@@ -10,22 +10,25 @@ const store = require("./store");
 class EventHandler {
 	updateState(instance) {
 		let context = parseContext(instance.context);
-		getProfile()[context.type][context.position][context.index] = instance;
-		updateProfile();
+		getProfile(context.device)[context.type][context.position][context.index] = instance;
+		updateProfile(context.device);
 		getMainWindow().webContents.send("updateState", instance.context, instance);
+
+		const { deviceManager } = require("./devices");
+		deviceManager.devices[context.device].setImage(instance.states[instance.state].image);
 	}
 
 	// Outbound events
 	// Reference: https://docs.elgato.com/sdk/plugins/events-received
 
-	keyDown(key) {
-		let instance = getProfile().key[key][0];
+	keyDown(device, key) {
+		let instance = getProfile(device).key[key][0];
 		if (instance == undefined) return;
 		pluginManager.sendEvent(instance.action.plugin, {
 			event: "keyDown",
 			action: instance.action.uuid,
 			context: instance.context,
-			device: 0,
+			device: instance.device,
 			payload: {
 				settings: instance.settings,
 				coordinates: getCoordinatesByContext(instance.context),
@@ -34,14 +37,14 @@ class EventHandler {
 		});
 	}
 
-	keyUp(key) {
-		let instance = getProfile().key[key][0];
+	keyUp(device, key) {
+		let instance = getProfile(device).key[key][0];
 		if (instance == undefined) return;
 		pluginManager.sendEvent(instance.action.plugin, {
 			event: "keyUp",
 			action: instance.action.uuid,
 			context: instance.context,
-			device: 0,
+			device: instance.device,
 			payload: {
 				settings: instance.settings,
 				coordinates: getCoordinatesByContext(instance.context),
@@ -55,14 +58,14 @@ class EventHandler {
 		this.updateState(instance);
 	}
 
-	dialRotate(slider, value) {
-		let instance = getProfile().slider[slider][0];
+	dialRotate(device, slider, value) {
+		let instance = getProfile(device).slider[slider][0];
 		if (instance == undefined) return;
 		pluginManager.sendEvent(instance.action.plugin, {
 			event: "dialRotate",
 			action: instance.action.uuid,
 			context: instance.context,
-			device: 0,
+			device: instance.device,
 			payload: {
 				settings: instance.settings,
 				coordinates: getCoordinatesByContext(instance.context),
@@ -77,7 +80,7 @@ class EventHandler {
 			event: "willAppear",
 			action: instance.action.uuid,
 			context: instance.context,
-			device: 0,
+			device: instance.device,
 			payload: {
 				controller: instance.type == "slider" ? "Encoder" : "Keypad",
 				settings: instance.settings,
@@ -92,7 +95,7 @@ class EventHandler {
 			event: "willDisappear",
 			action: instance.action.uuid,
 			context: instance.context,
-			device: 0,
+			device: instance.device,
 			payload: {
 				controller: instance.type == "slider" ? "Encoder" : "Keypad",
 				settings: instance.settings,
@@ -102,25 +105,25 @@ class EventHandler {
 		});
 	}
 
-	deviceDidConnect() {
+	deviceDidConnect(id, device) {
 		pluginManager.sendGlobalEvent({
 			event: "deviceDidConnect",
-			device: 0,
+			device: id,
 			deviceInfo: {
-				name: "OceanDeck",
-				type: 7,
+				name: device.name,
+				type: device.type,
 				size: {
-					rows: 3,
-					columns: 3
+					rows: device.rows,
+					columns: device.columns
 				}
 			}
 		});
 	}
 
-	deviceDidDisconnect() {
+	deviceDidDisconnect(id) {
 		pluginManager.sendGlobalEvent({
 			event: "deviceDidDisconnect",
-			device: 0
+			device: id
 		});
 	}
 
@@ -147,7 +150,7 @@ class EventHandler {
 			event: "propertyInspectorDidAppear",
 			action: instance.action.uuid,
 			context: instance.context,
-			device: 0
+			device: instance.device
 		});
 	}
 
@@ -156,7 +159,7 @@ class EventHandler {
 			event: "propertyInspectorDidDisappear",
 			action: instance.action.uuid,
 			context: instance.context,
-			device: 0
+			device: instance.device
 		});
 	}
 
@@ -165,7 +168,7 @@ class EventHandler {
 			event: "didReceiveSettings",
 			action: instance.action.uuid,
 			context: instance.context,
-			device: 0,
+			device: instance.device,
 			payload: {
 				settings: instance.settings,
 				coordinates: getCoordinatesByContext(instance.context),

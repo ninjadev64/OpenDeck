@@ -12,7 +12,7 @@ The OpenDeck codebase is modular and aims to keep independent areas seperate, fo
 
 `shared.js` provides helper functions for dealing with action contexts and profiles. It does not depend on any other module (save for `store.js`), so can be used from anywhere.
 
-`serial.js` handles communication with the hardware, via any supported means. It handles incoming data from the hardware and triggers `event.js` appropriately. 
+`devices.js` handles communication with the hardware, via any supported means. It handles incoming data from the hardware and triggers `event.js` appropriately.
 
 `plugins.js` loads plugins at startup and manages their lifecycle. It triggers `event.js` for inbound events.
 
@@ -40,7 +40,9 @@ A *slot* is a key or a slider, that can be assigned an action.
 
 An *action* is provided by a plugin, and specifies a name, icon, tooltip, etc. An action can have multiple *states*, e.g. "On", "Off", or "Muted", "Unmuted", etc.
 
-Every slot is assigned an *instance* of an action, that has its own individual settings. An instance is identified by a *context*, which in OpenDeck is in the format of `profile.type.position.index`.
+Every slot is assigned an *instance* of an action, that has its own individual settings. An instance is identified by a *context*, which in OpenDeck is in the format of `device.profile.type.position.index`.
+
+`device`: a string identifying the device. OceanDeck devices are prefixed with `od-` and Elgato devices are prefixed with `sd-`.
 
 `profile`: a string identifying the profile. It is generated based on the time the profile was created and a random number.
 

@@ -10,7 +10,7 @@ if (!app.requestSingleInstanceLock()) {
 const { allActions, categories, setProfile, updateSlot, ActionInstance } = require("./shared");
 const store = require("./store");
 
-const AutoLaunch = require('auto-launch');
+const AutoLaunch = require("auto-launch");
 
 let isQuitting = false;
 let tray;
@@ -29,8 +29,9 @@ function createWindow() {
   
 	mainWindow.loadFile(path.join(__dirname, "../markup/index.html"));
 
-	ipcMain.on("createInstance", (_event, action, type, position, index) => {
-		let instance = new ActionInstance(allActions[action], store.get("selectedProfile"), type, position, index);
+	ipcMain.on("createInstance", (_event, action, device, type, position, index) => {
+		let devices = store.get("devices");
+		let instance = new ActionInstance(allActions[action], device, devices[device].selectedProfile, type, position, index);
 		updateSlot(instance.context, instance);
 		mainWindow.webContents.send("updateState", instance.context, instance);
 	});
@@ -44,23 +45,29 @@ function createWindow() {
 		mainWindow.webContents.send("categories", categories);
 	});
 
-	ipcMain.on("requestProfiles", () => {
-		mainWindow.webContents.send("profiles", store.get("profiles"), store.get("selectedProfile"));
+	ipcMain.on("requestDevices", () => {
+		mainWindow.webContents.send("devices", store.get("devices"));
 	});
 
-	ipcMain.on("createProfile", (_event, name, id) => {
-		store.set("profiles." + id, {
+	ipcMain.on("requestProfiles", (_event, device) => {
+		let d = store.get("devices")[device];
+		mainWindow.webContents.send("profiles", d.profiles, d.selectedProfile);
+	});
+
+	ipcMain.on("createProfile", (_event, device, name, id) => {
+		let devices = store.get("devices");
+		devices[device].profiles[id] = {
 			name,
 			key: [ [ null ], [ null ], [ null ], [ null ], [ null ], [ null ], [ null ], [ null ], [ null ] ],
 			slider: [ [ null ], [ null ] ]
-		});
-		mainWindow.webContents.send("profiles", store.get("profiles"), store.get("selectedProfile"));
-		return 0;
+		};
+		store.set("devices", devices);
+		mainWindow.webContents.send("profiles", devices[device].profiles, devices[device].selectedProfile);
 	});
 
-	ipcMain.on("profileUpdate", (_event, id) => {
-		setProfile(id);
-		mainWindow.webContents.send("profiles", store.get("profiles"), id);
+	ipcMain.on("profileUpdate", (_event, device, id) => {
+		setProfile(device, id);
+		mainWindow.webContents.send("profiles", store.get("devices")[device].profiles, id);
 	});
 
 	mainWindow.on("close", (event) => {
@@ -85,6 +92,10 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+	require("./plugins");
+	require("./devices");
+	require("./propertyinspector");
+
 	createWindow();
 
 	tray = new Tray(path.join(__dirname, "../assets/icon.png"));
@@ -101,10 +112,6 @@ app.whenReady().then(() => {
 			}
 		}
 	]));
-
-	require("./plugins");
-	require("./serial");
-	require("./propertyinspector");
 
 	let autoLaunch = new AutoLaunch({
 		name: "OpenDeck",

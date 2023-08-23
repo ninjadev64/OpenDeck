@@ -5,9 +5,13 @@ const dialog = require("dialog");
 const { exit } = require("process");
 const { existsSync } = require("fs");
 
+function createUniqueId() {
+	return Date.now().toString(36) + Math.random().toString(36).substring(2);
+}
+
 function parseContext(context) {
 	context = context.split(".");
-	return { profile: context[0], type: context[1], position: parseInt(context[2]), index: parseInt(context[3]) };
+	return { device: context[0], profile: context[1], type: context[2], position: parseInt(context[3]), index: parseInt(context[4]) };
 }
 
 function getIcon(path) {
@@ -46,14 +50,15 @@ class ActionState {
 }
 
 class ActionInstance {
-	constructor(action, profile, type, position, index) {
+	constructor(action, device, profile, type, position, index) {
 		this.action = action;
 
+		this.device = device;
 		this.profile = profile;
 		this.type = type;
 		this.position = position;
 		this.index = index;
-		this.context = `${profile}.${type}.${position}.${index}`;
+		this.context = `${device}.${profile}.${type}.${position}.${index}`;
 		
 		this.state = 0;
 		this.states = JSON.parse(JSON.stringify(action.states));
@@ -65,23 +70,30 @@ class ActionInstance {
 var allActions = {};
 var categories = {};
 
-var currentProfile = store.get("profiles." + store.get("selectedProfile"));
+var currentProfiles = {};
+for (const [id, settings] of Object.entries(store.get("devices"))) {
+	currentProfiles[id] = settings.profiles[settings.selectedProfile];
+}
 
-function setProfile(id) {
+function setProfile(device, id) {
 	const { eventHandler } = require("./event");
-	currentProfile.key.forEach((slot) => slot.forEach((instance) => {
+	currentProfiles[device].key.forEach((slot) => slot.forEach((instance) => {
 		if (instance) eventHandler.willDisappear(instance);
 	}));
-	store.set("selectedProfile", id);
-	currentProfile = store.get("profiles." + store.get("selectedProfile"));
+	let devices = store.get("devices");
+	devices[device].selectedProfile = id;
+	currentProfiles[device] = devices[device].profiles[id];
+	store.set("devices", devices);
 }
 
-function getProfile() {
-	return currentProfile;
+function getProfile(device) {
+	return currentProfiles[device];
 }
 
-function updateProfile() {
-	store.set("profiles." + store.get("selectedProfile"), getProfile());
+function updateProfile(device) {
+	let devices = store.get("devices");
+	devices[device].profiles[devices[device].selectedProfile] = getProfile(device);
+	store.set("devices", devices);
 }
 
 function updateSlot(context, instance) {
@@ -89,10 +101,10 @@ function updateSlot(context, instance) {
 	const { eventHandler } = require("./event");
 	const { propertyInspectorManager } = require("./propertyinspector");
 	if (context.type == "slider") {
-		const { serialInterface } = require("./serial");
-		serialInterface.lastSliders[context.index] = 0;
+		const { deviceManager } = require("./devices");
+		deviceManager.devices[context.device].lastSliders[context.index] = 0;
 	}
-	let position = getProfile()[context.type][context.position];
+	let position = getProfile(context.device)[context.type][context.position];
 	if (instance == undefined) {
 		eventHandler.willDisappear(position[context.index]);
 		propertyInspectorManager.unregister(position[context.index]);
@@ -102,19 +114,21 @@ function updateSlot(context, instance) {
 		eventHandler.willAppear(instance);
 		propertyInspectorManager.register(instance);
 	}
-	updateProfile();
+	updateProfile(context.device);
 }
 
 function getInstanceByContext(context) {
 	context = parseContext(context);
-	return getProfile()[context.type][context.position][context.index];
+	return getProfile(context.device)[context.type][context.position][context.index];
 }
 
 function getCoordinatesByContext(context) {
 	context = parseContext(context);
+	const { deviceManager } = require("./devices");
+	let device = deviceManager.devices[context.device];
 	return {
-		row: Math.floor(context.position / 3),
-		column: context.position % 3
+		row: Math.floor(context.position / device.rows),
+		column: context.position % device.columns
 	}
 }
 
@@ -125,4 +139,4 @@ function error(message, fatal) {
 	});
 }
 
-module.exports = { allActions, categories, Action, ActionInstance, ActionState, parseContext, getIcon, setProfile, getProfile, updateProfile, updateSlot, getInstanceByContext, getCoordinatesByContext, error };
+module.exports = { allActions, categories, Action, ActionInstance, ActionState, createUniqueId, parseContext, getIcon, setProfile, getProfile, updateProfile, updateSlot, getInstanceByContext, getCoordinatesByContext, error };

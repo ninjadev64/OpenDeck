@@ -3,11 +3,24 @@ const store = require("../script/store");
 
 let list = document.getElementById("profiles");
 
+let selectedDevice = Object.keys(store.get("devices"))[0];
+let deviceSelect = document.getElementById("device-selector");
+deviceSelect.addEventListener("change", () => {
+	selectedDevice = deviceSelect.value;
+	updateList(store.get("devices")[selectedDevice].profiles);
+});
+for (const [id, device] of Object.entries(store.get("devices"))) {
+	let o = document.createElement("option");
+	o.value = id;
+	o.innerText = device.name;
+	deviceSelect.appendChild(o);
+}
+
 document.getElementById("create").addEventListener("click", () => {
 	let id = Date.now().toString(36) + Math.random().toString(36).substring(2);
 	let name = document.getElementById("name").value;
-	updateList({ ...(store.get("profiles")), [id]: { name } });
-	ipcRenderer.send("createProfile", name, id);
+	updateList({ ...(store.get("devices")[selectedDevice].profiles), [id]: { name } });
+	ipcRenderer.send("createProfile", selectedDevice, name, id);
 	document.getElementById("name").value = "";
 });
 
@@ -21,12 +34,12 @@ function updateList(profiles) {
 		i.src = "../assets/cross.png";
 		i.className = "deleteProfile";
 		i.addEventListener("click", () => {
-			if (Object.keys(store.get("profiles")).length < 2) return;
+			if (Object.keys(store.get("devices")[selectedDevice].profiles).length < 2) return;
 			store.delete("profiles." + id);
-			if (store.get("selectedProfile") == id) {
-				ipcRenderer.send("profileUpdate", Object.keys(store.get("profiles"))[0]);
+			if (store.get("devices")[selectedDevice].selectedProfile == id) {
+				ipcRenderer.send("profileUpdate", Object.keys(store.get("devices")[selectedDevice].profiles)[0]);
 			} else {
-				ipcRenderer.send("profileUpdate", store.get("selectedProfile"));
+				ipcRenderer.send("profileUpdate", store.get("devices")[selectedDevice].selectedProfile);
 			}
 			t.remove();
 		});
@@ -36,4 +49,4 @@ function updateList(profiles) {
 	}
 }
 
-updateList(store.get("profiles"));
+updateList(store.get("devices")[selectedDevice].profiles);

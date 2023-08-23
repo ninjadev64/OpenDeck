@@ -20,6 +20,7 @@ function createIcon(action) {
 function updateState(instance) {
 	let div = document.getElementById(instance.context.toString());
 	if (!div) {
+		if (instance.device != selectedDevice) return;
 		div = document.createElement("div");
 		div.id = instance.context.toString();
 		div.className = "instance";
@@ -98,15 +99,6 @@ ipcRenderer.on("categories", (_, categories) => {
 });
 ipcRenderer.send("requestCategories");
 
-Array.from(document.getElementsByClassName("key")).forEach((div) => {
-	div.addEventListener("dragover", (ev) => { dragover(ev); });
-	div.addEventListener("drop", (ev) => { drop(ev); });
-});
-Array.from(document.getElementsByClassName("slider")).forEach((div) => {
-	div.addEventListener("dragover", (ev) => { dragover(ev); });
-	div.addEventListener("drop", (ev) => { drop(ev); });
-});
-
 function dragover(ev) {
 	let e = dragging;
 	if (ev.target.children.length != 0) return;
@@ -125,16 +117,73 @@ function drop(ev) {
 
 	if (ev.target.classList.contains("key")) {
 		if (!dragging.action.controllers.includes("Keypad")) return;
-		ipcRenderer.send("createInstance", dragging.action.uuid, "key", parseInt(ev.target.id.slice(-1)), 0);
+		ipcRenderer.send("createInstance", dragging.action.uuid, selectedDevice, "key", parseInt(ev.target.id.slice(-1)), 0);
 	} else if (ev.target.classList.contains("slider")) {
 		if (!dragging.action.controllers.includes("Encoder")) return;
-		ipcRenderer.send("createInstance", dragging.action.uuid, "slider", parseInt(ev.target.id.slice(-1)), 0);
+		ipcRenderer.send("createInstance", dragging.action.uuid, selectedDevice, "slider", parseInt(ev.target.id.slice(-1)), 0);
 	} else {
 		return;
 	}
 	
 	ev.preventDefault();
 }
+
+function populateSlots(device) {
+	let slots = document.getElementById("slots");
+	slots.textContent = "";
+	let keyIndex = 0;
+
+	for (let r = 0; r < device.rows; r++) {
+		let tr = document.createElement("tr");
+		if (keyIndex == 0) {
+			for (let s = 0; s < device.sliders; s++) {
+				let td = document.createElement("td");
+				td.rowSpan = device.rows;
+				let div = document.createElement("div");
+				div.classList.add("slider");
+				div.id = `slider${s}`;
+				div.addEventListener("dragover", (ev) => dragover(ev));
+				div.addEventListener("drop", (ev) => drop(ev));
+				td.appendChild(div);
+				tr.appendChild(td);
+			}
+		}
+		for (let c = 0; c < device.columns; c++) {
+			let td = document.createElement("td");
+			let div = document.createElement("div");
+			div.classList.add("key");
+			div.id = `key${keyIndex}`;
+			div.addEventListener("dragover", (ev) => dragover(ev));
+			div.addEventListener("drop", (ev) => drop(ev));
+			td.appendChild(div);
+			tr.appendChild(td);
+			keyIndex++;
+		}
+		slots.appendChild(tr);
+	}
+}
+
+let devices;
+let selectedDevice;
+let deviceSelect = document.getElementById("device");
+deviceSelect.addEventListener("change", () => {
+	selectedDevice = deviceSelect.value;
+	ipcRenderer.send("requestProfiles", selectedDevice);
+	populateSlots(devices[selectedDevice]);
+});
+ipcRenderer.on("devices", (_event, d) => {
+	devices = d;
+	selectedDevice = Object.keys(devices)[0];
+	populateSlots(devices[selectedDevice]);
+	for (const [id, device] of Object.entries(devices)) {
+		let o = document.createElement("option");
+		o.value = id;
+		o.innerText = device.name;
+		deviceSelect.appendChild(o);
+	}
+	ipcRenderer.send("requestProfiles", selectedDevice);
+});
+ipcRenderer.send("requestDevices");
 
 let selectedProfile;
 let profileManager;
@@ -148,7 +197,7 @@ profileSelect.addEventListener("change", () => {
 		}
 		profileSelect.value = selectedProfile;
 	} else {
-		ipcRenderer.send("profileUpdate", profileSelect.value);
+		ipcRenderer.send("profileUpdate", selectedDevice, profileSelect.value);
 	}
 });
 ipcRenderer.on("profiles", (_event, profiles, selected) => {
@@ -172,7 +221,6 @@ ipcRenderer.on("profiles", (_event, profiles, selected) => {
 	manager.innerText = "Manage profiles...";
 	profileSelect.appendChild(manager);
 });
-ipcRenderer.send("requestProfiles");
 
 ipcRenderer.on("updateState", (_event, context, instance) => {
 	if (!instance) document.getElementById(context).remove();

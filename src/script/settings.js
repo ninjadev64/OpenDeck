@@ -14,17 +14,10 @@ document.getElementById("open-plugins").addEventListener("click", () => {
 	spawn(explorer, [store.get("pluginsDir")], { detached: true }).unref();
 });
 
-let serialPort = document.getElementById("serial-port");
-store.get("allPorts").forEach((port) => {
-	if (port.vendorId === "10c4" && port.productId === "ea60") {
-		serialPort.insertAdjacentHTML("beforeend", `<option value=${port.path}> ${port.path} </option>`);
-	}
-});
 let autoLaunch = document.getElementById("auto-launch");
 let webSocketPort = document.getElementById("websocket-port");
 let propertyInspectorPort = document.getElementById("propertyinspector-port");
 const options = {
-	"serialPort": serialPort,
 	"autoLaunch": autoLaunch,
 	"webSocketPort": webSocketPort,
 	"propertyInspectorPort": propertyInspectorPort

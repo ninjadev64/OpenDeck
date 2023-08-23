@@ -11,12 +11,15 @@
 	"author": "ninjadev64",
 	"license": "ISC",
 	"dependencies": {
+		"@elgato-stream-deck/node": "^5.7.3",
+		"@julusian/jpeg-turbo": "^2.1.0",
 		"adm-zip": "^0.5.10",
 		"auto-launch": "^5.0.6",
 		"dialog": "^0.3.1",
 		"electron-log": "^5.0.0-beta.16",
 		"electron-squirrel-startup": "^1.0.0",
 		"electron-store": "^8.1.0",
+		"jimp": "^0.22.10",
 		"ps-list": "^8.1.1",
 		"serialport": "^10.4.0",
 		"ws": "^7.5.9"
@@ -27,7 +30,7 @@
 		"@electron-forge/maker-dmg": "^6.0.0-beta.66",
 		"@electron-forge/maker-squirrel": "^6.0.0-beta.66",
 		"@electron-forge/maker-zip": "^6.0.0-beta.66",
-		"electron": "^20.2.0"
+		"electron": "^22.3.0"
 	},
 	"config": {
 		"forge": {
