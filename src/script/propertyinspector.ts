@@ -1,12 +1,19 @@
-const { BrowserWindow, ipcMain } = require("electron");
-const { pluginManager } = require("./plugins");
+import { BrowserWindow, ipcMain } from "electron";
+import { pluginManager } from "./plugins";
 
-const store = require("./store");
-const { getInstanceByContext, getCoordinatesByContext, error } = require("./shared");
-const WebSocketServer = require("ws").Server;
+import { Server as WebSocketServer } from "ws";
+import { Action, ActionInstance, error, getCoordinatesByContext, getInstanceByContext } from "./shared";
+import store from "./store";
 
-class PropertyInspector {
-	constructor(instance) {
+export class PropertyInspector {
+	action: Action;
+	context: string;
+	path: string;
+	socket: any;
+	queue: any[];
+	window: BrowserWindow;
+
+	constructor(instance: ActionInstance) {
 		this.action = instance.action;
 		this.context = instance.context;
 		this.path = this.action.propertyInspector;
@@ -52,7 +59,7 @@ class PropertyInspector {
 		});
 	}
 
-	send(data) {
+	send(data: string): void {
 		if (this.socket) {
 			this.socket.send(data);
 		} else {
@@ -60,7 +67,7 @@ class PropertyInspector {
 		}
 	}
 
-	setSocket(socket) {
+	setSocket(socket: any): void {
 		this.socket = socket;
 		this.queue.forEach((item) => {
 			this.socket.send(item);
@@ -70,6 +77,9 @@ class PropertyInspector {
 }
 
 class PropertyInspectorManager {
+	all: { [ uuid: string ]: PropertyInspector };
+	server: WebSocketServer;
+
 	constructor() {
 		this.all = {};
 		this.server = new WebSocketServer({ port: store.get("propertyInspectorPort") });
@@ -77,10 +87,10 @@ class PropertyInspectorManager {
 			error("An error occurred. Is an instance of OpenDeck already running? Make sure your configured ports are free.", true);
 			this.server.close();
 		});
-		this.server.on("connection", (ws) => {
+		this.server.on("connection", (ws: any) => {
 			const { eventHandler } = require("./event");
-			ws.on("message", (data) => {
-				data = JSON.parse(data);
+			ws.on("message", (message: string) => {
+				let data = JSON.parse(message);
 				if (data.event == "registerPropertyInspector") {
 					this.all[data.uuid].setSocket(ws);
 				} else {
@@ -96,11 +106,11 @@ class PropertyInspectorManager {
 		});
 	}
 
-	register(instance) {
+	register(instance: ActionInstance): void {
 		this.all[instance.context] = new PropertyInspector(instance);
 	}
 
-	unregister(instance) {
+	unregister(instance: ActionInstance): void {
 		let propertyInspector = this.all[instance.context];
 		if (propertyInspector.socket) {
 			propertyInspector.socket.close();
@@ -108,10 +118,9 @@ class PropertyInspectorManager {
 		propertyInspector.window.destroy();
 	}
 
-	async sendEvent(context, data) {
+	async sendEvent(context: string, data: object): Promise<void> {
 		this.all[context].send(JSON.stringify(data));
 	}
 }
 
-const propertyInspectorManager = new PropertyInspectorManager();
-module.exports = { propertyInspectorManager };
+export const propertyInspectorManager = new PropertyInspectorManager();

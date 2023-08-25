@@ -1,17 +1,40 @@
-const os = require("os");
-const fs = require("fs");
-const path = require("path");
-const store = require("./store");
-const WebSocketServer = require("ws").Server;
+import { ChildProcessWithoutNullStreams, execSync, spawn } from "child_process";
+import { BrowserWindow, app } from "electron";
+import fs from "fs";
+import os from "os";
+import path from "path";
+import { Server as WebSocketServer } from "ws";
 
-const { allActions, categories, Action, ActionState, error, getIcon } = require("./shared");
+import { Action, ActionState, allActions, categories, error, getIcon } from "./shared";
+import store from "./store";
 
-const { app, BrowserWindow } = require("electron");
-const { spawn, execSync } = require("child_process");
-const { version } = require("../../package.json");
+const version = "1.0.0";
 
 class StreamDeckPlugin {
-	constructor(root, uuid) {
+	uuid: string;
+	name: string;
+	description: string;
+	author: string;
+	version: string;
+	website: string;
+	iconPath: string;
+	category: string;
+	actions: Action[];
+	socket: any;
+	queue: string[];
+	propertyInspector: string;
+	applicationsToMonitor: string[];
+	info: {
+		application: object;
+		plugin: object;
+		devicePixelRatio: number;
+		colors: object;
+		devices: object[];
+	};
+	window: BrowserWindow;
+	process: ChildProcessWithoutNullStreams;
+
+	constructor(root: string, uuid: string) {
 		let manifest = JSON.parse(fs.readFileSync(path.join(root, uuid, "manifest.json"), "utf8"));
 
 		this.uuid = uuid;
@@ -37,11 +60,11 @@ class StreamDeckPlugin {
 		}
 		
 		if (categories[this.category] == undefined) categories[this.category] = [];
-		manifest.Actions.forEach((action) => {
+		manifest.Actions.forEach((action: any) => {
 			if (!action.Icon) action.Icon = action.States[0].Image;
 			let iconPath = getIcon(path.join(root, uuid, action.Icon));
-			let states = [];
-			action.States.forEach((state) => {
+			let states: ActionState[] = [];
+			action.States.forEach((state: any) => {
 				if (!state.Image || state.Image == "actionDefaultImage") {
 					state.Image = iconPath;
 				} else {
@@ -142,7 +165,7 @@ class StreamDeckPlugin {
 		}
 	}
 
-	send(data) {
+	send(data: string): void {
 		if (this.socket) {
 			this.socket.send(data);
 		} else {
@@ -150,7 +173,7 @@ class StreamDeckPlugin {
 		}
 	}
 
-	setSocket(socket) {
+	setSocket(socket: any): void {
 		this.socket = socket;
 		this.queue.forEach((item) => {
 			this.socket.send(item);
@@ -160,6 +183,15 @@ class StreamDeckPlugin {
 }
 
 class StreamDeckPluginManager {
+	pluginsDir: string;
+	pluginIds: string[];
+	plugins: { [uuid: string]: StreamDeckPlugin };
+	server: WebSocketServer;
+	applicationMonitors: { [id: string]: StreamDeckPlugin[] };
+	applicationCounts: { [id: string]: number };
+	lastPollTime: number;
+	bundleIDs: { [id: string]: string };
+
 	constructor() {
 		this.pluginsDir = path.join(app.getPath("userData"), "Plugins");
 
@@ -178,10 +210,10 @@ class StreamDeckPluginManager {
 			this.server.close();
 		});
 
-		this.server.on("connection", (ws) => {
+		this.server.on("connection", (ws: any) => {
 			const { eventHandler } = require("./event");
-			ws.on("message", (data) => {
-				data = JSON.parse(data);
+			ws.on("message", (message: string) => {
+				let data = JSON.parse(message);
 				if (data.event == "register") {
 					this.plugins[data.uuid].setSocket(ws);
 				} else {
@@ -215,7 +247,7 @@ class StreamDeckPluginManager {
 				}
 				this.lastPollTime = now;
 				
-				let counts = {};
+				let counts: { [id: string]: number } = {};
 				let processes = await pslist.default();
 				processes.forEach((process) => {
 					let p = process.name;
@@ -250,17 +282,16 @@ class StreamDeckPluginManager {
 		});
 	}
 
-	async sendEvent(plugin, data) {
+	async sendEvent(plugin: string, data: object): Promise<void> {
 		this.plugins[plugin].send(JSON.stringify(data));
 	}
 
-	async sendGlobalEvent(data) {
-		data = JSON.stringify(data);
+	async sendGlobalEvent(data: object): Promise<void> {
+		let stringified = JSON.stringify(data);
 		Object.values(this.plugins).forEach((plugin) => {
-			plugin.send(data);
+			plugin.send(stringified);
 		});
 	}
 }
 
-const pluginManager = new StreamDeckPluginManager();
-module.exports = { pluginManager };
+export const pluginManager = new StreamDeckPluginManager();

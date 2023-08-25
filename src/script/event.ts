@@ -1,14 +1,15 @@
-const { shell } = require("electron");
-const { pluginManager } = require("./plugins");
-const { propertyInspectorManager } = require("./propertyinspector");
-const { getProfile, updateProfile, parseContext, getInstanceByContext, getCoordinatesByContext } = require("./shared");
+import { Device } from "./devices";
+import { getMainWindow } from "./main";
+import { pluginManager } from "./plugins";
+import { propertyInspectorManager } from "./propertyinspector";
+import { ActionInstance, getCoordinatesByContext, getInstanceByContext, getProfile, parseContext, updateProfile } from "./shared";
+import store from "./store";
 
-const log = require("electron-log");
-const { getMainWindow } = require("./main");
-const store = require("./store");
+import { shell } from "electron";
+import log from "electron-log";
 
 class EventHandler {
-	updateState(instance) {
+	updateState(instance: ActionInstance): void {
 		let context = parseContext(instance.context);
 		getProfile(context.device)[context.type][context.position][context.index] = instance;
 		updateProfile(context.device);
@@ -21,7 +22,7 @@ class EventHandler {
 	// Outbound events
 	// Reference: https://docs.elgato.com/sdk/plugins/events-received
 
-	keyDown(device, key) {
+	keyDown(device: string, key: number): void {
 		let instance = getProfile(device).key[key][0];
 		if (instance == undefined) return;
 		pluginManager.sendEvent(instance.action.plugin, {
@@ -37,7 +38,7 @@ class EventHandler {
 		});
 	}
 
-	keyUp(device, key) {
+	keyUp(device: string, key: number): void {
 		let instance = getProfile(device).key[key][0];
 		if (instance == undefined) return;
 		pluginManager.sendEvent(instance.action.plugin, {
@@ -58,7 +59,7 @@ class EventHandler {
 		this.updateState(instance);
 	}
 
-	dialRotate(device, slider, value) {
+	dialRotate(device: string, slider: number, value: number): void {
 		let instance = getProfile(device).slider[slider][0];
 		if (instance == undefined) return;
 		pluginManager.sendEvent(instance.action.plugin, {
@@ -75,7 +76,7 @@ class EventHandler {
 		});
 	}
 
-	willAppear(instance) {
+	willAppear(instance: ActionInstance): void {
 		pluginManager.sendEvent(instance.action.plugin, {
 			event: "willAppear",
 			action: instance.action.uuid,
@@ -90,7 +91,7 @@ class EventHandler {
 		});
 	}
 
-	willDisappear(instance) {
+	willDisappear(instance: ActionInstance): void {
 		pluginManager.sendEvent(instance.action.plugin, {
 			event: "willDisappear",
 			action: instance.action.uuid,
@@ -105,7 +106,7 @@ class EventHandler {
 		});
 	}
 
-	deviceDidConnect(id, device) {
+	deviceDidConnect(id: string, device: Device): void {
 		pluginManager.sendGlobalEvent({
 			event: "deviceDidConnect",
 			device: id,
@@ -120,14 +121,14 @@ class EventHandler {
 		});
 	}
 
-	deviceDidDisconnect(id) {
+	deviceDidDisconnect(id: string): void {
 		pluginManager.sendGlobalEvent({
 			event: "deviceDidDisconnect",
 			device: id
 		});
 	}
 
-	applicationDidLaunch(application, plugin) {
+	applicationDidLaunch(application: string, plugin: string): void {
 		pluginManager.sendEvent(plugin, {
 			event: "applicationDidLaunch",
 			payload: {
@@ -136,7 +137,7 @@ class EventHandler {
 		});
 	}
 
-	applicationDidTerminate(application, plugin) {
+	applicationDidTerminate(application: string, plugin: string): void {
 		pluginManager.sendEvent(plugin, {
 			event: "applicationDidTerminate",
 			payload: {
@@ -145,7 +146,7 @@ class EventHandler {
 		});
 	}
 
-	propertyInspectorDidAppear(instance) {
+	propertyInspectorDidAppear(instance: ActionInstance): void {
 		pluginManager.sendEvent(instance.action.plugin, {
 			event: "propertyInspectorDidAppear",
 			action: instance.action.uuid,
@@ -154,7 +155,7 @@ class EventHandler {
 		});
 	}
 
-	propertyInspectorDidDisappear(instance) {
+	propertyInspectorDidDisappear(instance: ActionInstance): void {
 		pluginManager.sendEvent(instance.action.plugin, {
 			event: "propertyInspectorDidDisappear",
 			action: instance.action.uuid,
@@ -163,7 +164,7 @@ class EventHandler {
 		});
 	}
 
-	didReceiveSettings(instance, propertyInspector) {
+	didReceiveSettings(instance: ActionInstance, propertyInspector: boolean): void {
 		let data = {
 			event: "didReceiveSettings",
 			action: instance.action.uuid,
@@ -182,7 +183,7 @@ class EventHandler {
 		}
 	}
 
-	didReceiveGlobalSettings(plugin, propertyInspector) {
+	didReceiveGlobalSettings(plugin: string, propertyInspector: boolean): void {
 		let data = {
 			event: "didReceiveGlobalSettings",
 			payload: {
@@ -203,44 +204,44 @@ class EventHandler {
 	// Inbound events
 	// Reference: https://docs.elgato.com/sdk/plugins/events-sent
 
-	setSettings({ context, payload }, fromPropertyInspector) {
+	setSettings({ context, payload }: { context: string, payload: object }, fromPropertyInspector: boolean): void {
 		let instance = getInstanceByContext(context);
 		instance.settings = payload;
 		this.updateState(instance);
 		this.didReceiveSettings(instance, !fromPropertyInspector);
 	}
 
-	getSettings({ context }, fromPropertyInspector) {
+	getSettings({ context }: { context: string }, fromPropertyInspector: boolean): void {
 		this.didReceiveSettings(getInstanceByContext(context), fromPropertyInspector);
 	}
 
-	setGlobalSettings({ context, payload }, fromPropertyInspector) {
+	setGlobalSettings({ context, payload }: { context: string, payload: object }, fromPropertyInspector: boolean): void {
 		let plugin = fromPropertyInspector ? propertyInspectorManager.all[context].action.plugin : pluginManager.plugins[context].uuid;
 		store.set("pluginSettings." + plugin.replaceAll(".", "¬"), payload);
 		this.didReceiveGlobalSettings(plugin, !fromPropertyInspector);
 	}
 
-	getGlobalSettings({ context }, fromPropertyInspector) {
+	getGlobalSettings({ context }: { context: string }, fromPropertyInspector: boolean): void {
 		let plugin = fromPropertyInspector ? propertyInspectorManager.all[context].action.plugin : pluginManager.plugins[context].uuid;
 		this.didReceiveGlobalSettings(plugin, fromPropertyInspector)
 	}
 
-	openUrl({ payload: { url } }) {
+	openUrl({ payload: { url } }: { payload: { url: string } }): void {
 		shell.openExternal(url);
 	}
 
-	logMessage({ payload: { message } }) {
+	logMessage({ payload: { message } }: { payload: { message: string } }): void {
 		log.debug(message);
 	}
 
-	setTitle({ context, payload: { title, state } }) {
+	setTitle({ context, payload: { title, state } }: { context: string, payload: { title: string, state: number } }): void {
 		let instance = getInstanceByContext(context);
 		if (state) instance.states[state].title = title;
 		else instance.states.forEach((state) => state.title = title);
 		this.updateState(instance);
 	}
 
-	setImage({ context, payload: { image, state } }) {
+	setImage({ context, payload: { image, state } }: { context: string, payload: { image: string, state: number } }): void {
 		let instance = getInstanceByContext(context);
 		let svgxmlre = /data:image\/svg\+xml,([^;]+)/;
 		let base64re = /data:image\/(apng|avif|gif|jpeg|png|svg\+xml|webp|bmp|x-icon|tiff);base64,([A-Za-z0-9+/]+={0,2})?/;
@@ -257,21 +258,21 @@ class EventHandler {
 		this.updateState(instance);
 	}
 
-	setState({ context, payload: { state } }) {
+	setState({ context, payload: { state } }: { context: string, payload: { state: number }}): void {
 		let instance = getInstanceByContext(context);
 		instance.state = state;
 		this.updateState(instance);
 	}
 
-	showAlert({ context }) {
+	showAlert({ context }: { context: string }): void {
 		getMainWindow().webContents.send("showAlert", context);
 	}
 
-	showOk({ context }) {
+	showOk({ context }: { context: string }): void {
 		getMainWindow().webContents.send("showOk", context);
 	}
 
-	sendToPropertyInspector({ context, payload }) {
+	sendToPropertyInspector({ context, payload }: { context: string, payload: object }): void {
 		let instance = getInstanceByContext(context);
 		propertyInspectorManager.sendEvent(instance.context, {
 			event: "sendToPropertyInspector",
@@ -281,7 +282,7 @@ class EventHandler {
 		});
 	}
 
-	sendToPlugin({ context, payload }) {
+	sendToPlugin({ context, payload }: { context: string, payload: object }): void {
 		let instance = getInstanceByContext(context);
 		pluginManager.sendEvent(instance.action.plugin, {
 			event: "sendToPlugin",
@@ -292,5 +293,4 @@ class EventHandler {
 	}
 }
 
-const eventHandler = new EventHandler();
-module.exports = { eventHandler };
+export const eventHandler = new EventHandler();

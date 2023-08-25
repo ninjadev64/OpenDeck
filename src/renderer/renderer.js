@@ -173,7 +173,7 @@ deviceSelect.addEventListener("change", () => {
 });
 ipcRenderer.on("devices", (_event, d) => {
 	devices = d;
-	selectedDevice = Object.keys(devices)[0];
+	if (!selectedDevice || !devices[selectedDevice]) selectedDevice = Object.keys(devices)[0];
 	populateSlots(devices[selectedDevice]);
 	for (const [id, device] of Object.entries(devices)) {
 		let o = document.createElement("option");

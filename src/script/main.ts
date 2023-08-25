@@ -1,33 +1,33 @@
-if (require("electron-squirrel-startup")) return;
+if (require("electron-squirrel-startup")) require("process").exit(0);
 
-const { app, ipcMain, BrowserWindow, Tray, Menu } = require("electron");
-const path = require("path");
+import { BrowserWindow, Menu, Tray, app, ipcMain } from "electron";
+import path from "path";
 
 if (!app.requestSingleInstanceLock()) {
 	app.exit();
 }
 
-const { allActions, categories, setProfile, updateSlot, ActionInstance } = require("./shared");
-const store = require("./store");
+import { ActionInstance, allActions, categories, setProfile, updateSlot } from "./shared";
+import store from "./store";
 
-const AutoLaunch = require("auto-launch");
+import AutoLaunch from "auto-launch";
 
 let isQuitting = false;
 let tray;
 
-let mainWindow;
+let mainWindow: BrowserWindow;
 
-function createWindow() {
+function createWindow(): void {
 	mainWindow = new BrowserWindow({
 		webPreferences: {
 			nodeIntegration: true,
 			contextIsolation: false,
 		},
 		autoHideMenuBar: true,
-		icon: path.join(__dirname, "../assets/icon.png")
+		icon: path.join(__dirname, "../src/assets/icon.png")
 	});
   
-	mainWindow.loadFile(path.join(__dirname, "../markup/index.html"));
+	mainWindow.loadFile(path.join(__dirname, "../src/markup/index.html"));
 
 	ipcMain.on("createInstance", (_event, action, device, type, position, index) => {
 		let devices = store.get("devices");
@@ -70,7 +70,7 @@ function createWindow() {
 		mainWindow.webContents.send("profiles", store.get("devices")[device].profiles, id);
 	});
 
-	mainWindow.on("close", (event) => {
+	mainWindow.on("close", (event: any) => {
 		if (!isQuitting) {
 			event.preventDefault();
 			mainWindow.hide();
@@ -98,7 +98,7 @@ app.whenReady().then(() => {
 
 	createWindow();
 
-	tray = new Tray(path.join(__dirname, "../assets/icon.png"));
+	tray = new Tray(path.join(__dirname, "../src/assets/icon.png"));
 	tray.setContextMenu(Menu.buildFromTemplate([
 		{
 			label: "Open", click: () => {
@@ -117,18 +117,14 @@ app.whenReady().then(() => {
 		name: "OpenDeck",
 		isHidden: true
 	});
-	autoLaunch.isEnabled().then((isEnabled) => {
+	autoLaunch.isEnabled().then((isEnabled: boolean) => {
 		if (store.get("autoLaunch") && !isEnabled) autoLaunch.enable();
 		if (!store.get("autoLaunch") && isEnabled) autoLaunch.disable();
 	});
 });
 
-app.on("before-quit", () => {
-	isQuitting = true;
-});
+app.on("before-quit", () => isQuitting = true);
 
-function getMainWindow() {
+export function getMainWindow(): BrowserWindow {
 	return mainWindow;
 }
-
-module.exports = { getMainWindow };

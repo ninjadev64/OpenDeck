@@ -1,4 +1,5 @@
-let randomDefaultProfileId = Date.now().toString(36) + Math.random().toString(36).substring(2);
+const Store = require("electron-store");
+
 const schema = {
 	devices: {
 		type: "object",
@@ -33,7 +34,5 @@ const schema = {
 	}
 }
 
-const Store = require("electron-store");
 const store = new Store({ schema });
-
-module.exports = store;
+export default store;

@@ -1,30 +1,41 @@
-const { eventHandler } = require("./event");
-const { SerialPort } = require("serialport");
-const { ReadlineParser } = require("@serialport/parser-readline");
-const { listStreamDecks, openStreamDeck } = require("@elgato-stream-deck/node");
-const WebSocketServer = require("ws").Server;
-const EventEmitter = require("events");
-const Jimp = require("jimp");
+import { StreamDeck, listStreamDecks, openStreamDeck } from "@elgato-stream-deck/node";
+import { ReadlineParser } from "@serialport/parser-readline";
+import EventEmitter from "events";
+import Jimp from "jimp";
+import { SerialPort } from "serialport";
+import { Server as WebSocketServer } from "ws";
+import { eventHandler } from "./event";
 
-const store = require("./store");
-const { createUniqueId } = require("./shared");
+import { createUniqueId } from "./shared";
+import store from "./store";
+import { getMainWindow } from "./main";
 
-class BaseDevice extends EventEmitter {}
+export interface Device {
+	readonly name: string;
+	readonly type: number;
 
-class OceanDeckBaseDevice extends BaseDevice {
-	type = 7;
+	readonly sliders: number;
+	readonly keys: number;
+	readonly rows: number;
+	readonly columns: number;
+
+	on(event: string, callback: Function): void;
+	setImage(key: number, image: string): void;
+}
+
+class OceanDeckBaseDevice extends EventEmitter implements Device {
 	name = "OceanDeck";
+	type = 7;
 
-	keys = 9;
 	sliders = 2;
-
+	keys = 9;
 	rows = 3;
 	columns = 3;
 
 	lastKey = 0;
 	lastSliders = [ 0, 0 ];
 
-	handle(data) {
+	handle(data: any): void {
 		if (typeof data == "string") data = JSON.parse(data);
 		if (data.key <= 0) {
 			if (this.lastKey > 0) {
@@ -50,7 +61,11 @@ class OceanDeckBaseDevice extends BaseDevice {
 }
 
 class OceanDeckWiredDevice extends OceanDeckBaseDevice {
-	constructor(path) {
+	path: string;
+	port: SerialPort;
+	parser: ReadlineParser;
+
+	constructor(path: string) {
 		super();
 		this.path = path;
 		try { this.port = new SerialPort({ path: this.path, baudRate: 57600 }); }
@@ -63,32 +78,44 @@ class OceanDeckWiredDevice extends OceanDeckBaseDevice {
 }
 
 class OceanDeckVirtualDevice extends OceanDeckBaseDevice {
-	constructor(port) {
+	server: WebSocketServer;
+
+	constructor(port: number) {
 		super();
 		this.name = "Virtual OceanDeck";
 		this.server = new WebSocketServer({ port });
-		this.server.once("connection", (ws) => {
-			ws.on("message", (data) => this.handle(data));
+		this.server.once("connection", (ws: any) => {
+			ws.on("message", (data: string) => this.handle(data));
 			ws.on("close", () => this.emit("disconnect"));
 		});
 	}
 }
 
-class ElgatoDevice extends BaseDevice {
-	constructor(path) {
+class ElgatoDevice extends EventEmitter implements Device {
+	name: string;
+	type: number;
+
+	sliders = 0;
+	keys: number;
+	rows: number;
+	columns: number;
+	
+	path: string;
+	device: StreamDeck;
+
+	constructor(path: string) {
 		super();
 		this.path = path;
 		this.device = openStreamDeck(this.path);
 		switch (this.device.MODEL) {
-			case "original", "originalv2", "original-mk2": this.type = 0; break;
-			case "mini", "miniv2": this.type = 1; break;
-			case "xl", "xlv2": this.type = 2; break;
+			case "original": case "originalv2": case "original-mk2": this.type = 0; break;
+			case "mini": case "miniv2": this.type = 1; break;
+			case "xl": case "xlv2": this.type = 2; break;
 			case "pedal": this.type = 5; break;
 			case "plus": this.type = 7; break;
 		}
 		this.name = this.device.PRODUCT_NAME;
 		this.keys = this.device.NUM_KEYS;
-		this.sliders = 0;
 		this.rows = this.device.KEY_ROWS;
 		this.columns = this.device.KEY_COLUMNS;
 
@@ -96,30 +123,29 @@ class ElgatoDevice extends BaseDevice {
 		this.device.on("up", (key) => this.emit("keyUp", this.convertIndex(key)));
 	}
 
-	convertIndex(index) {
+	convertIndex(index: number): number {
 		let m = (index + 1) % this.columns;
 		if (m != 0) m = this.columns - m;
 		m += (Math.floor(index / 5) * this.columns);
 		return m;
 	}
 
-	setImage(key, image) {
-		let d = image;
+	setImage(key: number, image: string): void {
+		let d: any = image;
 		let base64re = /data:image\/(apng|avif|gif|jpeg|png|svg\+xml|webp|bmp|x-icon|tiff);base64,([A-Za-z0-9+/]+={0,2})?/;
 		if (base64re.test(image)) {
 			d = Buffer.from(base64re.exec(image)[2], "base64");
 		}
 		Jimp.read(d).then((image) => {
-			this.device.fillKeyBuffer(convertIndex(key), image.resize(this.device.ICON_SIZE, this.device.ICON_SIZE).bitmap.data, { format: "rgba" });
+			this.device.fillKeyBuffer(this.convertIndex(key), image.resize(this.device.ICON_SIZE, this.device.ICON_SIZE).bitmap.data, { format: "rgba" });
 		});
 	}
 }
 
 class DeviceManager {
-	constructor() {
-		this.lastKey = 0;
-		this.lastSliders = [ 0, 0 ];
+	devices: { [id: string]: Device };
 
+	constructor() {
 		this.devices = {};
 		
 		this.initDevice("od-testdevice1", new OceanDeckVirtualDevice(1925));
@@ -130,11 +156,12 @@ class DeviceManager {
 				if (!(port.vendorId == "10c4" && port.productId == "ea60")) return;
 				this.initDevice("od-" + port.path, new OceanDeckWiredDevice(port.path));
 			});
+			getMainWindow().webContents.send("devices", store.get("devices"));
 		});
 		listStreamDecks().forEach((device) => this.initDevice("sd-" + device.serialNumber, new ElgatoDevice(device.path)));
 	}
 
-	initDevice(id, device) {
+	initDevice(id: string, device: Device): Device {
 		this.devices[id] = device;
 		let d = store.get("devices");
 		if (!d[id]) {
@@ -157,12 +184,12 @@ class DeviceManager {
 		}
 		eventHandler.deviceDidConnect(id, device);
 		device.on("disconnect", () => eventHandler.deviceDidDisconnect(id));
-		device.on("keyDown", (key) => eventHandler.keyDown(id, key));
-		device.on("keyUp", (key) => eventHandler.keyUp(id, key));
-		device.on("dialRotate", (dial, value) => eventHandler.dialRotate(id, dial, value));
+		device.on("keyDown", (key: number) => eventHandler.keyDown(id, key));
+		device.on("keyUp", (key: number) => eventHandler.keyUp(id, key));
+		device.on("dialRotate", (dial: number, value: number) => eventHandler.dialRotate(id, dial, value));
 		store.set("devices", d);
+		return device;
 	}
 }
 
-const deviceManager = new DeviceManager();
-module.exports = { deviceManager };
+export const deviceManager = new DeviceManager();

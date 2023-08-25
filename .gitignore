@@ -3,3 +3,4 @@ package-lock.json
 
 configs.js
 out/
+build/
