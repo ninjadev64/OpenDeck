@@ -1,5 +1,6 @@
 import store from "./store";
 
+// @ts-expect-error
 import dialog from "dialog";
 import log from "electron-log";
 import { existsSync } from "fs";

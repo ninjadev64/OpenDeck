@@ -13,10 +13,13 @@ class EventHandler {
 		let context = parseContext(instance.context);
 		getProfile(context.device)[context.type][context.position][context.index] = instance;
 		updateProfile(context.device);
-		getMainWindow().webContents.send("updateState", instance.context, instance);
 
 		const { deviceManager } = require("./devices");
 		deviceManager.devices[context.device].setImage(instance.states[instance.state].image);
+
+		let window = getMainWindow();
+		if (!window || window.isDestroyed()) return;
+		getMainWindow().webContents.send("updateState", instance.context, instance);
 	}
 
 	// Outbound events
@@ -243,10 +246,10 @@ class EventHandler {
 
 	setImage({ context, payload: { image, state } }: { context: string, payload: { image: string, state: number } }): void {
 		let instance = getInstanceByContext(context);
-		let svgxmlre = /data:image\/svg\+xml,([^;]+)/;
-		let base64re = /data:image\/(apng|avif|gif|jpeg|png|svg\+xml|webp|bmp|x-icon|tiff);base64,([A-Za-z0-9+/]+={0,2})?/;
+		let svgxmlre = /^data:image\/svg\+xml,(.+)/;
+		let base64re = /^data:image\/(apng|avif|gif|jpeg|png|svg\+xml|webp|bmp|x-icon|tiff);base64,([A-Za-z0-9+/]+={0,2})?/;
 		if (image) {
-			if (svgxmlre.test(image)) image = "data:image/svg+xml;base64," + Buffer.from(svgxmlre.exec(image)[1]).toString("base64");
+			if (svgxmlre.test(image)) image = "data:image/svg+xml;base64," + Buffer.from(decodeURIComponent(svgxmlre.exec(image)[1].replace(/\;$/, ""))).toString("base64");
 			if (base64re.test(image)) {
 				let e = base64re.exec(image);
 				if (!e[2]) image = undefined;

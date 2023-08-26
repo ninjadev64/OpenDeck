@@ -1,12 +1,12 @@
 const { join } = require("path");
 const { get } = require("https");
 const { createWriteStream, unlink, readdirSync, readFileSync, rmSync } = require("fs");
-const { getIcon } = require("../script/shared");
+const { getIcon } = require("../../build/shared");
 const { ipcRenderer } = require("electron");
 
 const AdmZip = require("adm-zip");
 const path = require("path");
-const store = require("../script/store");
+const store = require("../../build/store").default;
 const dialog = require("dialog");
 
 function download(url, dest, cb) {

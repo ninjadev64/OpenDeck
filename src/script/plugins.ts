@@ -48,7 +48,7 @@ class StreamDeckPlugin {
 		this.actions = [];
 		this.socket = null;
 		this.queue = [];
-		this.propertyInspector = manifest.PropertyInspectorPath ? path.join(root, uuid, manifest.PropertyInspectorPath) : path.join(__dirname, "../markup/empty.html");
+		this.propertyInspector = manifest.PropertyInspectorPath ? path.join(root, uuid, manifest.PropertyInspectorPath) : path.join(__dirname, "../src/markup/empty.html");
 
 		this.applicationsToMonitor = [];
 		if (manifest.ApplicationsToMonitor) {
@@ -85,6 +85,19 @@ class StreamDeckPlugin {
 			categories[this.category].push(a);
 		});
 
+		let devices = [];
+		for (const [id, data] of Object.entries(store.get("devices"))) {
+			let details = data as any;
+			devices.push({
+				id: id,
+				name: details.name,
+				size: {
+					rows: details.rows,
+					columns: details.columns
+				},
+				type: details.type
+			});
+		}
 		this.info = {
 			"application": {
 				"font": "Rubik",
@@ -110,17 +123,7 @@ class StreamDeckPlugin {
 				"highlightColor": "#000000", 
 				"mouseDownColor": "#000000"
 			},
-			"devices": [
-				{
-					"id": "OceanDeck",
-					"name": "OceanDeck",
-					"size": {
-						"columns": 3,
-						"rows": 3
-					},
-					"type": 7
-				}
-			]
+			"devices": devices
 		}
 
 		let codePath = manifest.CodePath;

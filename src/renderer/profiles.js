@@ -1,5 +1,5 @@
 const { ipcRenderer } = require("electron");
-const store = require("../script/store");
+const store = require("../../build/store").default;
 
 let list = document.getElementById("profiles");
 

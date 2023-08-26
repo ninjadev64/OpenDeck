@@ -1,4 +1,4 @@
-const store = require("../script/store");
+const store = require("../../build/store").default;
 
 const { platform } = require("os");
 const { spawn } = require("child_process");

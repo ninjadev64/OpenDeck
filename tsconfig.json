@@ -7,12 +7,9 @@
 		"outDir": "build",
 		"rootDir": "src/script/",
 		"sourceMap": true,
-		// "noImplicitAny": true,
+		"noImplicitAny": true,
 		"esModuleInterop": true,
 		"resolveJsonModule": true,
-		"paths": {
-			"*": [ "./node_modules/*" ]
-		},
 		"skipLibCheck": true
 	},
 	"include": [ "src/script/*" ]

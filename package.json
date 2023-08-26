@@ -1,7 +1,7 @@
 {
 	"name": "opendeck",
 	"version": "1.0.0",
-	"description": "Software counterpart for your OceanDeck",
+	"description": "Stream Deck-compatible software for ProntoKey hardware and others",
 	"main": "build/main.js",
 	"scripts": {
 		"start": "tsc && electron .",

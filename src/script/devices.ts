@@ -6,9 +6,9 @@ import { SerialPort } from "serialport";
 import { Server as WebSocketServer } from "ws";
 import { eventHandler } from "./event";
 
-import { createUniqueId } from "./shared";
-import store from "./store";
 import { getMainWindow } from "./main";
+import { createUniqueId, currentProfiles } from "./shared";
+import store from "./store";
 
 export interface Device {
 	readonly name: string;
@@ -23,8 +23,8 @@ export interface Device {
 	setImage(key: number, image: string): void;
 }
 
-class OceanDeckBaseDevice extends EventEmitter implements Device {
-	name = "OceanDeck";
+class ProntoKeyBaseDevice extends EventEmitter implements Device {
+	name = "ProntoKey";
 	type = 7;
 
 	sliders = 2;
@@ -60,7 +60,7 @@ class OceanDeckBaseDevice extends EventEmitter implements Device {
 	setImage() {}
 }
 
-class OceanDeckWiredDevice extends OceanDeckBaseDevice {
+class ProntoKeyWiredDevice extends ProntoKeyBaseDevice {
 	path: string;
 	port: SerialPort;
 	parser: ReadlineParser;
@@ -77,12 +77,12 @@ class OceanDeckWiredDevice extends OceanDeckBaseDevice {
 	}
 }
 
-class OceanDeckVirtualDevice extends OceanDeckBaseDevice {
+class ProntoKeyVirtualDevice extends ProntoKeyBaseDevice {
 	server: WebSocketServer;
 
 	constructor(port: number) {
 		super();
-		this.name = "Virtual OceanDeck";
+		this.name = "Virtual ProntoKey";
 		this.server = new WebSocketServer({ port });
 		this.server.once("connection", (ws: any) => {
 			ws.on("message", (data: string) => this.handle(data));
@@ -148,14 +148,12 @@ class DeviceManager {
 	constructor() {
 		this.devices = {};
 		
-		this.initDevice("od-testdevice1", new OceanDeckVirtualDevice(1925));
-		this.initDevice("od-testdevice2", new OceanDeckVirtualDevice(1926));
-		
 		SerialPort.list().then((ports) => {
 			ports.forEach((port) => {
 				if (!(port.vendorId == "10c4" && port.productId == "ea60")) return;
-				this.initDevice("od-" + port.path, new OceanDeckWiredDevice(port.path));
+				this.initDevice("pk-" + port.path, new ProntoKeyWiredDevice(port.path));
 			});
+			this.initDevice("pk-testdevice1", new ProntoKeyVirtualDevice(1925));
 			getMainWindow().webContents.send("devices", store.get("devices"));
 		});
 		listStreamDecks().forEach((device) => this.initDevice("sd-" + device.serialNumber, new ElgatoDevice(device.path)));
@@ -168,6 +166,7 @@ class DeviceManager {
 			let randomDefaultProfileId = createUniqueId();
 			d[id] = {
 				name: device.name,
+				type: device.type,
 				keys: device.keys,
 				sliders: device.sliders,
 				rows: device.rows,
@@ -181,6 +180,7 @@ class DeviceManager {
 				},
 				selectedProfile: randomDefaultProfileId
 			}
+			currentProfiles[id] = d[id].profiles[randomDefaultProfileId];
 		}
 		eventHandler.deviceDidConnect(id, device);
 		device.on("disconnect", () => eventHandler.deviceDidDisconnect(id));

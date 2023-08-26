@@ -2,7 +2,7 @@
 
 OpenDeck is a desktop software that allows Stream Deck-like functionality, implementing the Elgato Stream Deck SDK for cross-compatibility.
 
-The software is supported on Windows, macOS, and Linux, and is built with Electron. The software is designed for OceanDeck hardware, but should theoretically support Elgato hardware using the `@elgato-stream-deck/node` package (untested).
+The software is supported on Windows, macOS, and Linux, and is built with Electron. The software is designed for ProntoKey hardware, but should theoretically support Elgato hardware using the `@elgato-stream-deck/node` package (untested).
 
 ### Structure
 
@@ -42,7 +42,7 @@ An *action* is provided by a plugin, and specifies a name, icon, tooltip, etc. A
 
 Every slot is assigned an *instance* of an action, that has its own individual settings. An instance is identified by a *context*, which in OpenDeck is in the format of `device.profile.type.position.index`.
 
-`device`: a string identifying the device. OceanDeck devices are prefixed with `od-` and Elgato devices are prefixed with `sd-`.
+`device`: a string identifying the device. ProntoKey devices are prefixed with `pk-` and Elgato devices are prefixed with `sd-`.
 
 `profile`: a string identifying the profile. It is generated based on the time the profile was created and a random number.
 
