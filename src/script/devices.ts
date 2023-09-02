@@ -150,7 +150,7 @@ class DeviceManager {
 		
 		SerialPort.list().then((ports) => {
 			ports.forEach((port) => {
-				if (!(port.vendorId == "10c4" && port.productId == "ea60")) return;
+				if (!(port.vendorId.toLowerCase() == "10c4" && port.productId.toLowerCase() == "ea60")) return;
 				this.initDevice("pk-" + port.path, new ProntoKeyWiredDevice(port.path));
 			});
 			this.initDevice("pk-testdevice1", new ProntoKeyVirtualDevice(1925));

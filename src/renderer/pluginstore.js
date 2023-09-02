@@ -58,11 +58,11 @@ pluginIDs.forEach((p) => {
 		let button = document.createElement("button");
 		button.innerText = "Remove";
 		button.addEventListener("click", () => {
-			Object.values(store.get("profiles")).forEach((profile) => {
+			Object.values(store.get("devices")).forEach((device) => { Object.values(device.profiles).forEach((profile) => {
 				[].concat(profile.key, profile.slider).forEach((slot) => slot.forEach((instance) => {
 					if (instance && instance.action.plugin == p) ipcRenderer.send("slotUpdate", instance.context, undefined);
 				}));
-			});
+			})});
 			div.remove();
 			rmSync(path.join(pluginDir, p), { recursive: true, force: true });
 		});
