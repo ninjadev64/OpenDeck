@@ -98,14 +98,15 @@ class StreamDeckPlugin {
 				type: details.type
 			});
 		}
+		const platform = os.platform();
 		this.info = {
 			"application": {
 				"font": "Rubik",
 				"language": "en",
 				"platform": (
-					os.platform() == "win32" ? "windows" :
-					(os.platform() == "darwin" ? "mac" :
-					(os.platform() == "linux" ? "linux" : "unknown"))
+					platform == "win32" ? "windows" :
+					(platform == "darwin" ? "mac" :
+					(platform == "linux" ? "linux" : "unknown"))
 				),
 				"platformVersion": os.version(),
 				"version": version
@@ -126,14 +127,37 @@ class StreamDeckPlugin {
 			"devices": devices
 		}
 
-		let codePath = manifest.CodePath;
-		switch (os.platform()) {
+		let codePath = manifest.CodePath ?? "";
+		switch (platform) {
 			case "win32": manifest.CodePathWin && (codePath = manifest.CodePathWin); break;
 			case "darwin": manifest.CodePathMac && (codePath = manifest.CodePathMac); break;
 			case "linux": manifest.CodePathLin && (codePath = manifest.CodePathLin); break;
 		}
-		if (!codePath || !fs.existsSync(path.join(root, uuid, codePath))) {
-			error(`The plugin ${uuid} is not supported on the platform "${os.platform()}"!`, false);
+		let supportsWindows = false;
+		let enableWine = false;
+		let supported = false;
+		manifest.OS.forEach(({ Platform }: { Platform: string }) => {
+			if (Platform == "windows") supportsWindows = true;
+			if (
+				(platform == "win32" && Platform == "windows") ||
+				(platform == "darwin" && Platform == "mac") ||
+				(platform == "linux" && Platform == "linux")
+			) {
+				supported = true;
+				return false;
+			}
+		});
+		if (!supported && codePath.endsWith(".html")) supported = true;
+		wine: if (!supported && platform != "win32" && supportsWindows) {
+			const winePath = execSync(`which wine`).toString().trim();
+			if (!winePath || winePath.includes("not found")) break wine;
+			if (!codePath) codePath = manifest.CodePathWin;
+			if (!codePath.endsWith(".exe")) codePath += ".exe";
+			enableWine = true;
+			supported = true;
+		}
+		if (!supported) {
+			error(`The plugin ${uuid} is not supported on the platform "${platform}"!`, false);
 			return;
 		}
 
@@ -158,13 +182,23 @@ class StreamDeckPlugin {
 				`);
 			});
 		} else {
-			if (["darwin", "linux"].includes(os.platform())) execSync(`chmod +x "${path.join(root, uuid, codePath)}"`);
-			this.process = spawn(path.join(root, uuid, codePath), [
-				"-port", store.get("webSocketPort"),
-				"-pluginUUID", this.uuid,
-				"-registerEvent", "register",
-				"-info", JSON.stringify(this.info)
-			]);
+			if (["darwin", "linux"].includes(platform)) execSync(`chmod +x "${path.join(root, uuid, codePath)}"`);
+			if (enableWine) {
+				this.process = spawn("wine", [
+					path.join(root, uuid, codePath),
+					"-port", store.get("webSocketPort"),
+					"-pluginUUID", this.uuid,
+					"-registerEvent", "register",
+					"-info", JSON.stringify(this.info)
+				]);
+			} else {
+				this.process = spawn(path.join(root, uuid, codePath), [
+					"-port", store.get("webSocketPort"),
+					"-pluginUUID", this.uuid,
+					"-registerEvent", "register",
+					"-info", JSON.stringify(this.info)
+				]);
+			}
 		}
 	}
 
