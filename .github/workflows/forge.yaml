@@ -1,4 +1,4 @@
-run-name: Build app distributables
+run-name: Build Linux distributables
 on: [ push, pull_request ]
 jobs:
   build-linux:
@@ -12,10 +12,11 @@ jobs:
           cache: "npm"
       - name: Install dependencies
         run: npm install
+      - run: rm node_modules/@julusian/jpeg-turbo/binding.gyp
       - name: Build artifacts
         run: npm run make
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
           name: opendeck-deb
-          path: out/make/deb
+          path: out/make/deb/x64
