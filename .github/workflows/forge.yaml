@@ -1,0 +1,70 @@
+run-name: Build distributables
+on: [ push, pull_request ]
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: "npm"
+      - name: Install dependencies
+        run: npm install
+      - run: del node_modules/@julusian/jpeg-turbo/binding.gyp
+      - name: Build artifacts
+        run: npm run make
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows
+          path: out/make/squirrel.windows/x64
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: "npm"
+      - name: Install dependencies
+        run: npm install
+      - run: rm node_modules/@julusian/jpeg-turbo/binding.gyp
+      - name: Build artifacts
+        run: npm run make
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: macos
+          path: out/make/OpenDeck.dmg
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: "npm"
+      - name: Install dependencies
+        run: npm install
+      - run: rm node_modules/@julusian/jpeg-turbo/binding.gyp
+      - name: Install rpmbuild
+        run: sudo apt install rpm -y
+      - name: Build artifacts
+        run: npm run make
+      - name: Upload deb distributable
+        uses: actions/upload-artifact@v3
+        with:
+          name: deb
+          path: out/make/deb/x64
+      - name: Upload rpm distributable
+        uses: actions/upload-artifact@v3
+        with:
+          name: rpm
+          path: out/make/rpm/x64

@@ -28,6 +28,7 @@
 		"@electron-forge/cli": "^6.0.0-beta.66",
 		"@electron-forge/maker-deb": "^6.0.0-beta.66",
 		"@electron-forge/maker-dmg": "^6.0.0-beta.66",
+		"@electron-forge/maker-rpm": "^6.4.2",
 		"@electron-forge/maker-squirrel": "^6.0.0-beta.66",
 		"@electron-forge/maker-zip": "^6.0.0-beta.66",
 		"@types/auto-launch": "^5.0.2",
@@ -56,6 +57,12 @@
 				},
 				{
 					"name": "@electron-forge/maker-deb",
+					"config": {
+						"productName": "OpenDeck"
+					}
+				},
+				{
+					"name": "@electron-forge/maker-rpm",
 					"config": {
 						"productName": "OpenDeck"
 					}
