@@ -243,7 +243,7 @@ class StreamDeckPluginManager {
 		
 		this.server = new WebSocketServer({ port: store.get("webSocketPort") });
 		this.server.on("error", () => {
-			error("An error occurred. Is an instance of OpenDeck already running? Make sure your configured ports are free.", true);
+			error("An error occurred. Try removing any recently installed plugins, and make sure your configured ports are free.", true);
 			this.server.close();
 		});
 

@@ -150,10 +150,10 @@ class DeviceManager {
 		
 		SerialPort.list().then((ports) => {
 			ports.forEach((port) => {
-				if (!(port.vendorId.toLowerCase() == "10c4" && port.productId.toLowerCase() == "ea60")) return;
+				if (!port.vendorId || !port.productId) return;
+				if (port.vendorId.toLowerCase() != "10c4" || port.productId.toLowerCase() != "ea60") return;
 				this.initDevice("pk-" + port.path, new ProntoKeyWiredDevice(port.path));
 			});
-			this.initDevice("pk-testdevice1", new ProntoKeyVirtualDevice(1925));
 			getMainWindow().webContents.send("devices", store.get("devices"));
 		});
 		listStreamDecks().forEach((device) => this.initDevice("sd-" + device.serialNumber, new ElgatoDevice(device.path)));
@@ -189,6 +189,12 @@ class DeviceManager {
 		device.on("dialRotate", (dial: number, value: number) => eventHandler.dialRotate(id, dial, value));
 		store.set("devices", d);
 		return device;
+	}
+
+	setImage(device: string, key: number, image: string): void {
+		let d = this.devices[device];
+		if (!d) return;
+		d.setImage(key, image);
 	}
 }
 

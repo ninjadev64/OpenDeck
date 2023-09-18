@@ -180,8 +180,7 @@ export function getInstanceByContext(context: string): ActionInstance {
 export type Coordinates = { row: number; column: number };
 export function getCoordinatesByContext(context: string): Coordinates {
 	let details = parseContext(context);
-	const { deviceManager } = require("./devices");
-	let device = deviceManager.devices[details.device];
+	let device = store.get("devices." + details.device);
 	return {
 		row: Math.floor(details.position / device.rows),
 		column: details.position % device.columns

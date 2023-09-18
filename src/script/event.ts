@@ -14,8 +14,7 @@ class EventHandler {
 		getProfile(context.device)[context.type][context.position][context.index] = instance;
 		updateProfile(context.device);
 
-		const { deviceManager } = require("./devices");
-		deviceManager.devices[context.device].setImage(instance.states[instance.state].image);
+		require("./devices").deviceManager.setImage(instance.device, instance.position, instance.states[instance.state].image);
 
 		let window = getMainWindow();
 		if (!window || window.isDestroyed()) return;
@@ -92,6 +91,7 @@ class EventHandler {
 				isInMultiAction: false
 			}
 		});
+		require("./devices").deviceManager.setImage(instance.device, instance.position, instance.states[instance.state].image);
 	}
 
 	willDisappear(instance: ActionInstance): void {
