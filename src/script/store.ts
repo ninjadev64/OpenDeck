@@ -5,6 +5,10 @@ const schema = {
 		type: "object",
 		default: {}
 	},
+	useBluetoothProntoKey: {
+		type: "boolean",
+		default: false
+	},
 	webSocketPort: {
 		type: "number",
         minimum: 0,

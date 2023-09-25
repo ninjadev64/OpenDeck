@@ -1,12 +1,11 @@
+import { shell } from "electron";
+import log from "electron-log";
 import { Device } from "./devices";
 import { getMainWindow } from "./main";
 import { pluginManager } from "./plugins";
 import { propertyInspectorManager } from "./propertyinspector";
 import { ActionInstance, getCoordinatesByContext, getInstanceByContext, getProfile, parseContext, updateProfile } from "./shared";
 import store from "./store";
-
-import { shell } from "electron";
-import log from "electron-log";
 
 class EventHandler {
 	updateState(instance: ActionInstance): void {

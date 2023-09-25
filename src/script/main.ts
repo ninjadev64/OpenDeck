@@ -1,16 +1,12 @@
-if (require("electron-squirrel-startup")) require("process").exit(0);
+if (require("electron-squirrel-startup")) process.exit(0);
 
 import { BrowserWindow, Menu, Tray, app, ipcMain } from "electron";
-import path from "path";
-
-if (!app.requestSingleInstanceLock()) {
-	app.exit();
-}
-
-import { ActionInstance, allActions, categories, setProfile, updateSlot } from "./shared";
-import store from "./store";
+if (!app.requestSingleInstanceLock()) app.exit();
 
 import AutoLaunch from "auto-launch";
+import path from "path";
+import { ActionInstance, allActions, categories, setProfile, updateSlot } from "./shared";
+import store from "./store";
 
 let isQuitting = false;
 let tray;

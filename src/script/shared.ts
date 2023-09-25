@@ -1,10 +1,9 @@
-import store from "./store";
-
 // @ts-expect-error
 import dialog from "dialog";
 import log from "electron-log";
 import { existsSync } from "fs";
 import { exit } from "process";
+import store from "./store";
 
 export function createUniqueId() {
 	return Date.now().toString(36) + Math.random().toString(36).substring(2);

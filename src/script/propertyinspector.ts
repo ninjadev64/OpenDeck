@@ -1,7 +1,6 @@
 import { BrowserWindow, ipcMain } from "electron";
-import { pluginManager } from "./plugins";
-
 import { Server as WebSocketServer } from "ws";
+import { pluginManager } from "./plugins";
 import { Action, ActionInstance, error, getCoordinatesByContext, getInstanceByContext } from "./shared";
 import store from "./store";
 

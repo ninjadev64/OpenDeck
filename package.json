@@ -4,7 +4,7 @@
 	"description": "Stream Deck-compatible software for ProntoKey hardware and others",
 	"main": "build/main.js",
 	"scripts": {
-		"start": "tsc && electron .",
+		"start": "tsc && electron-rebuild && electron .",
 		"package": "tsc && electron-forge package",
 		"make": "tsc && electron-forge make"
 	},
@@ -24,13 +24,17 @@
 		"serialport": "^10.4.0",
 		"ws": "^7.5.9"
 	},
+	"optionalDependencies": {
+		"bluetooth-serial-port": "^3.0.2"
+	},
 	"devDependencies": {
-		"@electron-forge/cli": "^6.0.0-beta.66",
-		"@electron-forge/maker-deb": "^6.0.0-beta.66",
-		"@electron-forge/maker-dmg": "^6.0.0-beta.66",
+		"@electron-forge/cli": "^6.4.2",
+		"@electron-forge/maker-deb": "^6.4.2",
+		"@electron-forge/maker-dmg": "^6.4.2",
 		"@electron-forge/maker-rpm": "^6.4.2",
-		"@electron-forge/maker-squirrel": "^6.0.0-beta.66",
-		"@electron-forge/maker-zip": "^6.0.0-beta.66",
+		"@electron-forge/maker-squirrel": "^6.4.2",
+		"@electron-forge/maker-zip": "^6.4.2",
+		"@electron/rebuild": "^3.3.0",
 		"@types/auto-launch": "^5.0.2",
 		"@types/node": "^18.17.6",
 		"@types/ws": "^8.5.5",

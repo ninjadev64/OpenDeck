@@ -15,10 +15,12 @@ document.getElementById("open-plugins").addEventListener("click", () => {
 });
 
 let autoLaunch = document.getElementById("auto-launch");
+let useBluetoothProntoKey = document.getElementById("use-bluetooth");
 let webSocketPort = document.getElementById("websocket-port");
 let propertyInspectorPort = document.getElementById("propertyinspector-port");
 const options = {
 	"autoLaunch": autoLaunch,
+	"useBluetoothProntoKey": useBluetoothProntoKey,
 	"webSocketPort": webSocketPort,
 	"propertyInspectorPort": propertyInspectorPort
 }

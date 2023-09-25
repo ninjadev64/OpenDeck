@@ -4,7 +4,6 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 import { Server as WebSocketServer } from "ws";
-
 import { Action, ActionState, allActions, categories, error, getIcon } from "./shared";
 import store from "./store";
 

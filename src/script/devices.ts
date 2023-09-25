@@ -5,9 +5,8 @@ import Jimp from "jimp";
 import { SerialPort } from "serialport";
 import { Server as WebSocketServer } from "ws";
 import { eventHandler } from "./event";
-
 import { getMainWindow } from "./main";
-import { createUniqueId, currentProfiles } from "./shared";
+import { createUniqueId, currentProfiles, error } from "./shared";
 import store from "./store";
 
 export interface Device {
@@ -37,6 +36,7 @@ class ProntoKeyBaseDevice extends EventEmitter implements Device {
 
 	handle(data: any): void {
 		if (typeof data == "string") data = JSON.parse(data);
+		if (data.address) this.emit("register", data.address);
 		if (data.key <= 0) {
 			if (this.lastKey > 0) {
 				this.emit("keyUp", this.lastKey - 1);
@@ -61,19 +61,47 @@ class ProntoKeyBaseDevice extends EventEmitter implements Device {
 }
 
 class ProntoKeyWiredDevice extends ProntoKeyBaseDevice {
-	path: string;
 	port: SerialPort;
 	parser: ReadlineParser;
 
 	constructor(path: string) {
 		super();
-		this.path = path;
-		try { this.port = new SerialPort({ path: this.path, baudRate: 57600 }); }
+
+		try { this.port = new SerialPort({ path: path, baudRate: 57600 }); }
 		catch { return undefined; }
 		this.port.on("close", () => this.emit("disconnect"));
 
 		this.parser = this.port.pipe(new ReadlineParser({ delimiter: "\r\n" }));
 		this.parser.on("data", (data) => this.handle(data));
+
+		this.port.write("register");
+	}
+}
+
+class ProntoKeyBluetoothDevice extends ProntoKeyBaseDevice {
+	address: string;
+	port: any;
+	buffer: string = "";
+
+	constructor(address: string, port: any) {
+		super();
+
+		this.address = address;
+		this.port = port;
+		this.port.on("data", (buffer: Buffer) => {
+			this.buffer += buffer.toString("utf-8");
+			if (this.buffer.includes("}")) {
+				this.handle(this.buffer.slice(0, this.buffer.indexOf("}") + 1));
+				this.buffer = this.buffer.slice(this.buffer.indexOf("}") + 1);
+			}
+		});
+
+		this.port.on("failure", () => {
+			this.port.removeAllListeners("data");
+			this.port.removeAllListeners("disconnect");
+			this.emit("disconnect");
+			this.port.inquire();
+		});
 	}
 }
 
@@ -143,19 +171,33 @@ class ElgatoDevice extends EventEmitter implements Device {
 }
 
 class DeviceManager {
-	devices: { [id: string]: Device };
+	devices: { [id: string]: Device } = {};
 
 	constructor() {
-		this.devices = {};
-		
-		SerialPort.list().then((ports) => {
-			ports.forEach((port) => {
-				if (!port.vendorId || !port.productId) return;
-				if (port.vendorId.toLowerCase() != "10c4" || port.productId.toLowerCase() != "ea60") return;
-				this.initDevice("pk-" + port.path, new ProntoKeyWiredDevice(port.path));
+		if (store.get("useBluetoothProntoKey") && require("bluetooth-serial-port")) {
+			const { BluetoothSerialPort } = require("bluetooth-serial-port");
+			const bt = new BluetoothSerialPort();
+			bt.on("found", (address: string, name: string) => {
+				if (name != "ProntoKey") return;
+				bt.findSerialPortChannel(address, (channel: number) => bt.connect(address, channel,
+					() => this.initDevice("pk-" + address, new ProntoKeyBluetoothDevice(address, bt)),
+					() => error(`Failed to connect to Bluetooth device with address ${address}`, false)
+				));
 			});
-			getMainWindow().webContents.send("devices", store.get("devices"));
-		});
+			bt.on("finished", () => {
+				if (!bt.isOpen()) setTimeout(() => bt.inquire(), 10e3);
+			});
+			bt.inquire();
+		} else {
+			SerialPort.list().then((ports) => {
+				ports.forEach((port) => {
+					if (!port.vendorId || !port.productId) return;
+					if (port.vendorId.toLowerCase() != "10c4" || port.productId.toLowerCase() != "ea60") return;
+					let device = new ProntoKeyWiredDevice(port.path);
+					device.once("register", (address: string) => this.initDevice("pk-" + address, device));
+				});
+			});
+		}
 		listStreamDecks().forEach((device) => this.initDevice("sd-" + device.serialNumber, new ElgatoDevice(device.path)));
 	}
 
@@ -188,6 +230,7 @@ class DeviceManager {
 		device.on("keyUp", (key: number) => eventHandler.keyUp(id, key));
 		device.on("dialRotate", (dial: number, value: number) => eventHandler.dialRotate(id, dial, value));
 		store.set("devices", d);
+		getMainWindow().webContents.send("devices", store.get("devices"));
 		return device;
 	}
 
