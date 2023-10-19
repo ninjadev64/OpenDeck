@@ -13,7 +13,7 @@ class EventHandler {
 		getProfile(context.device)[context.type][context.position][context.index] = instance;
 		updateProfile(context.device);
 
-		require("./devices").deviceManager.setImage(instance.device, instance.position, instance.states[instance.state].image);
+		require("./devices").deviceManager.setImage(instance.device, instance.position, instance.states[instance.state].image, instance.states[instance.state].title);
 
 		let window = getMainWindow();
 		if (!window || window.isDestroyed()) return;
@@ -90,7 +90,7 @@ class EventHandler {
 				isInMultiAction: false
 			}
 		});
-		require("./devices").deviceManager.setImage(instance.device, instance.position, instance.states[instance.state].image);
+		require("./devices").deviceManager.setImage(instance.device, instance.position, instance.states[instance.state].image, instance.states[instance.state].title);
 	}
 
 	willDisappear(instance: ActionInstance): void {
@@ -106,6 +106,7 @@ class EventHandler {
 				isInMultiAction: false
 			}
 		});
+		require("./devices").deviceManager.setImage(instance.device, instance.position, null, null);
 	}
 
 	deviceDidConnect(id: string, device: Device): void {

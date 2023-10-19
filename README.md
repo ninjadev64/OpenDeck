@@ -2,7 +2,7 @@
 
 OpenDeck is a desktop software that allows Stream Deck-like functionality, implementing the Elgato Stream Deck SDK for cross-compatibility.
 
-The software is supported on Windows, macOS, and Linux, and is built with Electron. The software is designed for ProntoKey hardware, but should theoretically support Elgato hardware using the `@elgato-stream-deck/node` package (untested).
+The software is supported on Windows, macOS, and Linux, and is built with Electron. The software is designed for ProntoKey hardware (USB and Bluetooth), but should theoretically support Elgato hardware using the `@elgato-stream-deck/node` package (untested).
 
 You can download a pre-built distributable for your platform from GitHub Actions [here](https://github.com/ninjadev64/OpenDeck/actions).
 
@@ -54,7 +54,7 @@ Every slot is assigned an *instance* of an action, that has its own individual s
 
 `index`: this specifies the order the action should be triggered in if the key or slider contains a multi-action.
 
-Example: `lldr3mliu9vfj083d1l.key.0.0`
+Example: `pk-D4:D4:DA:E4:79:5E.lldr3mliu9vfj083d1l.key.0.0`
 
 ### Running and building
 

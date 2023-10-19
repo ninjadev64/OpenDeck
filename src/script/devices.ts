@@ -19,7 +19,7 @@ export interface Device {
 	readonly columns: number;
 
 	on(event: string, callback: Function): void;
-	setImage(key: number, image: string): void;
+	setImage(key: number, source: string, text: string | null): void;
 }
 
 class ProntoKeyBaseDevice extends EventEmitter implements Device {
@@ -147,26 +147,36 @@ class ElgatoDevice extends EventEmitter implements Device {
 		this.rows = this.device.KEY_ROWS;
 		this.columns = this.device.KEY_COLUMNS;
 
-		this.device.on("down", (key) => this.emit("keyDown", this.convertIndex(key)));
-		this.device.on("up", (key) => this.emit("keyUp", this.convertIndex(key)));
+		this.device.on("down", (key) => this.emit("keyDown", key));
+		this.device.on("up", (key) => this.emit("keyUp", key));
 	}
 
 	convertIndex(index: number): number {
 		let m = (index + 1) % this.columns;
 		if (m != 0) m = this.columns - m;
-		m += (Math.floor(index / 5) * this.columns);
+		m += (Math.floor(index / this.columns) * this.columns);
 		return m;
 	}
 
-	setImage(key: number, image: string): void {
-		let d: any = image;
-		let base64re = /data:image\/(apng|avif|gif|jpeg|png|svg\+xml|webp|bmp|x-icon|tiff);base64,([A-Za-z0-9+/]+={0,2})?/;
-		if (base64re.test(image)) {
-			d = Buffer.from(base64re.exec(image)[2], "base64");
+	async setImage(key: number, source: string, text: string | null): Promise<void> {
+		if (!source) {
+			this.device.fillKeyColor(key, 0, 0, 0);
+			return;
 		}
-		Jimp.read(d).then((image) => {
-			this.device.fillKeyBuffer(this.convertIndex(key), image.resize(this.device.ICON_SIZE, this.device.ICON_SIZE).bitmap.data, { format: "rgba" });
-		});
+		let d: any = source;
+		let base64re = /data:image\/(apng|avif|gif|jpeg|png|svg\+xml|webp|bmp|x-icon|tiff);base64,([A-Za-z0-9+/]+={0,2})?/;
+		if (base64re.test(source)) {
+			d = Buffer.from(base64re.exec(source)[2], "base64");
+		}
+		const image = await Jimp.read(d);
+		if (text) {
+			image.print(await Jimp.loadFont(Jimp.FONT_SANS_32_WHITE), 0, 0, {
+				text: text,
+				alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
+				alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE
+			}, image.getWidth(), image.getHeight());
+		}
+		this.device.fillKeyBuffer(key, image.resize(this.device.ICON_SIZE, this.device.ICON_SIZE).bitmap.data, { format: "rgba" });
 	}
 }
 
@@ -230,14 +240,14 @@ class DeviceManager {
 		device.on("keyUp", (key: number) => eventHandler.keyUp(id, key));
 		device.on("dialRotate", (dial: number, value: number) => eventHandler.dialRotate(id, dial, value));
 		store.set("devices", d);
-		getMainWindow().webContents.send("devices", store.get("devices"));
+		if (getMainWindow()) getMainWindow().webContents.send("devices", store.get("devices"));
 		return device;
 	}
 
-	setImage(device: string, key: number, image: string): void {
+	setImage(device: string, key: number, source: string, text: string | null): void {
 		let d = this.devices[device];
 		if (!d) return;
-		d.setImage(key, image);
+		d.setImage(key, source, text);
 	}
 }
 

@@ -155,7 +155,9 @@ export function updateSlot(context: string, instance: ActionInstance): ActionIns
 	const { propertyInspectorManager } = require("./propertyinspector");
 	if (details.type == "slider") {
 		const { deviceManager } = require("./devices");
-		deviceManager.devices[details.device].lastSliders[details.index] = 0;
+		if (deviceManager.devices[details.device]) {
+			deviceManager.devices[details.device].lastSliders[details.index] = 0;
+		}
 	}
 	let position = getProfile(details.device)[details.type][details.position];
 	if (instance == undefined) {
