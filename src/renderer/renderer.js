@@ -117,10 +117,10 @@ function drop(ev) {
 
 	if (ev.target.classList.contains("key")) {
 		if (!dragging.action.controllers.includes("Keypad")) return;
-		ipcRenderer.send("createInstance", dragging.action.uuid, selectedDevice, "key", parseInt(ev.target.id.slice(-1)), 0);
+		ipcRenderer.send("createInstance", dragging.action.uuid, selectedDevice, "key", parseInt(ev.target.id.slice(3)), 0);
 	} else if (ev.target.classList.contains("slider")) {
 		if (!dragging.action.controllers.includes("Encoder")) return;
-		ipcRenderer.send("createInstance", dragging.action.uuid, selectedDevice, "slider", parseInt(ev.target.id.slice(-1)), 0);
+		ipcRenderer.send("createInstance", dragging.action.uuid, selectedDevice, "slider", parseInt(ev.target.id.slice(6)), 0);
 	} else {
 		return;
 	}

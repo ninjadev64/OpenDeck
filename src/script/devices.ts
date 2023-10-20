@@ -1,6 +1,9 @@
 import { StreamDeck, listStreamDecks, openStreamDeck } from "@elgato-stream-deck/node";
+import { Resvg } from "@resvg/resvg-js";
 import { ReadlineParser } from "@serialport/parser-readline";
 import EventEmitter from "events";
+import { XMLParser } from "fast-xml-parser";
+import { promises } from "fs";
 import Jimp from "jimp";
 import { SerialPort } from "serialport";
 import { Server as WebSocketServer } from "ws";
@@ -163,11 +166,21 @@ class ElgatoDevice extends EventEmitter implements Device {
 			this.device.fillKeyColor(key, 0, 0, 0);
 			return;
 		}
-		let d: any = source;
+
+		let d: Buffer;
 		let base64re = /data:image\/(apng|avif|gif|jpeg|png|svg\+xml|webp|bmp|x-icon|tiff);base64,([A-Za-z0-9+/]+={0,2})?/;
-		if (base64re.test(source)) {
-			d = Buffer.from(base64re.exec(source)[2], "base64");
-		}
+		if (base64re.test(source)) d = Buffer.from(base64re.exec(source)[2], "base64");
+		else d = await promises.readFile(source);
+		
+		try {
+			if ("svg" in (new XMLParser().parse(d))) {
+				d = new Resvg(d, {
+					font: { loadSystemFonts: false, fontFiles: [ "../assets/Rubik.ttf" ] },
+					fitTo: { mode: "width", value: this.device.ICON_SIZE }
+				}).render().asPng();
+			}
+		} catch (_) {}
+
 		const image = await Jimp.read(d);
 		if (text) {
 			image.print(await Jimp.loadFont(Jimp.FONT_SANS_32_WHITE), 0, 0, {
@@ -226,8 +239,8 @@ class DeviceManager {
 				profiles: {
 					[randomDefaultProfileId]: {
 						name: "Default",
-						key: [ [ null ], [ null ], [ null ], [ null ], [ null ], [ null ], [ null ], [ null ], [ null ] ],
-						slider: [ [ null ], [ null ] ]
+						key: Array.from({ length: device.keys }, () => [ null ]),
+						slider: Array.from({ length: device.sliders }, () => [ null ])
 					}
 				},
 				selectedProfile: randomDefaultProfileId
