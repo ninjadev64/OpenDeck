@@ -239,8 +239,9 @@ class EventHandler {
 
 	setTitle({ context, payload: { title, state } }: { context: string, payload: { title: string, state: number } }): void {
 		let instance = getInstanceByContext(context);
-		if (state) instance.states[state].title = title;
-		else instance.states.forEach((state) => state.title = title);
+		if (!instance) return;
+		if (state) instance.states[state].title.text = title;
+		else instance.states.forEach((state) => state.title.text = title);
 		this.updateState(instance);
 	}
 

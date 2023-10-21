@@ -56,29 +56,45 @@ export class Action {
 	}
 }
 
+export class ActionTitle {
+	text: string;
+	show: boolean;
+	colour: string;
+	alignment: string;
+	style: string;
+	size: number;
+	underline: boolean;
+
+	constructor(text: string, show: boolean, colour: string, alignment: string, style: string, size: number, underline: boolean) {
+		this.text = text;
+		this.show = show;
+		this.colour = colour;
+		this.alignment = alignment;
+		this.style = style;
+		this.size = size;
+		this.underline = underline;
+	}
+}
+
 export class ActionState {
 	image: string;
 	multiActionImage: string;
 	name: string;
-	title: string;
-	showTitle: boolean;
-	titleColour: string;
-	titleAlignment: string;
-	titleFontStyle: string;
-	titleFontSize: number;
-	titleFontUnderline: boolean;
+	title: ActionTitle;
 
 	constructor(data: any, actionDefaultName: string) {
 		this.image = data.Image;
 		this.multiActionImage = data.MultiActionImage ?? this.image;
 		this.name = data.Name ?? actionDefaultName;
-		this.title = data.Title ?? actionDefaultName;
-		this.showTitle = data.ShowTitle ?? true;
-		this.titleColour = data.TitleColor ?? "#f2f2f2";
-		this.titleAlignment = data.TitleAlignment ?? "middle";
-		this.titleFontStyle = data.FontStyle ?? "Regular";
-		this.titleFontSize = data.FontSize ?? 16;
-		this.titleFontUnderline = data.FontUnderline ?? false;
+		this.title = new ActionTitle(
+			data.Title ?? "",
+			data.ShowTitle ?? true,
+			data.TitleColor ?? "#f2f2f2",
+			data.TitleAlignment ?? "middle",
+			data.FontStyle ?? "Regular",
+			data.FontSize ?? 16,
+			data.FontUnderline ?? false
+		);
 	}
 }
 

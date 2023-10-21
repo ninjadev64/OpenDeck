@@ -9,7 +9,7 @@ import { SerialPort } from "serialport";
 import { Server as WebSocketServer } from "ws";
 import { eventHandler } from "./event";
 import { getMainWindow } from "./main";
-import { createUniqueId, currentProfiles, error } from "./shared";
+import { ActionTitle, createUniqueId, currentProfiles, error } from "./shared";
 import store from "./store";
 
 export interface Device {
@@ -22,7 +22,7 @@ export interface Device {
 	readonly columns: number;
 
 	on(event: string, callback: Function): void;
-	setImage(key: number, source: string, text: string | null): void;
+	setImage(key: number, source: string, title: ActionTitle | null): void;
 }
 
 class ProntoKeyBaseDevice extends EventEmitter implements Device {
@@ -161,15 +161,18 @@ class ElgatoDevice extends EventEmitter implements Device {
 		return m;
 	}
 
-	async setImage(key: number, source: string, text: string | null): Promise<void> {
+	async setImage(key: number, source: string, title: ActionTitle | null): Promise<void> {
 		if (!source) {
 			this.device.fillKeyColor(key, 0, 0, 0);
 			return;
 		}
 
+		let base64re = /^data:image\/(apng|avif|gif|jpeg|png|svg\+xml|webp|bmp|x-icon|tiff);base64,([A-Za-z0-9+/]+={0,2})?/;
+		let svgxmlre = /^data:image\/svg\+xml,(.+)/;
+		
 		let d: Buffer;
-		let base64re = /data:image\/(apng|avif|gif|jpeg|png|svg\+xml|webp|bmp|x-icon|tiff);base64,([A-Za-z0-9+/]+={0,2})?/;
 		if (base64re.test(source)) d = Buffer.from(base64re.exec(source)[2], "base64");
+		else if (svgxmlre.test(source)) d = Buffer.from(svgxmlre.exec(source)[1]);
 		else d = await promises.readFile(source);
 		
 		try {
@@ -182,14 +185,15 @@ class ElgatoDevice extends EventEmitter implements Device {
 		} catch (_) {}
 
 		const image = await Jimp.read(d);
-		if (text) {
+		image.resize(this.device.ICON_SIZE, this.device.ICON_SIZE);
+		if (title && title.show) {
 			image.print(await Jimp.loadFont(Jimp.FONT_SANS_32_WHITE), 0, 0, {
-				text: text,
+				text: title.text,
 				alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
-				alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE
+				alignmentY: title.alignment == "top" ? Jimp.VERTICAL_ALIGN_TOP : (title.alignment == "bottom" ? Jimp.VERTICAL_ALIGN_BOTTOM : Jimp.VERTICAL_ALIGN_MIDDLE)
 			}, image.getWidth(), image.getHeight());
 		}
-		this.device.fillKeyBuffer(key, image.resize(this.device.ICON_SIZE, this.device.ICON_SIZE).bitmap.data, { format: "rgba" });
+		this.device.fillKeyBuffer(key, image.bitmap.data, { format: "rgba" });
 	}
 }
 
@@ -257,7 +261,7 @@ class DeviceManager {
 		return device;
 	}
 
-	setImage(device: string, key: number, source: string, text: string | null): void {
+	setImage(device: string, key: number, source: string, text: ActionTitle | null): void {
 		let d = this.devices[device];
 		if (!d) return;
 		d.setImage(key, source, text);

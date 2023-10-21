@@ -41,21 +41,21 @@ function updateState(instance) {
 	image.className = "icon";
 	div.appendChild(image);
 	let title = document.createElement("span");
-	title.innerText = state.title;
+	title.innerText = state.title.text;
 	title.style.position = "absolute";
 	title.style.left = "50%";
-	switch (state.titleAlignment) {
+	switch (state.title.alignment) {
 		case "top": title.style.top = "0"; break;
 		case "middle": title.style.top = "50%"; break;
-		case "bottom": title.style.top = "100%"; break;
+		case "bottom": title.style.top = `calc(100% - ${state.title.size / 2}px - 4px)`; break;
 	}
 	title.style.transform = "translate(-50%, -50%)";
-	title.style.opacity = state.showTitle ? 1 : 0;
-	title.style.color = state.titleColour;
-	title.style.fontWeight = state.titleFontStyle.toLowerCase().includes("bold") ? "bold" : "normal";
-	title.style.fontStyle = state.titleFontStyle.toLowerCase().includes("italic") ? "italic" : "normal";
-	title.style.fontSize = state.titleFontSize + "px";
-	title.style.textDecorationLine = state.titleUnderline ? "underline" : "none";
+	title.style.opacity = state.title.show ? 1 : 0;
+	title.style.color = state.title.colour;
+	title.style.fontWeight = state.title.style.toLowerCase().includes("bold") ? "bold" : "normal";
+	title.style.fontStyle = state.title.style.toLowerCase().includes("italic") ? "italic" : "normal";
+	title.style.fontSize = state.title.size + "px";
+	title.style.textDecorationLine = state.title.underline ? "underline" : "none";
 	div.appendChild(title);
 }
 
