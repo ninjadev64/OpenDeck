@@ -54,8 +54,8 @@ function createWindow(): void {
 		let devices = store.get("devices");
 		devices[device].profiles[id] = {
 			name,
-			key: [ [ null ], [ null ], [ null ], [ null ], [ null ], [ null ], [ null ], [ null ], [ null ] ],
-			slider: [ [ null ], [ null ] ]
+			key: Array.from({ length: devices[device].keys }, () => [ null ]),
+			slider: Array.from({ length: devices[device].sliders }, () => [ null ])
 		};
 		store.set("devices", devices);
 		mainWindow.webContents.send("profiles", devices[device].profiles, devices[device].selectedProfile);

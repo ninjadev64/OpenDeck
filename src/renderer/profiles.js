@@ -35,11 +35,11 @@ function updateList(profiles) {
 		i.className = "deleteProfile";
 		i.addEventListener("click", () => {
 			if (Object.keys(store.get("devices")[selectedDevice].profiles).length < 2) return;
-			store.delete("profiles." + id);
+			store.delete("devices." + selectedDevice + ".profiles." + id);
 			if (store.get("devices")[selectedDevice].selectedProfile == id) {
-				ipcRenderer.send("profileUpdate", Object.keys(store.get("devices")[selectedDevice].profiles)[0]);
+				ipcRenderer.send("profileUpdate", selectedDevice, Object.keys(store.get("devices")[selectedDevice].profiles)[0]);
 			} else {
-				ipcRenderer.send("profileUpdate", store.get("devices")[selectedDevice].selectedProfile);
+				ipcRenderer.send("profileUpdate", selectedDevice, store.get("devices")[selectedDevice].selectedProfile);
 			}
 			t.remove();
 		});

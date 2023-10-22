@@ -2,9 +2,29 @@
 
 OpenDeck is a desktop software that allows Stream Deck-like functionality, implementing the Elgato Stream Deck SDK for cross-compatibility.
 
-The software is supported on Windows, macOS, and Linux, and is built with Electron. The software is designed for ProntoKey hardware (USB and Bluetooth), but should theoretically support Elgato hardware using the `@elgato-stream-deck/node` package (untested).
+The software is supported on Windows, macOS, and Linux, and is built with Electron. The software is designed for ProntoKey hardware (USB and Bluetooth), but also supports Elgato hardware (thanks to the `@elgato-stream-deck/node` package by julusian).
 
-You can download a pre-built distributable for your platform from GitHub Actions [here](https://github.com/ninjadev64/OpenDeck/actions).
+### Installation
+
+1. Download a pre-built distributable for your platform from GitHub Actions [here](https://github.com/ninjadev64/OpenDeck/actions).
+2. If you're using Elgato hardware on Linux, apply the required udev subsystem rules as described [here](https://github.com/Julusian/node-elgato-stream-deck#linux).
+3. If you're using ProntoKey hardware over Bluetooth, switch to Bluetooth mode in OpenDeck settings.
+
+### Updating
+
+1. Terminate OpenDeck if it's running with `killall opendeck`.
+2. If the update to be installed is a breaking config change, nuke your config file. Not all updates will require this. (this will remove all settings and profiles)
+	- On Windows, the file is located at `%appdata%/opendeck/config.json`.
+	- On macOS, the file is located at `~/Library/Application Support/opendeck/config.json`.
+	- On Linux, the file is located at `~/.config/opendeck/config.json`.
+3. Install the new version by performing the installation steps.
+
+### Usage
+
+![Assigning actions and switching profiles](.github/readme/assigning-actions-and-switching-profiles.gif)
+![Configuring and removing actions](.github/readme/configuring-and-removing-actions.gif)
+![Managing profiles](.github/readme/managing-profiles.gif)
+![Installing and removing plugins](.github/readme/installing-and-removing-plugins.gif)
 
 ### Structure
 
