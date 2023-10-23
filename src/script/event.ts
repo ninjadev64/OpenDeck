@@ -9,11 +9,10 @@ import store from "./store";
 
 class EventHandler {
 	updateState(instance: ActionInstance): void {
-		let context = parseContext(instance.context);
-		getProfile(context.device)[context.type][context.position][context.index] = instance;
-		updateProfile(context.device);
-
-		require("./devices").deviceManager.setImage(instance.device, instance.position, instance.states[instance.state].image, instance.states[instance.state].title);
+		getProfile(instance.device)[instance.type][instance.position][instance.index] = instance;
+		updateProfile(instance.device);
+		
+		if (instance.type == "key") require("./devices").deviceManager.setImage(instance.device, instance.position, instance.states[instance.state].image, instance.states[instance.state].title);
 
 		let window = getMainWindow();
 		if (!window || window.isDestroyed()) return;
@@ -60,6 +59,44 @@ class EventHandler {
 		this.updateState(instance);
 	}
 
+	dialDown(device: string, dial: number) {
+		let instance = getProfile(device).slider[dial][0];
+		if (instance == undefined) return;
+		pluginManager.sendEvent(instance.action.plugin, {
+			event: "dialDown",
+			action: instance.action.uuid,
+			context: instance.context,
+			device: instance.device,
+			payload: {
+				controller: "Encoder",
+				settings: instance.settings,
+				coordinates: {
+					row: 0,
+					column: dial
+				}
+			}
+		});
+	}
+
+	dialUp(device: string, dial: number) {
+		let instance = getProfile(device).slider[dial][0];
+		if (instance == undefined) return;
+		pluginManager.sendEvent(instance.action.plugin, {
+			event: "dialUp",
+			action: instance.action.uuid,
+			context: instance.context,
+			device: instance.device,
+			payload: {
+				controller: "Encoder",
+				settings: instance.settings,
+				coordinates: {
+					row: 0,
+					column: dial
+				}
+			}
+		});
+	}
+
 	dialRotate(device: string, slider: number, value: number): void {
 		let instance = getProfile(device).slider[slider][0];
 		if (instance == undefined) return;
@@ -90,7 +127,7 @@ class EventHandler {
 				isInMultiAction: false
 			}
 		});
-		require("./devices").deviceManager.setImage(instance.device, instance.position, instance.states[instance.state].image, instance.states[instance.state].title);
+		if (instance.type == "key") require("./devices").deviceManager.setImage(instance.device, instance.position, instance.states[instance.state].image, instance.states[instance.state].title);
 	}
 
 	willDisappear(instance: ActionInstance): void {
@@ -106,7 +143,7 @@ class EventHandler {
 				isInMultiAction: false
 			}
 		});
-		require("./devices").deviceManager.setImage(instance.device, instance.position, null, null);
+		if (instance.type == "key") require("./devices").deviceManager.setImage(instance.device, instance.position, null, null);
 	}
 
 	deviceDidConnect(id: string, device: Device): void {

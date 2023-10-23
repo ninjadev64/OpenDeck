@@ -152,6 +152,14 @@ class ElgatoDevice extends EventEmitter implements Device {
 
 		this.device.on("down", (key) => this.emit("keyDown", key));
 		this.device.on("up", (key) => this.emit("keyUp", key));
+
+		if (this.device.MODEL == "plus") {
+			this.sliders = 4;
+			this.device.on("encoderDown", (encoder: number) => this.emit("dialDown", encoder));
+			this.device.on("encoderUp", (encoder: number) => this.emit("dialUp", encoder));
+			this.device.on("rotateLeft", (encoder: number, amount: number) => this.emit("dialRotate", encoder, -amount));
+			this.device.on("rotateRight", (encoder: number, amount: number) => this.emit("dialRotate", encoder, amount));
+		}
 	}
 
 	convertIndex(index: number): number {
@@ -255,7 +263,11 @@ class DeviceManager {
 		device.on("disconnect", () => eventHandler.deviceDidDisconnect(id));
 		device.on("keyDown", (key: number) => eventHandler.keyDown(id, key));
 		device.on("keyUp", (key: number) => eventHandler.keyUp(id, key));
+
+		device.on("dialDown", (dial: number) => eventHandler.dialDown(id, dial));
+		device.on("dialUp", (dial: number) => eventHandler.dialUp(id, dial));
 		device.on("dialRotate", (dial: number, value: number) => eventHandler.dialRotate(id, dial, value));
+		
 		store.set("devices", d);
 		if (getMainWindow()) getMainWindow().webContents.send("devices", store.get("devices"));
 		return device;

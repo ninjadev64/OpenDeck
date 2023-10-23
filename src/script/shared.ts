@@ -102,7 +102,7 @@ export class ActionInstance {
 	action: Action;
 	device: string;
 	profile: string;
-	type: string;
+	type: "key" | "slider";
 	position: number;
 	index: number;
 	context: string;
@@ -110,7 +110,7 @@ export class ActionInstance {
 	states: ActionState[];
 	settings: object;
 
-	constructor(action: Action, device: string, profile: string, type: string, position: number, index: number) {
+	constructor(action: Action, device: string, profile: string, type: "key" | "slider", position: number, index: number) {
 		this.action = action;
 
 		this.device = device;
