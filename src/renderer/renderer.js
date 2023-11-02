@@ -161,6 +161,10 @@ function populateSlots(device) {
 		}
 		slots.appendChild(tr);
 	}
+
+	let width = (device.sliders * 64) + (device.columns * 112) + 305;
+	if (width < 800) width = 800;
+	ipcRenderer.send("resize", width, 600);
 }
 
 let devices;

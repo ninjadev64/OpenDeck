@@ -183,20 +183,28 @@ class StreamDeckPlugin {
 		} else {
 			if (["darwin", "linux"].includes(platform)) execSync(`chmod +x "${path.join(root, uuid, codePath)}"`);
 			if (enableWine) {
-				this.process = spawn("wine", [
-					path.join(root, uuid, codePath),
-					"-port", store.get("webSocketPort"),
-					"-pluginUUID", this.uuid,
-					"-registerEvent", "register",
-					"-info", JSON.stringify(this.info)
-				]);
+				this.process = spawn(
+					"wine",
+					[
+						path.join(root, uuid, codePath),
+						"-port", store.get("webSocketPort"),
+						"-pluginUUID", this.uuid,
+						"-registerEvent", "register",
+						"-info", JSON.stringify(this.info)
+					],
+					{ cwd: path.join(root, uuid) }
+				);
 			} else {
-				this.process = spawn(path.join(root, uuid, codePath), [
-					"-port", store.get("webSocketPort"),
-					"-pluginUUID", this.uuid,
-					"-registerEvent", "register",
-					"-info", JSON.stringify(this.info)
-				]);
+				this.process = spawn(
+					path.join(root, uuid, codePath),
+					[
+						"-port", store.get("webSocketPort"),
+						"-pluginUUID", this.uuid,
+						"-registerEvent", "register",
+						"-info", JSON.stringify(this.info)
+					],
+					{ cwd: path.join(root, uuid) }
+				);
 			}
 		}
 	}

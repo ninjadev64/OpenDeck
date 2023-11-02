@@ -66,6 +66,10 @@ function createWindow(): void {
 		mainWindow.webContents.send("profiles", store.get("devices")[device].profiles, id);
 	});
 
+	ipcMain.on("resize", (_event, width, height) => {
+		mainWindow.setSize(width, height);
+	});
+
 	mainWindow.on("close", (event: any) => {
 		if (!isQuitting) {
 			event.preventDefault();

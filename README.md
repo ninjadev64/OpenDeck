@@ -4,11 +4,14 @@ OpenDeck is a desktop software that allows Stream Deck-like functionality, imple
 
 The software is supported on Windows, macOS, and Linux, and is built with Electron. The software is designed for ProntoKey hardware (USB and Bluetooth), but also supports Elgato hardware (thanks to the `@elgato-stream-deck/node` package by julusian).
 
+Join the [Discord server](https://discord.gg/26Nf8rHvaj) for questions, support, and updates!
+
 ### Installation
 
 1. Download a pre-built distributable for your platform from GitHub Actions [here](https://github.com/ninjadev64/OpenDeck/actions).
 2. If you're using Elgato hardware on Linux, apply the required udev subsystem rules as described [here](https://github.com/Julusian/node-elgato-stream-deck#linux).
-3. If you're using ProntoKey hardware over Bluetooth, switch to Bluetooth mode in OpenDeck settings.
+3. If you're using ProntoKey hardware on Windows, install the CP210x Universal Windows Driver from [here](https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers?tab=downloads). 
+4. If you're using ProntoKey hardware over Bluetooth, switch to Bluetooth mode in OpenDeck settings.
 
 ### Updating
 
