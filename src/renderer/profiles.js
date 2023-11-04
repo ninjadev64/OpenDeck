@@ -9,7 +9,7 @@ deviceSelect.addEventListener("change", () => {
 	selectedDevice = deviceSelect.value;
 	updateList(store.get("devices")[selectedDevice].profiles);
 });
-for (const [id, device] of Object.entries(store.get("devices"))) {
+for (const [ id, device ] of Object.entries(store.get("devices"))) {
 	let o = document.createElement("option");
 	o.value = id;
 	o.innerText = device.name;
@@ -26,7 +26,7 @@ document.getElementById("create").addEventListener("click", () => {
 
 function updateList(profiles) {
 	list.textContent = "";
-	for (const [id, profile] of Object.entries(profiles)) {
+	for (const [ id, profile ] of Object.entries(profiles)) {
 		let t = document.createElement("li");
 		t.innerText = profile.name;
 		

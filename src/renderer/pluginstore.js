@@ -10,10 +10,10 @@ const store = require("../../build/store").default;
 const dialog = require("dialog");
 
 function download(url, dest, cb) {
-	var file = createWriteStream(dest);
+	let file = createWriteStream(dest);
 	get(url, (response) => {
 		response.pipe(file);
-		file.on("finish", function() {
+		file.on("finish", () => {
 			file.close(cb);
 		});
 	}).on("error", (err) => {
@@ -23,17 +23,16 @@ function download(url, dest, cb) {
 };
 
 function install(plugin) {
-	if (confirm(`Are you sure you want to install the plugin "${plugin.name}" by "${plugin.author.name}"?`)) {
-		let path = join(store.get("userDataPath"), "Plugins", `${plugin.identifier}.streamDeckPlugin`);
-		download(plugin.published_versions[0].direct_download_link, path, (err) => {
+	if (!confirm(`Are you sure you want to install the plugin "${plugin.name}" by "${plugin.author.name}"?`)) return;
+	let path = join(store.get("userDataPath"), "Plugins", `${plugin.identifier}.streamDeckPlugin`);
+	download(plugin.published_versions[0].direct_download_link, path, (err) => {
+		if (err) throw err;
+		new AdmZip(path).extractAllToAsync(join(store.get("userDataPath"), "Plugins"), true, false, (err) => {
 			if (err) throw err;
-			new AdmZip(path).extractAllToAsync(join(store.get("userDataPath"), "Plugins"), true, false, (err) => {
-				if (err) throw err;
-				unlink(path, (err) => { if (err) throw err; });
-				dialog.info(`Successfully downloaded and unpacked plugin "${plugin.name}"!`, "Success");
-			});
+			unlink(path, (err) => { if (err) throw err; });
+			dialog.info(`Successfully downloaded and unpacked plugin "${plugin.name}"!`, "Success");
 		});
-	}
+	});
 }
 
 let pluginDir = path.join(store.get("userDataPath"), "Plugins");
@@ -41,39 +40,39 @@ let pluginIDs = readdirSync(pluginDir, { withFileTypes: true }).filter((item) =>
 pluginIDs.forEach((p) => {
 	let manifest = JSON.parse(readFileSync(path.join(pluginDir, p, "manifest.json"), "utf8"));
 	let div = document.createElement("div");
-		div.classList.add("plugin-card");
+	div.classList.add("plugin-card");
 
-		let title = document.createElement("h3");
-		title.innerText = manifest.Name;
-		div.appendChild(title);
+	let title = document.createElement("h3");
+	title.innerText = manifest.Name;
+	div.appendChild(title);
 
-		let identifier = document.createElement("small");
-		identifier.innerText = p.slice(0, -9);
-		div.appendChild(identifier);
+	let identifier = document.createElement("small");
+	identifier.innerText = p.slice(0, -9);
+	div.appendChild(identifier);
 
-		let author = document.createElement("p");
-		author.innerText = `by ${manifest.Author}`;
-		div.appendChild(author);
+	let author = document.createElement("p");
+	author.innerText = `by ${manifest.Author}`;
+	div.appendChild(author);
 
-		let button = document.createElement("button");
-		button.innerText = "Remove";
-		button.addEventListener("click", () => {
-			Object.values(store.get("devices")).forEach((device) => { Object.values(device.profiles).forEach((profile) => {
-				[].concat(profile.key, profile.slider).forEach((slot) => slot.forEach((instance) => {
-					if (instance && instance.action.plugin == p) ipcRenderer.send("slotUpdate", instance.context, undefined);
-				}));
-			})});
-			div.remove();
-			rmSync(path.join(pluginDir, p), { recursive: true, force: true });
-		});
-		div.appendChild(button);
+	let button = document.createElement("button");
+	button.innerText = "Remove";
+	button.addEventListener("click", () => {
+		Object.values(store.get("devices")).forEach((device) => { Object.values(device.profiles).forEach((profile) => {
+			[].concat(profile.key, profile.slider).forEach((slot) => slot.forEach((instance) => {
+				if (instance && instance.action.plugin == p) ipcRenderer.send("slotUpdate", instance.context, undefined);
+			}));
+		})});
+		div.remove();
+		rmSync(path.join(pluginDir, p), { recursive: true, force: true });
+	});
+	div.appendChild(button);
 
-		let icon = document.createElement("img");
-		icon.src = getIcon(path.join(pluginDir, p, manifest.Icon));
-		icon.classList.add("plugin-icon");
-		div.appendChild(icon);
+	let icon = document.createElement("img");
+	icon.src = getIcon(path.join(pluginDir, p, manifest.Icon));
+	icon.classList.add("plugin-icon");
+	div.appendChild(icon);
 
-		document.body.appendChild(div);
+	document.body.appendChild(div);
 });
 
 document.body.appendChild(document.createElement("hr"));

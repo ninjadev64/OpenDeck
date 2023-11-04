@@ -25,14 +25,14 @@ function createWindow(): void {
   
 	mainWindow.loadFile(path.join(__dirname, "../src/markup/index.html"));
 
-	ipcMain.on("createInstance", (_event, action, device, type, position, index) => {
+	ipcMain.on("createInstance", (_, action: string, device: string, type: "key" | "slider", position: number, index: number) => {
 		let devices = store.get("devices");
 		let instance = new ActionInstance(allActions[action], device, devices[device].selectedProfile, type, position, index);
 		updateSlot(instance.context, instance);
 		mainWindow.webContents.send("updateState", instance.context, instance);
 	});
 	
-	ipcMain.on("slotUpdate", (_event, context, instance) => {
+	ipcMain.on("slotUpdate", (_, context: string, instance: ActionInstance) => {
 		updateSlot(context, instance);
 		mainWindow.webContents.send("updateState", context, instance);
 	});
@@ -45,12 +45,12 @@ function createWindow(): void {
 		mainWindow.webContents.send("devices", store.get("devices"));
 	});
 
-	ipcMain.on("requestProfiles", (_event, device) => {
+	ipcMain.on("requestProfiles", (_, device: string) => {
 		let d = store.get("devices")[device];
 		mainWindow.webContents.send("profiles", d.profiles, d.selectedProfile);
 	});
 
-	ipcMain.on("createProfile", (_event, device, name, id) => {
+	ipcMain.on("createProfile", (_, device: string, name: string, id: string) => {
 		let devices = store.get("devices");
 		devices[device].profiles[id] = {
 			name,
@@ -61,12 +61,12 @@ function createWindow(): void {
 		mainWindow.webContents.send("profiles", devices[device].profiles, devices[device].selectedProfile);
 	});
 
-	ipcMain.on("profileUpdate", (_event, device, id) => {
+	ipcMain.on("profileUpdate", (_, device: string, id: string) => {
 		setProfile(device, id);
 		mainWindow.webContents.send("profiles", store.get("devices")[device].profiles, id);
 	});
 
-	ipcMain.on("resize", (_event, width, height) => {
+	ipcMain.on("resize", (_event, width: number, height: number) => {
 		mainWindow.setSize(width, height);
 	});
 

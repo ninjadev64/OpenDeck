@@ -85,7 +85,7 @@ class StreamDeckPlugin {
 		});
 
 		let devices = [];
-		for (const [id, data] of Object.entries(store.get("devices"))) {
+		for (const [ id, data ] of Object.entries(store.get("devices"))) {
 			let details = data as any;
 			devices.push({
 				id: id,
@@ -260,9 +260,8 @@ class StreamDeckPluginManager {
 				let data = JSON.parse(message);
 				if (data.event == "register") {
 					this.plugins[data.uuid].setSocket(ws);
-				} else {
-					let f = eventHandler[data.event];
-					if (f) f.bind(eventHandler)(data, false);
+				} else if (typeof eventHandler[data.event] == "function") {
+					eventHandler[data.event](data, false);
 				}
 			});
 		});
@@ -311,7 +310,7 @@ class StreamDeckPluginManager {
 				});
 
 				const { eventHandler } = require("./event");
-				for (const [key, value] of Object.entries(this.applicationCounts)) {
+				for (const [ key, value ] of Object.entries(this.applicationCounts)) {
 					if (!counts[key]) counts[key] = 0;
 					if (counts[key] == value) continue;
 					this.applicationMonitors[key].forEach((plugin) => {

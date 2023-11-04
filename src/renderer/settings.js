@@ -5,7 +5,7 @@ const { spawn } = require("child_process");
 const dialog = require("dialog");
 
 document.getElementById("open-plugins").addEventListener("click", () => {
-	var explorer;
+	let explorer;
 	switch (platform()) {
 		case "win32": explorer = "explorer"; break;
 		case "linux": explorer = "xdg-open"; break;
@@ -24,14 +24,14 @@ const options = {
 	"webSocketPort": webSocketPort,
 	"propertyInspectorPort": propertyInspectorPort
 }
-for (const [key, value] of Object.entries(options)) {
+for (const [ key, value ] of Object.entries(options)) {
 	switch (value.type) {
 		case "checkbox": value.checked = store.get(key);
 		default: value.value = store.get(key);
 	}
 }
 function applyChanges() {
-	for (const [key, value] of Object.entries(options)) {
+	for (const [ key, value ] of Object.entries(options)) {
 		switch (value.type) {
 			case "number": store.set(key, parseInt(value.value)); break;
 			case "checkbox": store.set(key, value.checked); break;

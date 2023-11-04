@@ -60,7 +60,7 @@ function updateState(instance) {
 }
 
 ipcRenderer.on("categories", (_, categories) => {
-	for (const [category, actions] of Object.entries(categories)) {
+	for (const [ category, actions ] of Object.entries(categories)) {
 		let heading = document.createElement("h3");
 		heading.innerText = category;
 		actionList.appendChild(heading);
@@ -181,7 +181,7 @@ ipcRenderer.on("devices", (_event, d) => {
 	if (!selectedDevice || !devices[selectedDevice]) selectedDevice = Object.keys(devices)[0];
 	populateSlots(devices[selectedDevice]);
 	deviceSelect.textContent = "";
-	for (const [id, device] of Object.entries(devices)) {
+	for (const [ id, device ] of Object.entries(devices)) {
 		let o = document.createElement("option");
 		o.value = id;
 		o.innerText = device.name;
@@ -215,7 +215,7 @@ ipcRenderer.on("profiles", (_event, profiles, selected) => {
 	})});
 
 	profileSelect.textContent = "";
-	for (const [id, profile] of Object.entries(profiles)) {
+	for (const [ id, profile ] of Object.entries(profiles)) {
 		let o = document.createElement("option");
 		o.value = id;
 		o.innerText = profile.name;

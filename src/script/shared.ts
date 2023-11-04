@@ -137,7 +137,7 @@ export type Profile = {
 }
 
 export let currentProfiles: { [device: string]: Profile } = {};
-for (const [id, data] of Object.entries(store.get("devices"))) {
+for (const [ id, data ] of Object.entries(store.get("devices"))) {
 	let settings = data as any;
 	currentProfiles[id] = settings.profiles[settings.selectedProfile];
 }

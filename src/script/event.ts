@@ -4,7 +4,7 @@ import { Device } from "./devices";
 import { getMainWindow } from "./main";
 import { pluginManager } from "./plugins";
 import { propertyInspectorManager } from "./propertyinspector";
-import { ActionInstance, getCoordinatesByContext, getInstanceByContext, getProfile, parseContext, updateProfile } from "./shared";
+import { ActionInstance, getCoordinatesByContext, getInstanceByContext, getProfile, updateProfile } from "./shared";
 import store from "./store";
 
 class EventHandler {
@@ -59,7 +59,7 @@ class EventHandler {
 		this.updateState(instance);
 	}
 
-	dialDown(device: string, dial: number) {
+	dialDown(device: string, dial: number): void {
 		let instance = getProfile(device).slider[dial][0];
 		if (instance == undefined) return;
 		pluginManager.sendEvent(instance.action.plugin, {
@@ -78,7 +78,7 @@ class EventHandler {
 		});
 	}
 
-	dialUp(device: string, dial: number) {
+	dialUp(device: string, dial: number): void {
 		let instance = getProfile(device).slider[dial][0];
 		if (instance == undefined) return;
 		pluginManager.sendEvent(instance.action.plugin, {
