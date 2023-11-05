@@ -1,0 +1,53 @@
+{
+	"build": {
+		"beforeBuildCommand": "npm run build",
+		"beforeDevCommand": "npm run dev",
+		"devPath": "http://localhost:5173",
+		"distDir": "../build"
+	},
+	"package": {
+		"productName": "OpenDeck",
+		"version": "2.0.0"
+	},
+	"tauri": {
+		"windows": [
+			{
+				"title": "OpenDeck",
+				"fullscreen": false,
+				"resizable": true,
+				"width": 800,
+				"height": 600,
+				"minWidth": 800,
+				"minHeight": 600,
+				"center": true,
+				"fileDropEnabled": false
+			}
+		],
+		"bundle": {
+			"active": true,
+			"targets": "all",
+			"identifier": "com.amansprojects.opendeck",
+			"publisher": "ninjadev64",
+			"shortDescription": "A cross-platform desktop application for ProntoKey and Stream Deck.",
+			"longDescription": "OpenDeck is a desktop application that provides Stream Deck-like functionality for ProntoKey and Elgato hardware, implementing the Stream Deck SDK for cross-compatibility.",
+			"category": "Productivity",
+			"icon": [
+				"icons/icon.png",
+				"icons/icon.icns",
+				"icons/icon.ico"
+			]
+		},
+		"security": {
+			"csp": "default-src 'self'; img-src 'self' data: https://appstore.elgato.com/; connect-src https://appstore.elgato.com/;"
+		},
+		"allowlist": {
+			"all": true
+		},
+		"updater": {
+			"active": false
+		},
+		"systemTray": {
+			"iconPath": "icons/icon.png"
+		}
+	}
+}
