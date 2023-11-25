@@ -47,7 +47,7 @@ impl ProntoKeyDevice {
 			.open()
 		{
 			Ok(p) => p,
-			Err(e) => panic!("Failed to open serial port: {}", e.description)
+			Err(error) => panic!("Failed to open serial port: {}", error)
 		};
 		let _ = port.write("register".as_bytes()); 
 
@@ -62,8 +62,8 @@ impl ProntoKeyDevice {
 						Err(_) => break
 					}
 					// Iterate through JSON objects received from device that are being held in the buffer.
-					while holding_string.contains("}") {
-						let index = holding_string.find("}").unwrap_or_default();
+					while holding_string.contains('}') {
+						let index = holding_string.find('}').unwrap_or_default();
 						let chunk = holding_string[..=index].trim();
 						let j: Value = match serde_json::from_str(chunk) {
 							Ok(data) => data,
@@ -73,15 +73,11 @@ impl ProntoKeyDevice {
 						
 						// If the device is uninitialised, attempt to read its MAC address and initialise.
 						if device.is_none() {
-							match &j["address"] {
-								Value::String(address) => {
-									device = Some(ProntoKeyDevice { address: address.clone() });
-									match &device {
-										Some(device) => super::DEVICES.lock().unwrap().push(super::DeviceInfo::new(device)),
-										_ => {}
-									}
-								},
-								_ => {}
+							if let Value::String(address) = &j["address"] {
+								device = Some(ProntoKeyDevice { address: address.clone() });
+								if let Some(device) = &device {
+									super::DEVICES.lock().unwrap().push(super::DeviceInfo::new(device));
+								}
 							}
 							continue;
 						}
@@ -89,46 +85,37 @@ impl ProntoKeyDevice {
 						let device = device.as_ref().unwrap();
 
 						// Handle key presses and releases.
-						match &j["key"] {
-							Value::Number(num) => {
-								match num.as_u64().unwrap_or_default() as u8 {
-									0 => device.key_up(last_key),
-									val => {
-										device.key_down(val);
-										last_key = val;
-									}
+						if let Value::Number(num) = &j["key"] {
+							match num.as_u64().unwrap_or_default() as u8 {
+								0 => device.key_up(last_key),
+								val => {
+									device.key_down(val);
+									last_key = val;
 								}
-							},
-							_ => {}
+							}
 						}
 
 						// Handle slider value changes.
-						match &j["slider0"] {
-							Value::Number(val) => {
-								let val: i16 = match val.as_i64() {
-									Some(v) => v as i16,
-									_ => last_sliders[0]
-								};
-								device.dial_rotate(0, val - last_sliders[0]);
-								last_sliders[0] = val;
-							},
-							_ => ()
+						if let Value::Number(val) = &j["slider0"] {
+							let val: i16 = match val.as_i64() {
+								Some(v) => v as i16,
+								_ => last_sliders[0]
+							};
+							device.dial_rotate(0, val - last_sliders[0]);
+							last_sliders[0] = val;
 						}
-						match &j["slider1"] {
-							Value::Number(val) => {
-								let val: i16 = match val.as_i64() {
-									Some(v) => v as i16,
-									_ => last_sliders[1]
-								};
-								device.dial_rotate(1, val - last_sliders[1]);
-								last_sliders[1] = val;
-							},
-							_ => {}
+						if let Value::Number(val) = &j["slider1"] {
+							let val: i16 = match val.as_i64() {
+								Some(v) => v as i16,
+								_ => last_sliders[1]
+							};
+							device.dial_rotate(1, val - last_sliders[1]);
+							last_sliders[1] = val;
 						}
 					}
 				},
-				Err(ref e) if e.kind() == std::io::ErrorKind::TimedOut => (),
-				Err(e) => eprintln!("{:?}", e)
+				Err(ref error) if error.kind() == std::io::ErrorKind::TimedOut => (),
+				Err(error) => eprintln!("{:?}", error)
 			}
 			thread::sleep(Duration::from_millis(10));
 		}

@@ -10,7 +10,7 @@ mod devices;
 async fn main() {
 	let app = match tauri::Builder::default().build(tauri::generate_context!()) {
 		Ok(app) => app,
-		Err(e) => panic!("Failed to create Tauri application: {}", e.to_string())
+		Err(error) => panic!("Failed to create Tauri application: {}", error)
 	};
 	devices::initialise_devices();
 	plugins::initialise_plugins(app.handle());

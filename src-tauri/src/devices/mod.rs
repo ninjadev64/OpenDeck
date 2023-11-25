@@ -62,13 +62,10 @@ lazy_static! {
 pub fn initialise_devices() {
 	// Iterate through available serial ports and attempt to register them as ProntoKey devices.
 	for port in serialport::available_ports().unwrap_or_default() {
-		match port.port_type {
-			serialport::SerialPortType::UsbPort(info) => {
-				if info.vid == 0x10c4 && info.pid == 0xea60 {
-					tokio::spawn(prontokey::ProntoKeyDevice::init(port.port_name));
-				}
+		if let serialport::SerialPortType::UsbPort(info) = port.port_type {
+			if info.vid == 0x10c4 && info.pid == 0xea60 {
+				tokio::spawn(prontokey::ProntoKeyDevice::init(port.port_name));
 			}
-			_ => {}
 		}
 	}
 }

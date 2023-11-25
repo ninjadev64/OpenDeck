@@ -44,11 +44,11 @@ fn initialise_plugin(path: path::PathBuf, app: &AppHandle) -> anyhow::Result<()>
 	for os in manifest.os {
 		if os.platform == platform {
 			#[cfg(target_os = "windows")]
-			if let Some(_) = &manifest.code_path_windows { code_path = manifest.code_path_windows; }
+			if manifest.code_path_windows.is_some() { code_path = manifest.code_path_windows; }
 			#[cfg(target_os = "macos")]
-			if let Some(_) = &manifest.code_path_macos { code_path = manifest.code_path_macos; }
+			if manifest.code_path_macos.is_some() { code_path = manifest.code_path_macos; }
 			#[cfg(target_os = "linux")]
-			if let Some(_) = &manifest.code_path_linux { code_path = manifest.code_path_linux; }
+			if manifest.code_path_linux.is_some() { code_path = manifest.code_path_linux; }
 			
 			if let Some(code_path) = &code_path {
 				use_browser = code_path.ends_with(".html");
@@ -95,10 +95,10 @@ fn initialise_plugin(path: path::PathBuf, app: &AppHandle) -> anyhow::Result<()>
 
 	if use_browser {
 		// Create a webview window for the plugin and call its registration function.
-		let url = String::from("http://localhost:57118/") + &path.join(code_path).to_str().unwrap();
+		let url = String::from("http://localhost:57118/") + path.join(code_path).to_str().unwrap();
 		let window = tauri::WindowBuilder::new(
 			app,
-			plugin_uuid.replace(".", "_"),
+			plugin_uuid.replace('.', "_"),
 			tauri::WindowUrl::External(url.parse().unwrap())
 		)
 			.visible(false)
@@ -159,21 +159,21 @@ pub fn initialise_plugins(app: AppHandle) {
 
 	let entries = match fs::read_dir(&plugin_dir) {
 		Ok(p) => p,
-		Err(e) => panic!("Failed to read plugins directory at {}: {}", plugin_dir.display(), e.to_string())
+		Err(error) => panic!("Failed to read plugins directory at {}: {}", plugin_dir.display(), error)
 	};
 
 	// Iterate through all directory entries in the plugins folder and initialise them as plugins if appropriate
 	for entry in entries {
 		if let Ok(entry) = entry {
 			if entry.metadata().unwrap().is_dir() {
-				if let Err(e) = initialise_plugin(entry.path(), &app) {
-					eprintln!("{}\n\tCaused by: {}", e.to_string(), e.root_cause());
+				if let Err(error) = initialise_plugin(entry.path(), &app) {
+					eprintln!("{}\n\tCaused by: {}", error, error.root_cause());
 				}
 			} else {
 				eprintln!("Failed to initialise plugin at {}: is a file", entry.path().display());
 			}
-		} else if let Err(e) = entry {
-			eprintln!("Failed to read plugin directory: {}", e.to_string())
+		} else if let Err(error) = entry {
+			eprintln!("Failed to read plugin directory: {}", error)
 		}
 	}
 }
@@ -183,7 +183,7 @@ async fn init_websocket_server() {
 	let listener = match TcpListener::bind("localhost:57116").await {
 		Ok(listener) => listener,
 		Err(error) => {
-			eprintln!("Failed to bind to socket: {}", error.to_string());
+			eprintln!("Failed to bind to socket: {}", error);
 			return;
 		}
 	};
@@ -198,15 +198,13 @@ async fn accept_connection(stream: TcpStream) {
 	let mut socket = match tokio_tungstenite::accept_async(stream).await {
 		Ok(socket) => socket,
 		Err(error) => {
-			eprintln!("Failed to complete WebSocket handshake: {}", error.to_string());
+			eprintln!("Failed to complete WebSocket handshake: {}", error);
 			return;
 		}
 	};
 
-	while let Some(data) = socket.next().await {
-		crate::events::register_plugin(serde_json::from_str(&data.unwrap().into_text().unwrap()).unwrap(), socket).await;
-		break;
-	}
+	let register_event = socket.next().await.unwrap().unwrap();
+	crate::events::register_plugin(serde_json::from_str(&register_event.into_text().unwrap()).unwrap(), socket).await;
 }
 
 /// Start a simple webserver to serve files of plugins that run in a browser environment.
