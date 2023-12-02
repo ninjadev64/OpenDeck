@@ -7,7 +7,7 @@ use serde::Serialize;
 
 /// A trait implemented by all supported devices.
 pub trait BaseDevice {
-	fn num_dials(&self) -> u8;
+	fn num_sliders(&self) -> u8;
 	fn num_rows(&self) -> u8;
 	fn num_columns(&self) -> u8;
 	fn num_keys(&self) -> u8 {
@@ -23,20 +23,14 @@ pub trait BaseDevice {
 	fn dial_rotate(&self, dial: u8, ticks: i16);
 }
 
-
-/// The dimensions of a device.
-#[derive(Clone, Serialize)]
-pub struct DeviceSize {
-	pub rows: u8,
-	pub columns: u8
-}
-
 /// Metadata of a device.
 #[derive(Clone, Serialize)]
 pub struct DeviceInfo {
 	pub id: String,
 	pub name: String,
-	pub size: DeviceSize,
+	pub rows: u8,
+	pub columns: u8,
+	pub sliders: u8,
 	pub r#type: u8
 }
 
@@ -45,10 +39,9 @@ impl DeviceInfo {
 		DeviceInfo {
 			id: device.id(),
 			name: device.name(),
-			size: DeviceSize {
-				rows: device.num_rows(),
-				columns: device.num_columns()
-			},
+			rows: device.num_rows(),
+			columns: device.num_columns(),
+			sliders: device.num_sliders(),
 			r#type: device.r#type()
 		}
 	}

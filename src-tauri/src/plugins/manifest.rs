@@ -1,6 +1,7 @@
 use crate::shared::Action;
 
 use serde::Deserialize;
+use serde_inline_default::serde_inline_default;
 
 #[derive(Deserialize)]
 pub(super) struct OS {
@@ -9,10 +10,15 @@ pub(super) struct OS {
 }
 
 #[allow(dead_code)]
+#[serde_inline_default]
 #[derive(Deserialize)]
 pub(super) struct PluginManifest {
 	#[serde(alias = "Version")]
 	pub version: String,
+
+	#[serde_inline_default(String::from("Custom"))]
+	#[serde(alias = "Category")]
+	pub category: String,
 
 	#[serde(alias = "Actions")]
 	pub actions: Vec<Action>,

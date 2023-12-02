@@ -11,7 +11,7 @@ pub struct ProntoKeyDevice {
 }
 
 impl BaseDevice for ProntoKeyDevice {
-	fn num_dials(&self) -> u8 { 2 }
+	fn num_sliders(&self) -> u8 { 2 }
 	fn num_rows(&self) -> u8 { 3 }
 	fn num_columns(&self) -> u8 { 3 }
 

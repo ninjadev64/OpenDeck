@@ -41,7 +41,13 @@
 			"csp": "default-src 'self'; img-src 'self' data: https://appstore.elgato.com/; connect-src https://appstore.elgato.com/;"
 		},
 		"allowlist": {
-			"all": true
+			"all": true,
+			"protocol": {
+				"asset": true,
+				"assetScope": [
+					"$APPCONFIG/plugins/**/*"
+				]
+			}
 		},
 		"updater": {
 			"active": false

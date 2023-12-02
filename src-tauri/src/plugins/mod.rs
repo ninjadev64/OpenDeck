@@ -1,8 +1,11 @@
 mod manifest;
 mod info_param;
 
+use crate::shared::{Action, CATEGORIES, convert_icon};
+
 use std::{fs, path};
 use std::process::{Command, Stdio};
+use std::collections::HashMap;
 
 use tauri::AppHandle;
 
@@ -12,7 +15,7 @@ use futures_util::StreamExt;
 use anyhow::{Context, anyhow};
 
 /// Initialise a plugin from a given directory.
-fn initialise_plugin(path: path::PathBuf, app: &AppHandle) -> anyhow::Result<()> {
+fn initialise_plugin(path: path::PathBuf, app: &AppHandle, categories: &mut HashMap<String, Vec<Action>>) -> anyhow::Result<()> {
 	let plugin_uuid = path.file_name().unwrap().to_str().unwrap();
 	let mut manifest_path = path.clone();
 	manifest_path.push("manifest.json");
@@ -26,6 +29,32 @@ fn initialise_plugin(path: path::PathBuf, app: &AppHandle) -> anyhow::Result<()>
 	
 	for action in &mut manifest.actions {
 		action.plugin = plugin_uuid.to_string();
+
+		let mut action_icon_path = path.clone();
+		action_icon_path.push(action.icon.clone());
+		action.icon = convert_icon(action_icon_path.to_str().unwrap().to_string());
+
+		for state in &mut action.states {
+			if state.image == "actionDefaultImage" {
+				state.image = action.icon.clone();
+			} else {
+				let mut state_icon = path.clone();
+				state_icon.push(state.image.clone());
+				state.image = convert_icon(state_icon.to_str().unwrap().to_string());
+			}
+		}
+	}
+
+	if let Some(category) = categories.get_mut(&manifest.category) {
+		for action in manifest.actions {
+			category.push(action);
+		}
+	} else {
+		let mut category: Vec<Action> = vec![];
+		for action in manifest.actions {
+			category.push(action);
+		}
+		categories.insert(manifest.category, category);
 	}
 
 	#[cfg(target_os = "windows")]
@@ -67,6 +96,11 @@ fn initialise_plugin(path: path::PathBuf, app: &AppHandle) -> anyhow::Result<()>
 		return Err(anyhow!("Failed to load plugin with ID {}: unsupported on platform {}", plugin_uuid, platform));
 	}
 
+	let mut devices: Vec<info_param::DeviceInfo> = vec![];
+	for device in crate::devices::DEVICES.lock().unwrap().iter() {
+		devices.push(info_param::DeviceInfo::new(device));
+	}
+
 	let info = info_param::Info {
 		application: info_param::ApplicationInfo {
 			font: String::from("Rubik"),
@@ -88,7 +122,7 @@ fn initialise_plugin(path: path::PathBuf, app: &AppHandle) -> anyhow::Result<()>
 			highlightColor: String::from("#F7821BFF"),
 			mouseDownColor: String::from("#CF6304FF")
 		},
-		devices: crate::devices::DEVICES.lock().unwrap().to_vec()
+		devices
 	};
 
 	let code_path = code_path.unwrap();
@@ -166,7 +200,7 @@ pub fn initialise_plugins(app: AppHandle) {
 	for entry in entries {
 		if let Ok(entry) = entry {
 			if entry.metadata().unwrap().is_dir() {
-				if let Err(error) = initialise_plugin(entry.path(), &app) {
+				if let Err(error) = initialise_plugin(entry.path(), &app, &mut CATEGORIES.lock().unwrap()) {
 					eprintln!("{}\n\tCaused by: {}", error, error.root_cause());
 				}
 			} else {

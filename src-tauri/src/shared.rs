@@ -1,5 +1,22 @@
+use std::collections::HashMap;
+use std::sync::Mutex;
+use std::path::Path;
+
 use serde::{Serialize, Deserialize};
 use serde_inline_default::serde_inline_default;
+
+use lazy_static::lazy_static;
+
+/// Convert an icon specified in a plugin manifest to its full path.
+pub fn convert_icon(path: String) -> String {
+	if Path::new(&(path.clone() + ".svg")).exists() {
+		path + ".svg"
+	} else if Path::new(&(path.clone() + "@2x.png")).exists() {
+		path + "@2x.png"
+	} else {
+		path + ".png"
+	}
+}
 
 /// A state of an action.
 #[serde_inline_default]
@@ -100,4 +117,9 @@ pub struct ActionInstance {
 	pub states: Vec<ActionState>,
 	pub current_state: u16,
 	pub settings: String
+}
+
+lazy_static! {
+	/// A map of category names to a list of actions in that category.
+	pub static ref CATEGORIES: Mutex<HashMap<String, Vec<Action>>> = Mutex::new(HashMap::new());
 }
