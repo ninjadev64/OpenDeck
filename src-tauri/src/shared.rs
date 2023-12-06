@@ -20,7 +20,7 @@ pub fn convert_icon(path: String) -> String {
 
 /// A state of an action.
 #[serde_inline_default]
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct ActionState {
 	#[serde(alias = "Image")]
 	pub image: String,
@@ -60,7 +60,7 @@ pub struct ActionState {
 
 /// An action, deserialised from the plugin manifest.
 #[serde_inline_default]
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Action {
 	#[serde(alias = "Name")]
 	pub name: String,
@@ -94,7 +94,7 @@ pub struct Action {
 }
 
 /// Information about the slot an instance is located in.
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct ActionContext {
 	pub device: String,
 	pub profile: String,
@@ -116,7 +116,15 @@ pub struct ActionInstance {
 	pub context: ActionContext,
 	pub states: Vec<ActionState>,
 	pub current_state: u16,
-	pub settings: String
+	pub settings: serde_json::Value
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Profile {
+	pub device: String,
+	pub id: String,
+	pub keys: Vec<Option<ActionInstance>>,
+	pub sliders: Vec<Option<ActionInstance>>
 }
 
 lazy_static! {

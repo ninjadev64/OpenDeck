@@ -28,11 +28,11 @@ fn initialise_plugin(path: path::PathBuf, app: &AppHandle, categories: &mut Hash
 		.with_context(|| { format!("Failed to parse manifest of plugin at {}", manifest_path.display()) })?;
 	
 	for action in &mut manifest.actions {
-		action.plugin = plugin_uuid.to_string();
+		action.plugin = plugin_uuid.to_owned();
 
 		let mut action_icon_path = path.clone();
 		action_icon_path.push(action.icon.clone());
-		action.icon = convert_icon(action_icon_path.to_str().unwrap().to_string());
+		action.icon = convert_icon(action_icon_path.to_str().unwrap().to_owned());
 
 		for state in &mut action.states {
 			if state.image == "actionDefaultImage" {
@@ -40,7 +40,7 @@ fn initialise_plugin(path: path::PathBuf, app: &AppHandle, categories: &mut Hash
 			} else {
 				let mut state_icon = path.clone();
 				state_icon.push(state.image.clone());
-				state.image = convert_icon(state_icon.to_str().unwrap().to_string());
+				state.image = convert_icon(state_icon.to_str().unwrap().to_owned());
 			}
 		}
 	}
@@ -97,7 +97,7 @@ fn initialise_plugin(path: path::PathBuf, app: &AppHandle, categories: &mut Hash
 	}
 
 	let mut devices: Vec<info_param::DeviceInfo> = vec![];
-	for device in crate::devices::DEVICES.lock().unwrap().iter() {
+	for device in crate::devices::DEVICES.lock().unwrap().values() {
 		devices.push(info_param::DeviceInfo::new(device));
 	}
 
@@ -110,7 +110,7 @@ fn initialise_plugin(path: path::PathBuf, app: &AppHandle, categories: &mut Hash
 			version: env!("CARGO_PKG_VERSION").to_owned()
 		},
 		plugin: info_param::PluginInfo {
-			uuid: plugin_uuid.to_string(),
+			uuid: plugin_uuid.to_owned(),
 			version: manifest.version
 		},
 		devicePixelRatio: 0,
@@ -155,7 +155,7 @@ fn initialise_plugin(path: path::PathBuf, app: &AppHandle, categories: &mut Hash
 			.args([
 				code_path,
 				String::from("-port"), 57116.to_string(),
-				String::from("-pluginUUID"), plugin_uuid.to_string(),
+				String::from("-pluginUUID"), plugin_uuid.to_owned(),
 				String::from("-registerEvent"), String::from("register"),
 				String::from("-info"), serde_json::to_string(&info).unwrap()
 			])
@@ -169,7 +169,7 @@ fn initialise_plugin(path: path::PathBuf, app: &AppHandle, categories: &mut Hash
 			.current_dir(&path)
 			.args([
 				String::from("-port"), 57116.to_string(),
-				String::from("-pluginUUID"), plugin_uuid.to_string(),
+				String::from("-pluginUUID"), plugin_uuid.to_owned(),
 				String::from("-registerEvent"), String::from("register"),
 				String::from("-info"), serde_json::to_string(&info).unwrap()
 			])

@@ -1,5 +1,7 @@
 mod prontokey;
 
+use std::collections::HashMap;
+
 use lazy_static::lazy_static;
 use std::sync::Mutex;
 
@@ -48,7 +50,7 @@ impl DeviceInfo {
 }
 
 lazy_static! {
-	pub static ref DEVICES: Mutex<Vec<DeviceInfo>> = Mutex::new(vec![]);
+	pub static ref DEVICES: Mutex<HashMap<String, DeviceInfo>> = Mutex::new(HashMap::new());
 }
 
 /// Attempt to initialise all connected devices.

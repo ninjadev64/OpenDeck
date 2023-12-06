@@ -38,7 +38,7 @@
 			]
 		},
 		"security": {
-			"csp": "default-src 'self'; img-src 'self' data: https://appstore.elgato.com/; connect-src https://appstore.elgato.com/;"
+			"csp": "default-src 'self'; img-src 'self' data: asset: https://appstore.elgato.com/; connect-src https://appstore.elgato.com/;"
 		},
 		"allowlist": {
 			"all": true,

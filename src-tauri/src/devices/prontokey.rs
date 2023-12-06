@@ -76,7 +76,7 @@ impl ProntoKeyDevice {
 							if let Value::String(address) = &j["address"] {
 								device = Some(ProntoKeyDevice { address: address.clone() });
 								if let Some(device) = &device {
-									super::DEVICES.lock().unwrap().push(super::DeviceInfo::new(device));
+									super::DEVICES.lock().unwrap().insert(device.id(), super::DeviceInfo::new(device));
 								}
 							}
 							continue;
