@@ -19,14 +19,14 @@ fn initialise_plugin(path: path::PathBuf, app: &AppHandle, categories: &mut Hash
 	let plugin_uuid = path.file_name().unwrap().to_str().unwrap();
 	let mut manifest_path = path.clone();
 	manifest_path.push("manifest.json");
-	
+
 	let manifest =
 		fs::read(&manifest_path)
 		.with_context(|| { format!("Failed to read manifest of plugin at {}", manifest_path.display()) })?;
 	let mut manifest: manifest::PluginManifest =
 		serde_json::from_slice(&manifest)
 		.with_context(|| { format!("Failed to parse manifest of plugin at {}", manifest_path.display()) })?;
-	
+
 	for action in &mut manifest.actions {
 		action.plugin = plugin_uuid.to_owned();
 
@@ -78,7 +78,7 @@ fn initialise_plugin(path: path::PathBuf, app: &AppHandle, categories: &mut Hash
 			if manifest.code_path_macos.is_some() { code_path = manifest.code_path_macos; }
 			#[cfg(target_os = "linux")]
 			if manifest.code_path_linux.is_some() { code_path = manifest.code_path_linux; }
-			
+
 			if let Some(code_path) = &code_path {
 				use_browser = code_path.ends_with(".html");
 			}
@@ -115,7 +115,7 @@ fn initialise_plugin(path: path::PathBuf, app: &AppHandle, categories: &mut Hash
 		},
 		devicePixelRatio: 0,
 		colors: info_param::ColoursInfo {
-			buttonPressedBackgroundColor: String::from("#303030FF"), 
+			buttonPressedBackgroundColor: String::from("#303030FF"),
 			buttonPressedBorderColor: String::from("#646464FF"),
 			buttonPressedTextColor: String::from("#969696FF"),
 			disabledColor: String::from("#F7821B59"),

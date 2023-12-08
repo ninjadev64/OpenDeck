@@ -49,7 +49,7 @@ impl ProntoKeyDevice {
 			Ok(p) => p,
 			Err(error) => panic!("Failed to open serial port: {}", error)
 		};
-		let _ = port.write("register".as_bytes()); 
+		let _ = port.write("register".as_bytes());
 
 		let mut serial_buf: Vec<u8> = vec![0; 1024];
 		let mut holding_string = String::from("");
@@ -70,7 +70,7 @@ impl ProntoKeyDevice {
 							Err(_) => continue
 						};
 						holding_string = holding_string[(index + 1)..].to_owned();
-						
+
 						// If the device is uninitialised, attempt to read its MAC address and initialise.
 						if device.is_none() {
 							if let Value::String(address) = &j["address"] {

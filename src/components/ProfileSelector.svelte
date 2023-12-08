@@ -6,7 +6,7 @@
 		profiles = JSON.parse(await invoke("get_profiles", { device: device.id }));
 		value = profiles[0];
 	}
-	
+
 	export let profile: Profile;
 	async function setProfile(id: string) {
 		if (!device || !id) return;
@@ -16,7 +16,7 @@
 
 	let value: string;
 	$: setProfile(value);
-	
+
 	export let device: DeviceInfo;
 	$: getProfiles(device);
 </script>

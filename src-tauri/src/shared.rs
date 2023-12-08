@@ -88,7 +88,7 @@ pub struct Action {
 	#[serde_inline_default(vec![String::from("Keypad")])]
 	#[serde(alias = "Controllers")]
 	pub controllers: Vec<String>,
-	
+
 	#[serde(alias = "States")]
 	pub states: Vec<ActionState>
 }
@@ -100,7 +100,7 @@ pub struct ActionContext {
 	pub profile: String,
 	pub controller: String,
 	pub position: u8,
-	pub index: u16 
+	pub index: u16
 }
 
 impl ToString for ActionContext {

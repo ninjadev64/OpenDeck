@@ -26,9 +26,9 @@ async fn main() {
 		Ok(app) => app,
 		Err(error) => panic!("Failed to create Tauri application: {}", error)
 	};
-	
+
 	devices::initialise_devices();
 	plugins::initialise_plugins(app.handle());
-	
+
 	app.run(|_, _| {});
 }

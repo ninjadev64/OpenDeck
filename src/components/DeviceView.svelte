@@ -19,7 +19,7 @@
 			instance={profile.sliders[i]}
 		/>
 	{/each}
-	
+
 	<div class="flex flex-col">
 		{#each { length: device.rows } as _, r}
 			<div class="flex flex-row">

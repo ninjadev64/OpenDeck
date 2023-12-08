@@ -15,7 +15,7 @@ pub trait BaseDevice {
 	fn num_keys(&self) -> u8 {
 		self.num_rows() * self.num_columns()
 	}
-	
+
 	fn id(&self) -> String;
 	fn name(&self) -> String;
 	fn r#type(&self) -> u8;

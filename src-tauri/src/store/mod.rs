@@ -25,7 +25,7 @@ impl<T> Store<T> where T: Serialize + for<'a> Deserialize<'a> {
 				.with_context(|| { format!("Failed to read contents of file at {}", &path.display()) })?;
 			let existing_value: T = serde_json::from_slice(&file_contents)
 				.with_context(|| { format!("Failed to parse config file at {}", &path.display()) })?;
-			
+
 			Ok(Self {
 				path,
 				id: String::from(id),

@@ -2,14 +2,14 @@
 	import { invoke } from "@tauri-apps/api";
 
 	let devices: { [id: string]: DeviceInfo } = {};
-	
+
 	async function refreshDevices() {
 		devices = JSON.parse(await invoke("get_devices"));
 	}
 	setTimeout(refreshDevices, 5e2);
-	
+
 	let value: string;
-	export let device = null;
+	export let device: DeviceInfo | null;
 	function change() {
 		if (value == "refresh_devices") {
 			refreshDevices();
@@ -26,6 +26,6 @@
 	{#each Object.entries(devices) as [ id, device ]}
 		<option value={id}> {device.name} </option>
 	{/each}
-	
+
 	<option value="refresh_devices"> Refresh devices </option>
 </select>
