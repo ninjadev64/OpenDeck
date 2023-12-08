@@ -6,9 +6,10 @@
 	async function refreshDevices() {
 		devices = JSON.parse(await invoke("get_devices"));
 	}
+	setTimeout(refreshDevices, 5e2);
 	
 	let value: string;
-	export let device;
+	export let device = null;
 	function change() {
 		if (value == "refresh_devices") {
 			refreshDevices();

@@ -85,10 +85,46 @@ pub fn create_instance(app: tauri::AppHandle, action: Action, context: ActionCon
 		Err(error) => return serde_json::to_string(&Error { description: error.to_string() }).unwrap()
 	};
 
-	store.value.keys[context.position as usize] = Some(instance);
+	let instance_ref: &Option<ActionInstance>;
+	if context.controller == "Encoder" {
+		store.value.sliders[context.position as usize] = Some(instance);
+		instance_ref = &store.value.sliders[context.position as usize];
+	} else {
+		store.value.keys[context.position as usize] = Some(instance);
+		instance_ref = &store.value.keys[context.position as usize];
+	}
+
 	if let Err(error) = store.save() {
 		return serde_json::to_string(&Error { description: error.to_string() }).unwrap();
 	}
 
-	serde_json::to_string(&store.value.keys[context.position as usize]).unwrap()
+	serde_json::to_string(instance_ref).unwrap()
+}
+
+#[tauri::command]
+pub fn clear_slot(app: tauri::AppHandle, context: ActionContext) -> String {
+	let mut profile_stores = PROFILE_STORES.lock().unwrap();
+	let store = match profile_stores.get_profile_store(
+		DEVICES.lock().unwrap().get(&context.device).unwrap(),
+		&context.profile,
+		&app
+	) {
+		Ok(store) => store,
+		Err(error) => return serde_json::to_string(&Error { description: error.to_string() }).unwrap()
+	};
+
+	let instance_ref: &Option<ActionInstance>;
+	if context.controller == "Encoder" {
+		store.value.sliders[context.position as usize] = None;
+		instance_ref = &store.value.sliders[context.position as usize];
+	} else {
+		store.value.keys[context.position as usize] = None;
+		instance_ref = &store.value.keys[context.position as usize];
+	}
+
+	if let Err(error) = store.save() {
+		return serde_json::to_string(&Error { description: error.to_string() }).unwrap();
+	}
+
+	serde_json::to_string(instance_ref).unwrap()
 }
