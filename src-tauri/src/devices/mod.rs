@@ -3,7 +3,7 @@ mod prontokey;
 use std::collections::HashMap;
 
 use lazy_static::lazy_static;
-use std::sync::Mutex;
+use tokio::sync::Mutex;
 
 use serde::Serialize;
 
@@ -19,10 +19,6 @@ pub trait BaseDevice {
 	fn id(&self) -> String;
 	fn name(&self) -> String;
 	fn r#type(&self) -> u8;
-
-	fn key_down(&self, key: u8);
-	fn key_up(&self, key: u8);
-	fn dial_rotate(&self, dial: u8, ticks: i16);
 }
 
 /// Metadata of a device.

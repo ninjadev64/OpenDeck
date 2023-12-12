@@ -1,5 +1,7 @@
 use super::BaseDevice;
 
+use crate::events::outbound;
+
 use std::thread;
 use std::time::Duration;
 
@@ -22,16 +24,6 @@ impl BaseDevice for ProntoKeyDevice {
 		String::from("ProntoKey")
 	}
 	fn r#type(&self) -> u8 { 7 }
-
-	fn key_down(&self, key: u8) {
-		println!("{} down {}", &self.address, key);
-	}
-	fn key_up(&self, key: u8) {
-		println!("{} up {}", &self.address, key);
-	}
-	fn dial_rotate(&self, dial: u8, ticks: i16) {
-		println!("{} rotate {} by {}", &self.address, dial, ticks);
-	}
 }
 
 impl ProntoKeyDevice {
@@ -76,7 +68,7 @@ impl ProntoKeyDevice {
 							if let Value::String(address) = &j["address"] {
 								device = Some(ProntoKeyDevice { address: address.clone() });
 								if let Some(device) = &device {
-									super::DEVICES.lock().unwrap().insert(device.id(), super::DeviceInfo::new(device));
+									super::DEVICES.lock().await.insert(device.id(), super::DeviceInfo::new(device));
 								}
 							}
 							continue;
@@ -87,9 +79,11 @@ impl ProntoKeyDevice {
 						// Handle key presses and releases.
 						if let Value::Number(num) = &j["key"] {
 							match num.as_u64().unwrap_or_default() as u8 {
-								0 => device.key_up(last_key),
+								0 => {
+									let _ = outbound::keypad::key_up(device.id(), last_key - 1).await;
+								},
 								val => {
-									device.key_down(val);
+									let _ = outbound::keypad::key_down(device.id(), val - 1).await;
 									last_key = val;
 								}
 							}
@@ -101,7 +95,7 @@ impl ProntoKeyDevice {
 								Some(v) => v as i16,
 								_ => last_sliders[0]
 							};
-							device.dial_rotate(0, val - last_sliders[0]);
+							let _ = outbound::encoder::dial_rotate(device.id(), 0, val - last_sliders[0]).await;
 							last_sliders[0] = val;
 						}
 						if let Value::Number(val) = &j["slider1"] {
@@ -109,7 +103,7 @@ impl ProntoKeyDevice {
 								Some(v) => v as i16,
 								_ => last_sliders[1]
 							};
-							device.dial_rotate(1, val - last_sliders[1]);
+							let _ = outbound::encoder::dial_rotate(device.id(), 1, val - last_sliders[1]).await;
 							last_sliders[1] = val;
 						}
 					}

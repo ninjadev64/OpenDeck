@@ -1,11 +1,11 @@
 use std::collections::HashMap;
-use std::sync::Mutex;
 use std::path::Path;
 
 use serde::{Serialize, Deserialize};
 use serde_inline_default::serde_inline_default;
 
 use lazy_static::lazy_static;
+use tokio::sync::Mutex;
 
 /// Convert an icon specified in a plugin manifest to its full path.
 pub fn convert_icon(path: String) -> String {
@@ -110,7 +110,7 @@ impl ToString for ActionContext {
 }
 
 /// An instance of an action.
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct ActionInstance {
 	pub action: Action,
 	pub context: ActionContext,

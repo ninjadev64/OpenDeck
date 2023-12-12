@@ -9,10 +9,10 @@ struct Error {
 	pub description: String
 }
 
-fn serialise_mutex_hashmap<T>(map: &std::sync::Mutex<HashMap<String, T>>) -> String where T: serde::Serialize {
+async fn serialise_mutex_hashmap<T>(map: &tokio::sync::Mutex<HashMap<String, T>>) -> String where T: serde::Serialize {
 	// Here, we "duplicate" the HashMap so it isn't captured in a MutexGuard, allowing it to be serialised
 	let mut hash_map: HashMap<String, &T> = HashMap::new();
-	let locked = map.lock().unwrap();
+	let locked = map.lock().await;
 
 	for key in locked.keys() {
 		hash_map.insert(key.to_owned(), locked.get(key).unwrap());
@@ -23,13 +23,13 @@ fn serialise_mutex_hashmap<T>(map: &std::sync::Mutex<HashMap<String, T>>) -> Str
 // Strings are returned from many of these commands as their return values often reference static Mutexes.
 
 #[tauri::command]
-pub fn get_devices() -> String {
-	serialise_mutex_hashmap(&*DEVICES)
+pub async fn get_devices() -> String {
+	serialise_mutex_hashmap(&*DEVICES).await
 }
 
 #[tauri::command]
-pub fn get_categories() -> String {
-	serialise_mutex_hashmap(&*CATEGORIES)
+pub async fn get_categories() -> String {
+	serialise_mutex_hashmap(&*CATEGORIES).await
 }
 
 #[tauri::command]
@@ -41,11 +41,11 @@ pub fn get_profiles(app: tauri::AppHandle, device: &str) -> String {
 }
 
 #[tauri::command]
-pub fn get_selected_profile(app: tauri::AppHandle, device: &str) -> String {
-	match DEVICE_STORES.lock().unwrap().get_device_store(device, &app) {
+pub async fn get_selected_profile(app: tauri::AppHandle, device: String) -> String {
+	match DEVICE_STORES.lock().await.get_device_store(&device, &app) {
 		Ok(store) => {
-			match PROFILE_STORES.lock().unwrap().get_profile_store(
-				DEVICES.lock().unwrap().get(device).unwrap(),
+			match PROFILE_STORES.lock().await.get_profile_store(
+				DEVICES.lock().await.get(&device).unwrap(),
 				&store.value.selected_profile,
 				&app
 			) {
@@ -58,15 +58,15 @@ pub fn get_selected_profile(app: tauri::AppHandle, device: &str) -> String {
 }
 
 #[tauri::command]
-pub fn set_selected_profile(app: tauri::AppHandle, device: &str, profile: &str) {
-	let mut device_stores = DEVICE_STORES.lock().unwrap();
-	let store = device_stores.get_device_store(device, &app).unwrap();
+pub async fn set_selected_profile(app: tauri::AppHandle, device: String, profile: String) {
+	let mut device_stores = DEVICE_STORES.lock().await;
+	let store = device_stores.get_device_store(&device, &app).unwrap();
 	store.value.selected_profile = profile.to_owned();
 	let _ = store.save();
 }
 
 #[tauri::command]
-pub fn create_instance(app: tauri::AppHandle, action: Action, context: ActionContext) -> String {
+pub async fn create_instance(app: tauri::AppHandle, action: Action, context: ActionContext) -> String {
 	let instance = ActionInstance {
 		action: action.clone(),
 		context: context.clone(),
@@ -75,9 +75,9 @@ pub fn create_instance(app: tauri::AppHandle, action: Action, context: ActionCon
 		settings: serde_json::Value::Null
 	};
 
-	let mut profile_stores = PROFILE_STORES.lock().unwrap();
+	let mut profile_stores = PROFILE_STORES.lock().await;
 	let store = match profile_stores.get_profile_store(
-		DEVICES.lock().unwrap().get(&context.device).unwrap(),
+		DEVICES.lock().await.get(&context.device).unwrap(),
 		&context.profile,
 		&app
 	) {
@@ -102,10 +102,10 @@ pub fn create_instance(app: tauri::AppHandle, action: Action, context: ActionCon
 }
 
 #[tauri::command]
-pub fn clear_slot(app: tauri::AppHandle, context: ActionContext) -> String {
-	let mut profile_stores = PROFILE_STORES.lock().unwrap();
+pub async fn clear_slot(app: tauri::AppHandle, context: ActionContext) -> String {
+	let mut profile_stores = PROFILE_STORES.lock().await;
 	let store = match profile_stores.get_profile_store(
-		DEVICES.lock().unwrap().get(&context.device).unwrap(),
+		DEVICES.lock().await.get(&context.device).unwrap(),
 		&context.profile,
 		&app
 	) {

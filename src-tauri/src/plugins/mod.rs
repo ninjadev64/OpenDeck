@@ -1,11 +1,11 @@
 mod manifest;
 mod info_param;
 
+use crate::APP_HANDLE;
 use crate::shared::{Action, CATEGORIES, convert_icon};
 
 use std::{fs, path};
 use std::process::{Command, Stdio};
-use std::collections::HashMap;
 
 use tauri::AppHandle;
 
@@ -15,7 +15,7 @@ use futures_util::StreamExt;
 use anyhow::{Context, anyhow};
 
 /// Initialise a plugin from a given directory.
-fn initialise_plugin(path: path::PathBuf, app: &AppHandle, categories: &mut HashMap<String, Vec<Action>>) -> anyhow::Result<()> {
+async fn initialise_plugin(path: path::PathBuf) -> anyhow::Result<()> {
 	let plugin_uuid = path.file_name().unwrap().to_str().unwrap();
 	let mut manifest_path = path.clone();
 	manifest_path.push("manifest.json");
@@ -45,6 +45,7 @@ fn initialise_plugin(path: path::PathBuf, app: &AppHandle, categories: &mut Hash
 		}
 	}
 
+	let mut categories = CATEGORIES.lock().await;
 	if let Some(category) = categories.get_mut(&manifest.category) {
 		for action in manifest.actions {
 			category.push(action);
@@ -97,7 +98,7 @@ fn initialise_plugin(path: path::PathBuf, app: &AppHandle, categories: &mut Hash
 	}
 
 	let mut devices: Vec<info_param::DeviceInfo> = vec![];
-	for device in crate::devices::DEVICES.lock().unwrap().values() {
+	for device in crate::devices::DEVICES.lock().await.values() {
 		devices.push(info_param::DeviceInfo::new(device));
 	}
 
@@ -131,7 +132,7 @@ fn initialise_plugin(path: path::PathBuf, app: &AppHandle, categories: &mut Hash
 		// Create a webview window for the plugin and call its registration function.
 		let url = String::from("http://localhost:57118/") + path.join(code_path).to_str().unwrap();
 		let window = tauri::WindowBuilder::new(
-			app,
+			APP_HANDLE.lock().await.as_ref().unwrap(),
 			plugin_uuid.replace('.', "_"),
 			tauri::WindowUrl::External(url.parse().unwrap())
 		)
@@ -200,9 +201,11 @@ pub fn initialise_plugins(app: AppHandle) {
 	for entry in entries {
 		if let Ok(entry) = entry {
 			if entry.metadata().unwrap().is_dir() {
-				if let Err(error) = initialise_plugin(entry.path(), &app, &mut CATEGORIES.lock().unwrap()) {
-					eprintln!("{}\n\tCaused by: {}", error, error.root_cause());
-				}
+				tokio::spawn(async move {
+					if let Err(error) = initialise_plugin(entry.path()).await {
+						eprintln!("{}\n\tCaused by: {}", error, error.root_cause());
+					}
+				});
 			} else {
 				eprintln!("Failed to initialise plugin at {}: is a file", entry.path().display());
 			}

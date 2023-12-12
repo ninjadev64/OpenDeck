@@ -2,7 +2,6 @@ use super::Store;
 use crate::shared::Profile;
 
 use std::fs;
-use std::sync::Mutex;
 use std::collections::HashMap;
 use std::iter::repeat_with;
 
@@ -10,6 +9,7 @@ use serde::{Serialize, Deserialize};
 
 use anyhow::Context;
 use lazy_static::lazy_static;
+use tokio::sync::Mutex;
 
 pub struct ProfileStores {
 	stores: HashMap<String, Store<Profile>>

@@ -9,6 +9,13 @@ mod devices;
 
 use events::frontend;
 
+use tokio::sync::Mutex;
+use lazy_static::lazy_static;
+
+lazy_static! {
+	pub static ref APP_HANDLE: Mutex<Option<tauri::AppHandle>> = Mutex::new(None);
+}
+
 #[tokio::main]
 async fn main() {
 	let app = match tauri::Builder::default()
@@ -26,6 +33,8 @@ async fn main() {
 		Ok(app) => app,
 		Err(error) => panic!("Failed to create Tauri application: {}", error)
 	};
+
+	*APP_HANDLE.lock().await = Some(app.handle());
 
 	devices::initialise_devices();
 	plugins::initialise_plugins(app.handle());
