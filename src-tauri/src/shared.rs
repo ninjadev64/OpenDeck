@@ -94,7 +94,7 @@ pub struct Action {
 }
 
 /// Information about the slot an instance is located in.
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, serde_with::SerializeDisplay, serde_with::DeserializeFromStr)]
 pub struct ActionContext {
 	pub device: String,
 	pub profile: String,
@@ -103,9 +103,22 @@ pub struct ActionContext {
 	pub index: u16
 }
 
-impl ToString for ActionContext {
-	fn to_string(&self) -> String {
-		format!("{}.{}.{}.{}.{}", self.device, self.profile, self.controller, self.position, self.index)
+impl std::fmt::Display for ActionContext {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		write!(f, "{}.{}.{}.{}.{}", self.device, self.profile, self.controller, self.position, self.index)
+	}
+}
+
+impl std::str::FromStr for ActionContext {
+	type Err = anyhow::Error;
+	fn from_str(s: &str) -> Result<Self, Self::Err> {
+		let segments: Vec<&str> = s.split('.').collect();
+		let device = segments[0].to_owned();
+		let profile = segments[1].to_owned();
+		let controller = segments[2].to_owned();
+		let position = u8::from_str(segments[3])?;
+		let index = u16::from_str(segments[4])?;
+		Ok(Self { device, profile, controller, position, index })
 	}
 }
 

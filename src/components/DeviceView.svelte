@@ -9,13 +9,7 @@
 <div class="flex flex-row">
 	{#each { length: device.sliders } as _, i}
 		<Slider
-			context={{
-				device: device.id,
-				profile: profile.id,
-				controller: "Encoder",
-				position: i,
-				index: 0
-			}}
+			context="{device.id}.{profile.id}.Encoder.{i}.0"
 			instance={profile.sliders[i]}
 		/>
 	{/each}
@@ -25,13 +19,7 @@
 			<div class="flex flex-row">
 				{#each { length: device.columns } as _, c}
 					<Key
-						context={{
-							device: device.id,
-							profile: profile.id,
-							controller: "Keypad",
-							position: (r * device.columns) + c,
-							index: 0
-						}}
+						context="{device.id}.{profile.id}.Keypad.{(r * device.columns) + c}.0"
 						instance={profile.keys[(r * device.columns) + c]}
 					/>
 				{/each}

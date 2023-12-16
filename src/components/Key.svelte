@@ -2,7 +2,7 @@
     import { invoke } from "@tauri-apps/api";
 	import { convertFileSrc } from "@tauri-apps/api/tauri";
 
-	export let context: ActionContext;
+	export let context: string;
 	export let instance: ActionInstance | null;
 
 	$: state = instance?.states[instance?.current_state];
