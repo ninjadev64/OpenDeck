@@ -16,13 +16,8 @@ lazy_static! {
 }
 
 /// Register a plugin to send and receive events with its WebSocket.
-pub async fn register_plugin(data: inbound::RegisterEvent, stream: WebSocketStream<TcpStream>) {
+pub async fn register_plugin(data: inbound::misc::RegisterEvent, stream: WebSocketStream<TcpStream>) {
 	let (read, write) = stream.split();
-	tokio::spawn(write.try_for_each(|value| {
-		if let Message::Text(text) = value {
-			println!("{}", text);
-		}
-		futures_util::future::ready(Ok(()))
-	}));
+	tokio::spawn(write.try_for_each(inbound::process_incoming_message));
 	SOCKETS.lock().await.insert(data.uuid.clone(), read);
 }
