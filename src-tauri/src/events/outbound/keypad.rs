@@ -1,6 +1,7 @@
-use super::{Coordinates, send_to_plugin, get_instance};
+use super::{Coordinates, send_to_plugin};
 
 use crate::shared::{ActionContext, ActionInstance};
+use crate::store::profiles::get_instance;
 
 use serde::Serialize;
 

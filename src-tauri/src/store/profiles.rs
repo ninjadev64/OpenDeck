@@ -9,7 +9,7 @@ use serde::{Serialize, Deserialize};
 
 use anyhow::Context;
 use lazy_static::lazy_static;
-use tokio::sync::Mutex;
+use tokio::sync::{Mutex, MutexGuard};
 
 pub struct ProfileStores {
 	stores: HashMap<String, Store<Profile>>
@@ -100,4 +100,41 @@ lazy_static! {
 
 	/// A singleton object to manage Store instances for device configurations.
 	pub static ref DEVICE_STORES: Mutex<DeviceStores> = Mutex::new(DeviceStores { stores: HashMap::new() });
+}
+
+pub async fn lock_mutexes() -> (
+	MutexGuard<'static, Option<tauri::AppHandle>>,
+	MutexGuard<'static, DeviceStores>,
+	MutexGuard<'static, HashMap<String, crate::devices::DeviceInfo>>,
+	MutexGuard<'static, ProfileStores>
+) {
+	let app = crate::APP_HANDLE.lock().await;
+	let device_stores = DEVICE_STORES.lock().await;
+	let devices = crate::devices::DEVICES.lock().await;
+	let profile_stores = PROFILE_STORES.lock().await;
+	(app, device_stores, devices, profile_stores)
+}
+
+pub async fn get_instance(device: &str, position: u8, controller: &str) -> Result<Option<crate::shared::ActionInstance>, anyhow::Error> {
+	let (
+		app,
+		mut device_stores,
+		devices,
+		mut profile_stores
+	) = lock_mutexes().await;
+
+	let selected_profile = &device_stores.get_device_store(device, app.as_ref().unwrap())?.value.selected_profile;
+	let device = devices.get(device).unwrap();
+	let store = profile_stores.get_profile_store(device, selected_profile, app.as_ref().unwrap())?;
+	let profile = &store.value;
+
+	let configured = match controller {
+		"Encoder" => profile.sliders[position as usize].as_ref(),
+		_ => profile.keys[position as usize].as_ref()
+	};
+
+	match configured {
+		Some(configured) => Ok(Some(configured.clone())),
+		None => Ok(None)
+	}
 }

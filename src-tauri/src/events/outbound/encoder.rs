@@ -1,6 +1,7 @@
-use super::{Coordinates, send_to_plugin, get_instance};
+use super::{Coordinates, send_to_plugin};
 
 use crate::shared::ActionContext;
+use crate::store::profiles::get_instance;
 
 use serde::Serialize;
 
@@ -29,7 +30,7 @@ pub async fn dial_rotate(device: String, index: u8, ticks: i16) -> Result<(), an
 
 	send_to_plugin(&instance.action.plugin, DialRotateEvent {
 		action: instance.action.uuid.clone(),
-		event: "keyDown".to_owned(),
+		event: "dialRotate".to_owned(),
 		context: instance.context.clone(),
 		device: instance.context.device.clone(),
 		payload: DialRotatePayload {
