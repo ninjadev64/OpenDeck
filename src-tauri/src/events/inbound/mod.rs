@@ -4,6 +4,7 @@ mod settings;
 use crate::shared::ActionContext;
 
 use serde::Deserialize;
+use log::warn;
 
 #[derive(Deserialize)]
 pub struct RegisterEvent {
@@ -47,7 +48,7 @@ pub async fn process_incoming_message(data: tokio_tungstenite::tungstenite::Mess
 			InboundEventType::SetSettings(event) => settings::set_settings(event).await,
 			InboundEventType::GetSettings(event) => settings::get_settings(event).await
 		} {
-			eprintln!("Failed to process incoming event: {}\n\tCaused by: {}", error, error.root_cause())
+			warn!("Failed to process incoming event from plugin: {}\n\tCaused by: {}", error, error.root_cause())
 		}
 	}
 

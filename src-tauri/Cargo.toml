@@ -24,6 +24,8 @@ rouille = "3.6.2"
 # Smaller utility libraries
 futures-util = "0.3.29"
 anyhow = "1.0.75"
+log = "0.4.20"
+tauri-plugin-log = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 serde-inline-default = "0.1.1"
 serde_with = "3.4.0"
 lazy_static = "1.4.0"

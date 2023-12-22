@@ -6,6 +6,7 @@ use std::thread;
 use std::time::Duration;
 
 use serde_json::Value;
+use log::{warn, error};
 
 /// A representation of a ProntoKey device.
 pub struct ProntoKeyDevice {
@@ -39,7 +40,10 @@ impl ProntoKeyDevice {
 			.open()
 		{
 			Ok(p) => p,
-			Err(error) => panic!("Failed to open serial port: {}", error)
+			Err(error) => {
+				error!("Failed to open serial port: {}", error);
+				panic!()
+			}
 		};
 		let _ = port.write("register".as_bytes());
 
@@ -109,7 +113,7 @@ impl ProntoKeyDevice {
 					}
 				},
 				Err(ref error) if error.kind() == std::io::ErrorKind::TimedOut => (),
-				Err(error) => eprintln!("{:?}", error)
+				Err(error) => warn!("Failed to decode serial message from ProntoKey device: {}", error)
 			}
 			thread::sleep(Duration::from_millis(10));
 		}

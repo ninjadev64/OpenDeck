@@ -13,6 +13,7 @@ use tokio::net::{TcpListener, TcpStream};
 use futures_util::StreamExt;
 
 use anyhow::{Context, anyhow};
+use log::{warn, error};
 
 /// Initialise a plugin from a given directory.
 async fn initialise_plugin(path: path::PathBuf) -> anyhow::Result<()> {
@@ -194,7 +195,10 @@ pub fn initialise_plugins(app: AppHandle) {
 
 	let entries = match fs::read_dir(&plugin_dir) {
 		Ok(p) => p,
-		Err(error) => panic!("Failed to read plugins directory at {}: {}", plugin_dir.display(), error)
+		Err(error) => {
+			error!("Failed to read plugins directory at {}: {}", plugin_dir.display(), error);
+			panic!()
+		}
 	};
 
 	// Iterate through all directory entries in the plugins folder and initialise them as plugins if appropriate
@@ -203,14 +207,14 @@ pub fn initialise_plugins(app: AppHandle) {
 			if entry.metadata().unwrap().is_dir() {
 				tokio::spawn(async move {
 					if let Err(error) = initialise_plugin(entry.path()).await {
-						eprintln!("{}\n\tCaused by: {}", error, error.root_cause());
+						warn!("Failed to initialise plugin at {}: {}\n\tCaused by: {}", entry.path().display(), error, error.root_cause());
 					}
 				});
 			} else {
-				eprintln!("Failed to initialise plugin at {}: is a file", entry.path().display());
+				warn!("Failed to initialise plugin at {}: is a file", entry.path().display());
 			}
 		} else if let Err(error) = entry {
-			eprintln!("Failed to read plugin directory: {}", error)
+			warn!("Failed to read entry of plugins directory: {}", error)
 		}
 	}
 }
@@ -220,7 +224,7 @@ async fn init_websocket_server() {
 	let listener = match TcpListener::bind("localhost:57116").await {
 		Ok(listener) => listener,
 		Err(error) => {
-			eprintln!("Failed to bind to socket: {}", error);
+			error!("Failed to bind plugin WebSocket server to socket: {}", error);
 			return;
 		}
 	};
@@ -235,7 +239,7 @@ async fn accept_connection(stream: TcpStream) {
 	let mut socket = match tokio_tungstenite::accept_async(stream).await {
 		Ok(socket) => socket,
 		Err(error) => {
-			eprintln!("Failed to complete WebSocket handshake: {}", error);
+			warn!("Failed to complete WebSocket handshake: {}", error);
 			return;
 		}
 	};
