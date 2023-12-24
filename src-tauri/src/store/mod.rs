@@ -17,8 +17,7 @@ pub struct Store<T> where T: Serialize + for<'a> Deserialize<'a> {
 impl<T> Store<T> where T: Serialize + for<'a> Deserialize<'a> {
 	/// Create a new Store given an ID and storage directory.
 	pub fn new(id: &str, config_dir: PathBuf, default: T) -> Result<Self, anyhow::Error> {
-		let mut path = config_dir.clone();
-		path.push(format!("{}.json", id));
+		let path = config_dir.join(format!("{}.json", id));
 
 		if path.exists() {
 			let file_contents = fs::read(&path)

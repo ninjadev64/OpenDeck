@@ -18,8 +18,7 @@ use log::{warn, error};
 /// Initialise a plugin from a given directory.
 async fn initialise_plugin(path: path::PathBuf) -> anyhow::Result<()> {
 	let plugin_uuid = path.file_name().unwrap().to_str().unwrap();
-	let mut manifest_path = path.clone();
-	manifest_path.push("manifest.json");
+	let manifest_path = path.join("manifest.json");
 
 	let manifest =
 		fs::read(&manifest_path)
@@ -31,16 +30,14 @@ async fn initialise_plugin(path: path::PathBuf) -> anyhow::Result<()> {
 	for action in &mut manifest.actions {
 		action.plugin = plugin_uuid.to_owned();
 
-		let mut action_icon_path = path.clone();
-		action_icon_path.push(action.icon.clone());
+		let action_icon_path = path.join(action.icon.clone());
 		action.icon = convert_icon(action_icon_path.to_str().unwrap().to_owned());
 
 		for state in &mut action.states {
 			if state.image == "actionDefaultImage" {
 				state.image = action.icon.clone();
 			} else {
-				let mut state_icon = path.clone();
-				state_icon.push(state.image.clone());
+				let state_icon = path.join(state.image.clone());
 				state.image = convert_icon(state_icon.to_str().unwrap().to_owned());
 			}
 		}
@@ -189,8 +186,7 @@ pub fn initialise_plugins(app: AppHandle) {
 	tokio::spawn(init_websocket_server());
 	tokio::spawn(init_browser_server());
 
-	let mut plugin_dir = app.path_resolver().app_config_dir().unwrap();
-	plugin_dir.push("plugins/");
+	let plugin_dir = app.path_resolver().app_config_dir().unwrap().join("plugins/");
 	let _ = fs::create_dir_all(&plugin_dir);
 
 	let entries = match fs::read_dir(&plugin_dir) {

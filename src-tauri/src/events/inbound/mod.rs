@@ -12,8 +12,8 @@ pub struct RegisterEvent {
 }
 
 #[derive(Deserialize)]
-pub struct ContextEvent {
-	pub context: ActionContext
+pub struct ContextEvent<C = ActionContext> {
+	pub context: C
 }
 
 #[derive(Deserialize)]
@@ -22,8 +22,8 @@ pub struct PayloadEvent<T> {
 }
 
 #[derive(Deserialize)]
-pub struct ContextAndPayloadEvent<T> {
-	pub context: ActionContext,
+pub struct ContextAndPayloadEvent<T, C = ActionContext> {
+	pub context: C,
 	pub payload: T
 }
 
@@ -33,7 +33,9 @@ pub struct ContextAndPayloadEvent<T> {
 pub enum InboundEventType {
 	OpenUrl(PayloadEvent<misc::OpenUrlEvent>),
 	SetSettings(ContextAndPayloadEvent<serde_json::Value>),
-	GetSettings(ContextEvent)
+	GetSettings(ContextEvent),
+	SetGlobalSettings(ContextAndPayloadEvent<serde_json::Value, String>),
+	GetGlobalSettings(ContextEvent<String>)
 }
 
 pub async fn process_incoming_message(data: tokio_tungstenite::tungstenite::Message) -> Result<(), tokio_tungstenite::tungstenite::Error> {
@@ -46,7 +48,9 @@ pub async fn process_incoming_message(data: tokio_tungstenite::tungstenite::Mess
 		if let Err(error) = match decoded {
 			InboundEventType::OpenUrl(event) => misc::open_url(event).await,
 			InboundEventType::SetSettings(event) => settings::set_settings(event).await,
-			InboundEventType::GetSettings(event) => settings::get_settings(event).await
+			InboundEventType::GetSettings(event) => settings::get_settings(event).await,
+			InboundEventType::SetGlobalSettings(event) => settings::set_global_settings(event).await,
+			InboundEventType::GetGlobalSettings(event) => settings::get_global_settings(event).await
 		} {
 			warn!("Failed to process incoming event from plugin: {}\n\tCaused by: {}", error, error.root_cause())
 		}
