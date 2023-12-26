@@ -36,5 +36,8 @@ pub(super) struct PluginManifest {
 	pub code_path_macos: Option<String>,
 
 	#[serde(alias = "CodePathLin")]
-	pub code_path_linux: Option<String>
+	pub code_path_linux: Option<String>,
+
+	#[serde(alias = "PropertyInspectorPath")]
+	pub property_inspector_path: Option<String>
 }

@@ -33,6 +33,12 @@ async fn initialise_plugin(path: path::PathBuf) -> anyhow::Result<()> {
 		let action_icon_path = path.join(action.icon.clone());
 		action.icon = convert_icon(action_icon_path.to_str().unwrap().to_owned());
 
+		if !action.property_inspector.is_empty() {
+			action.property_inspector = path.join(&action.property_inspector).to_string_lossy().to_string();
+		} else if let Some(ref property_inspector) = manifest.property_inspector_path {
+			action.property_inspector = path.join(property_inspector).to_string_lossy().to_string();
+		}
+
 		for state in &mut action.states {
 			if state.image == "actionDefaultImage" {
 				state.image = action.icon.clone();
@@ -247,6 +253,6 @@ async fn accept_connection(stream: TcpStream) {
 /// Start a simple webserver to serve files of plugins that run in a browser environment.
 async fn init_browser_server() {
 	rouille::start_server("localhost:57118", move |request| {
-		rouille::Response::html(std::fs::read_to_string(request.url()).unwrap())
+		rouille::Response::html(std::fs::read_to_string(request.url()).unwrap_or_default())
 	});
 }

@@ -11,7 +11,7 @@
 	$: _selectedProfile = selectedProfile;
 </script>
 
-<div class="grow">
+<div class="flex flex-col grow">
 	{#if selectedDevice && selectedProfile}
 		<DeviceView bind:device={_selectedDevice} bind:profile={_selectedProfile} />
 	{/if}

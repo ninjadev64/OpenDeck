@@ -59,4 +59,18 @@ pub fn initialise_devices() {
 			}
 		}
 	}
+
+	// Create a virtual device for testing without a physical device.
+	tokio::spawn(async move {
+		let mut devices = DEVICES.lock().await;
+		let device = DeviceInfo {
+			id: "virtual".to_owned(),
+			name: "Virtual device".to_owned(),
+			rows: 3,
+			columns: 3,
+			sliders: 2,
+			r#type: 7
+		};
+		devices.insert("virtual".to_owned(), device);
+	});
 }

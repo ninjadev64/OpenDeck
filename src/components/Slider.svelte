@@ -1,11 +1,16 @@
 <script lang="ts">
-    import { invoke } from "@tauri-apps/api";
+	import { invoke } from "@tauri-apps/api";
 	import { convertFileSrc } from "@tauri-apps/api/tauri";
+
+	import { inspectedInstance } from "$lib/propertyInspector";
 
 	export let context: string;
 	export let instance: ActionInstance | null;
 
 	$: state = instance?.states[instance?.current_state];
+
+	export let iframe: HTMLIFrameElement;
+	$: if (iframe) iframe.src = instance ? ("http://localhost:57118" + instance.action.property_inspector) : "";
 
 	function handleDragOver(event: DragEvent) {
 		event.preventDefault();
@@ -18,8 +23,10 @@
 		instance = JSON.parse(await invoke("create_instance", { context, action: JSON.parse(action) }));
 	}
 
-	async function clear() {
+	async function clear(event: MouseEvent | KeyboardEvent) {
+		if (event.ctrlKey) return;
 		instance = JSON.parse(await invoke("clear_slot", { context }));
+		inspectedInstance.set(null);
 	}
 </script>
 
@@ -36,6 +43,10 @@
 			class="p-2 w-full rounded-xl"
 			alt={instance.action.tooltip}
 			on:click={clear} on:keyup={clear}
+			on:contextmenu={(event) => {
+				event.preventDefault();
+				inspectedInstance.set(context);
+			}}
 		/>
 		{#if state.show}
 			<div class="absolute flex justify-center w-full aspect-square top-[50%] -translate-y-1/2 left-0 pointer-events-none">
