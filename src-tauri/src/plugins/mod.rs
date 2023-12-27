@@ -190,7 +190,7 @@ async fn initialise_plugin(path: path::PathBuf) -> anyhow::Result<()> {
 /// Initialise plugins from the plugins directory.
 pub fn initialise_plugins(app: AppHandle) {
 	tokio::spawn(init_websocket_server());
-	tokio::spawn(init_browser_server());
+	tokio::spawn(init_browser_server(app.path_resolver().app_config_dir().unwrap()));
 
 	let plugin_dir = app.path_resolver().app_config_dir().unwrap().join("plugins/");
 	let _ = fs::create_dir_all(&plugin_dir);
@@ -251,8 +251,12 @@ async fn accept_connection(stream: TcpStream) {
 }
 
 /// Start a simple webserver to serve files of plugins that run in a browser environment.
-async fn init_browser_server() {
+async fn init_browser_server(prefix: path::PathBuf) {
 	rouille::start_server("localhost:57118", move |request| {
-		rouille::Response::html(std::fs::read_to_string(request.url()).unwrap_or_default())
+		if path::Path::new(&request.url()).starts_with(&prefix) {
+			rouille::Response::html(fs::read_to_string(request.url()).unwrap_or_default())
+		} else {
+			rouille::Response::empty_400()
+		}
 	});
 }

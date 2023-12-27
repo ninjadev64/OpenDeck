@@ -10,7 +10,7 @@
 	$: state = instance?.states[instance?.current_state];
 
 	export let iframe: HTMLIFrameElement;
-	$: if (iframe) iframe.src = instance ? ("http://localhost:57118" + instance.action.property_inspector) : "";
+	$: if (iframe) iframe.src = instance?.action.property_inspector ? ("http://localhost:57118" + instance.action.property_inspector) : "";
 
 	function handleDragOver(event: DragEvent) {
 		event.preventDefault();
