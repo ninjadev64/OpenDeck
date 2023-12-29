@@ -1,6 +1,7 @@
 pub mod keypad;
 pub mod encoder;
 pub mod settings;
+pub mod property_inspector;
 
 use super::SOCKETS;
 

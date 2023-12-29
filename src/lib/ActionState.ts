@@ -1,4 +1,4 @@
-type ActionState = {
+export type ActionState = {
 	image: string,
 	name: string,
 	text: string,

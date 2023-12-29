@@ -1,10 +1,10 @@
 use serde::Serialize;
 
-// Structs that make up the Info parameter passed to plugins during the registration procedure.
+// Structs that make up the Info parameter passed to plugins and property inspectors during the registration procedure.
 
 #[allow(non_snake_case)]
 #[derive(Serialize)]
-pub(super) struct ApplicationInfo {
+pub struct ApplicationInfo {
 	pub font: String,
 	pub language: String,
 	pub platform: String,
@@ -13,14 +13,14 @@ pub(super) struct ApplicationInfo {
 }
 
 #[derive(Serialize)]
-pub(super) struct PluginInfo {
+pub struct PluginInfo {
 	pub uuid: String,
 	pub version: String
 }
 
 #[allow(non_snake_case)]
 #[derive(Serialize)]
-pub(super) struct ColoursInfo {
+pub struct ColoursInfo {
 	pub buttonPressedBackgroundColor: String,
 	pub buttonPressedBorderColor: String,
 	pub buttonPressedTextColor: String,
@@ -30,13 +30,13 @@ pub(super) struct ColoursInfo {
 }
 
 #[derive(Clone, Serialize)]
-pub(super) struct DeviceSizeInfo {
+pub struct DeviceSizeInfo {
 	pub rows: u8,
 	pub columns: u8
 }
 
 #[derive(Clone, Serialize)]
-pub(super) struct DeviceInfo {
+pub struct DeviceInfo {
 	pub id: String,
 	pub name: String,
 	pub size: DeviceSizeInfo,
@@ -44,7 +44,7 @@ pub(super) struct DeviceInfo {
 }
 
 impl DeviceInfo {
-	pub(super) fn new(device: &crate::devices::DeviceInfo) -> DeviceInfo {
+	pub fn new(device: &crate::devices::DeviceInfo) -> DeviceInfo {
 		DeviceInfo {
 			id: device.id.clone(),
 			name: device.name.clone(),
@@ -59,10 +59,49 @@ impl DeviceInfo {
 
 #[allow(non_snake_case)]
 #[derive(Serialize)]
-pub(super) struct Info {
+pub struct Info {
 	pub application: ApplicationInfo,
 	pub plugin: PluginInfo,
 	pub devicePixelRatio: u8,
 	pub colors: ColoursInfo,
 	pub devices: Vec<DeviceInfo>
+}
+
+/// Construct the info parameter for a given plugin's UUID and version.
+pub async fn make_info(uuid: String, version: String) -> Info {
+	#[cfg(target_os = "windows")]
+	let platform = "windows";
+	#[cfg(target_os = "macos")]
+	let platform = "mac";
+	#[cfg(target_os = "linux")]
+	let platform = "linux";
+
+	let mut devices: Vec<DeviceInfo> = vec![];
+	for device in crate::devices::DEVICES.lock().await.values() {
+		devices.push(DeviceInfo::new(device));
+	}
+
+	Info {
+		application: ApplicationInfo {
+			font: "ui-sans-serif".to_owned(),
+			language: "en".to_owned(),
+			platform: platform.to_owned(),
+			platformVersion: os_info::get().version().to_string(),
+			version: env!("CARGO_PKG_VERSION").to_owned()
+		},
+		plugin: PluginInfo {
+			uuid,
+			version
+		},
+		devicePixelRatio: 0,
+		colors: ColoursInfo {
+			buttonPressedBackgroundColor: "#303030FF".to_owned(),
+			buttonPressedBorderColor: "#646464FF".to_owned(),
+			buttonPressedTextColor: "#969696FF".to_owned(),
+			disabledColor: "#F7821B59".to_owned(),
+			highlightColor: "#F7821BFF".to_owned(),
+			mouseDownColor: "#CF6304FF".to_owned()
+		},
+		devices
+	}
 }

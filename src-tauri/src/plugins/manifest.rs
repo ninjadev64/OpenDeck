@@ -4,7 +4,7 @@ use serde::Deserialize;
 use serde_inline_default::serde_inline_default;
 
 #[derive(Deserialize)]
-pub(super) struct OS {
+pub struct OS {
 	#[serde(alias = "Platform")]
 	pub platform: String
 }
@@ -12,7 +12,7 @@ pub(super) struct OS {
 #[allow(dead_code)]
 #[serde_inline_default]
 #[derive(Deserialize)]
-pub(super) struct PluginManifest {
+pub struct PluginManifest {
 	#[serde(alias = "Version")]
 	pub version: String,
 

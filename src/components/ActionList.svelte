@@ -1,6 +1,9 @@
 <script lang="ts">
+	import type { Action } from "$lib/Action";
+
+	import ListedAction from "./ListedAction.svelte";
+
 	import { invoke } from "@tauri-apps/api";
-    import ListedAction from "./ListedAction.svelte";
 
 	let categories: { [name: string]: Action[] } = {};
 

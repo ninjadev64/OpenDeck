@@ -1,4 +1,4 @@
-type DeviceInfo = {
+export type DeviceInfo = {
 	id: string,
 	name: string,
 	rows: number,

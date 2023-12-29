@@ -134,3 +134,23 @@ pub async fn clear_slot(app: tauri::AppHandle, context: ActionContext) -> String
 
 	serde_json::to_string(instance_ref).unwrap()
 }
+
+#[tauri::command]
+pub async fn make_info(app: tauri::AppHandle, plugin: String) -> String {
+	let mut path = app.path_resolver().app_config_dir().unwrap();
+	path.push("plugins");
+	path.push(&plugin);
+	path.push("manifest.json");
+
+	let manifest = match std::fs::read(&path) {
+		Ok(data) => data,
+		Err(error) => return serde_json::to_string(&Error { description: error.to_string() }).unwrap()
+	};
+
+	let manifest: crate::plugins::manifest::PluginManifest = match serde_json::from_slice(&manifest) {
+		Ok(manifest) => manifest,
+		Err(error) => return serde_json::to_string(&Error { description: error.to_string() }).unwrap()
+	};
+
+	serde_json::to_string(&crate::plugins::info_param::make_info(plugin, manifest.version).await).unwrap()
+}

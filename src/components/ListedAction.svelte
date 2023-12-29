@@ -1,5 +1,8 @@
 <script lang="ts">
+	import type { Action } from "$lib/Action";
+
 	import { convertFileSrc } from "@tauri-apps/api/tauri";
+
 	export let action: Action;
 
 	function handleDragStart(event: DragEvent) {

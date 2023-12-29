@@ -1,4 +1,6 @@
 <script lang="ts">
+	import type { DeviceInfo } from "$lib/DeviceInfo";
+
 	import { invoke } from "@tauri-apps/api";
 
 	let devices: { [id: string]: DeviceInfo } = {};

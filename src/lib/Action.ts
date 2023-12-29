@@ -1,4 +1,6 @@
-type Action = {
+import type { ActionState } from "./ActionState";
+
+export type Action = {
 	name: string,
 	uuid: string,
 	plugin: string,

@@ -1,16 +1,15 @@
 <script lang="ts">
-	import { invoke } from "@tauri-apps/api";
-	import { convertFileSrc } from "@tauri-apps/api/tauri";
+	import type { ActionInstance } from "$lib/ActionInstance";
 
 	import { inspectedInstance } from "$lib/propertyInspector";
+
+	import { invoke } from "@tauri-apps/api";
+	import { convertFileSrc } from "@tauri-apps/api/tauri";
 
 	export let context: string;
 	export let instance: ActionInstance | null;
 
 	$: state = instance?.states[instance?.current_state];
-
-	export let iframe: HTMLIFrameElement;
-	$: if (iframe) iframe.src = instance?.action.property_inspector ? ("http://localhost:57118" + instance.action.property_inspector) : "";
 
 	function handleDragOver(event: DragEvent) {
 		event.preventDefault();
@@ -26,7 +25,7 @@
 	async function clear(event: MouseEvent | KeyboardEvent) {
 		if (event.ctrlKey) return;
 		instance = JSON.parse(await invoke("clear_slot", { context }));
-		inspectedInstance.set(null);
+		if ($inspectedInstance == context) inspectedInstance.set(null);
 	}
 </script>
 

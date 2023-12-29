@@ -1,6 +1,10 @@
 <script lang="ts">
-	import { invoke } from "@tauri-apps/api";
+	import type { DeviceInfo } from "$lib/DeviceInfo";
+	import type { Profile } from "$lib/Profile";
+
 	import Popup from "../components/Popup.svelte";
+
+	import { invoke } from "@tauri-apps/api";
 
 	let profiles: string[] = [];
 	async function getProfiles(device: DeviceInfo) {

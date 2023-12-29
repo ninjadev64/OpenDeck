@@ -1,5 +1,5 @@
-mod manifest;
-mod info_param;
+pub mod manifest;
+pub mod info_param;
 
 use crate::APP_HANDLE;
 use crate::shared::{Action, CATEGORIES, convert_icon};
@@ -106,29 +106,7 @@ async fn initialise_plugin(path: path::PathBuf) -> anyhow::Result<()> {
 		devices.push(info_param::DeviceInfo::new(device));
 	}
 
-	let info = info_param::Info {
-		application: info_param::ApplicationInfo {
-			font: String::from("Rubik"),
-			language: String::from("en"),
-			platform: platform.to_owned(),
-			platformVersion: os_info::get().version().to_string(),
-			version: env!("CARGO_PKG_VERSION").to_owned()
-		},
-		plugin: info_param::PluginInfo {
-			uuid: plugin_uuid.to_owned(),
-			version: manifest.version
-		},
-		devicePixelRatio: 0,
-		colors: info_param::ColoursInfo {
-			buttonPressedBackgroundColor: String::from("#303030FF"),
-			buttonPressedBorderColor: String::from("#646464FF"),
-			buttonPressedTextColor: String::from("#969696FF"),
-			disabledColor: String::from("#F7821B59"),
-			highlightColor: String::from("#F7821BFF"),
-			mouseDownColor: String::from("#CF6304FF")
-		},
-		devices
-	};
+	let info = info_param::make_info(plugin_uuid.to_owned(), manifest.version).await;
 
 	let code_path = code_path.unwrap();
 
@@ -253,8 +231,21 @@ async fn accept_connection(stream: TcpStream) {
 /// Start a simple webserver to serve files of plugins that run in a browser environment.
 async fn init_browser_server(prefix: path::PathBuf) {
 	rouille::start_server("localhost:57118", move |request| {
-		if path::Path::new(&request.url()).starts_with(&prefix) {
-			rouille::Response::html(fs::read_to_string(request.url()).unwrap_or_default())
+		let url = request.url();
+		// Ensure the requested path is within the OpenDeck config directory to prevent unrestricted access to the filesystem.
+		if path::Path::new(&url).starts_with(&prefix) {
+			// The Svelte frontend cannot call the connectElgatoStreamDeckSocket function on property inspector frames
+			// because they are served from a different origin (this webserver on port 57118).
+			// Instead, we have to inject a script onto all property inspector frames that receives a message
+			// from the Svelte frontend over window.postMessage.
+			if url.ends_with("|opendeck_property_inspector") {
+				let path = &url[..url.len() - 28];
+				let mut content = fs::read_to_string(path).unwrap_or_default();
+				content += "\n<script> window.addEventListener(\"message\", ({ data }) => connectElgatoStreamDeckSocket(...data)); </script>";
+				rouille::Response::html(content)
+			} else {
+				rouille::Response::html(fs::read_to_string(url).unwrap_or_default())
+			}
 		} else {
 			rouille::Response::empty_400()
 		}
