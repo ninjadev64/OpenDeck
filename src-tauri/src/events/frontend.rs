@@ -66,6 +66,12 @@ pub async fn set_selected_profile(app: tauri::AppHandle, device: String, profile
 }
 
 #[tauri::command]
+pub async fn delete_profile(app: tauri::AppHandle, device: String, profile: String) {
+	let mut profile_stores = PROFILE_STORES.lock().await;
+	profile_stores.remove_profile(&device, &profile, &app);
+}
+
+#[tauri::command]
 pub async fn create_instance(app: tauri::AppHandle, action: Action, context: ActionContext) -> String {
 	let instance = ActionInstance {
 		action: action.clone(),

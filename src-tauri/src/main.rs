@@ -27,7 +27,8 @@ async fn main() {
 			frontend::clear_slot,
 			frontend::get_profiles,
 			frontend::get_selected_profile,
-			frontend::set_selected_profile
+			frontend::set_selected_profile,
+			frontend::delete_profile
 		])
 		.plugin(tauri_plugin_log::Builder::default()
 			.targets([
