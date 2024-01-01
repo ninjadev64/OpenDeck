@@ -230,8 +230,9 @@ async fn accept_connection(stream: TcpStream) {
 
 /// Start a simple webserver to serve files of plugins that run in a browser environment.
 async fn init_browser_server(prefix: path::PathBuf) {
-	rouille::start_server("localhost:57118", move |request| {
-		let url = request.url();
+	let server = tiny_http::Server::http("0.0.0.0:57118").unwrap();
+	for request in server.incoming_requests() {
+		let url = urlencoding::decode(request.url()).unwrap().into_owned();
 		// Ensure the requested path is within the OpenDeck config directory to prevent unrestricted access to the filesystem.
 		if path::Path::new(&url).starts_with(&prefix) {
 			// The Svelte frontend cannot call the connectElgatoStreamDeckSocket function on property inspector frames
@@ -242,12 +243,20 @@ async fn init_browser_server(prefix: path::PathBuf) {
 				let path = &url[..url.len() - 28];
 				let mut content = fs::read_to_string(path).unwrap_or_default();
 				content += "\n<script> window.addEventListener(\"message\", ({ data }) => connectElgatoStreamDeckSocket(...data)); </script>";
-				rouille::Response::html(content)
+				let response = tiny_http::Response::from_string(content);
+				let _ = request.respond(response.with_header(tiny_http::Header {
+					field: "Content-Type".parse().unwrap(),
+					value: "text/html".parse().unwrap()
+				}));
 			} else {
-				rouille::Response::html(fs::read_to_string(url).unwrap_or_default())
+				let response = tiny_http::Response::from_string(fs::read_to_string(url).unwrap_or_default());
+				let _ = request.respond(response.with_header(tiny_http::Header {
+					field: "Content-Type".parse().unwrap(),
+					value: "text/html".parse().unwrap()
+				}));
 			}
 		} else {
-			rouille::Response::empty_400()
+			let _ = request.respond(tiny_http::Response::empty(403));
 		}
-	});
+	}
 }
