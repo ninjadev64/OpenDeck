@@ -4,6 +4,8 @@ use crate::shared::{Action, ActionContext, ActionInstance, CATEGORIES};
 
 use std::collections::HashMap;
 
+use tauri::Manager;
+
 #[derive(serde::Serialize, serde::Deserialize)]
 struct Error {
 	pub description: String
@@ -153,4 +155,10 @@ pub async fn make_info(app: tauri::AppHandle, plugin: String) -> String {
 	};
 
 	serde_json::to_string(&crate::plugins::info_param::make_info(plugin, manifest.version).await).unwrap()
+}
+
+pub async fn update_state(app: &tauri::AppHandle, instance: &ActionInstance) -> Result<(), anyhow::Error> {
+	let window = app.get_window("main").unwrap();
+	window.emit("update_state", serde_json::to_string(instance).unwrap())?;
+	Ok(())
 }

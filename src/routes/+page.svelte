@@ -1,4 +1,7 @@
 <script lang="ts">
+	import type { DeviceInfo } from "$lib/DeviceInfo";
+	import type { Profile } from "$lib/Profile";
+
 	import ActionList from "../components/ActionList.svelte";
 	import DeviceSelector from "../components/DeviceSelector.svelte";
 	import DeviceView from "../components/DeviceView.svelte";

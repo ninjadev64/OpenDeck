@@ -1,5 +1,6 @@
 mod misc;
 mod settings;
+mod states;
 
 use crate::shared::ActionContext;
 
@@ -40,6 +41,9 @@ pub enum InboundEventType {
 	GetGlobalSettings(ContextEvent<String>),
 	OpenUrl(PayloadEvent<misc::OpenUrlEvent>),
 	LogMessage(PayloadEvent<misc::LogMessageEvent>),
+	SetTitle(ContextAndPayloadEvent<states::SetTitlePayload>),
+	SetImage(ContextAndPayloadEvent<states::SetImagePayload>),
+	SetState(ContextAndPayloadEvent<states::SetStatePayload>),
 	SendToPropertyInspector(ContextAndPayloadEvent<serde_json::Value>),
 	SendToPlugin(ContextAndPayloadEvent<serde_json::Value>)
 }
@@ -58,6 +62,9 @@ pub async fn process_incoming_message(data: tokio_tungstenite::tungstenite::Mess
 			InboundEventType::GetGlobalSettings(event) => settings::get_global_settings(event).await,
 			InboundEventType::OpenUrl(event) => misc::open_url(event).await,
 			InboundEventType::LogMessage(event) => misc::log_message(event).await,
+			InboundEventType::SetTitle(event) => states::set_title(event).await,
+			InboundEventType::SetImage(event) => states::set_image(event).await,
+			InboundEventType::SetState(event) => states::set_state(event).await,
 			InboundEventType::SendToPropertyInspector(event) => misc::send_to_property_inspector(event).await,
 			InboundEventType::SendToPlugin(_) => Ok(())
 		} {

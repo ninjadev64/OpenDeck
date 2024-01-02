@@ -4,12 +4,18 @@
 	import { inspectedInstance } from "$lib/propertyInspector";
 
 	import { invoke } from "@tauri-apps/api";
+	import { listen } from "@tauri-apps/api/event";
 	import { convertFileSrc } from "@tauri-apps/api/tauri";
 
 	export let context: string;
 	export let instance: ActionInstance | null;
 
 	$: state = instance?.states[instance?.current_state];
+
+	listen("update_state", ({ payload }: { payload: string }) => {
+		let i = JSON.parse(payload);
+		if (i.context == context) instance = i;
+	});
 
 	function handleDragOver(event: DragEvent) {
 		event.preventDefault();
@@ -38,7 +44,7 @@
 	{#if instance && state}
 		<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 		<img
-			src={convertFileSrc(state.image)}
+			src={state.image.startsWith("data:") ? state.image : convertFileSrc(state.image)}
 			class="p-2 w-full rounded-xl"
 			alt={instance.action.tooltip}
 			on:click={clear} on:keyup={clear}

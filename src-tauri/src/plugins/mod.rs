@@ -234,7 +234,18 @@ async fn init_browser_server(prefix: path::PathBuf) {
 	for request in server.incoming_requests() {
 		let url = urlencoding::decode(request.url()).unwrap().into_owned();
 		// Ensure the requested path is within the OpenDeck config directory to prevent unrestricted access to the filesystem.
-		if path::Path::new(&url).starts_with(&prefix) {
+		let filepath = path::Path::new(&url);
+		if filepath.starts_with(&prefix) {
+			let extension = match filepath.extension() {
+				Some(extension) => extension.to_string_lossy().into_owned(),
+				None => "html".to_owned()
+			};
+			let mime = match &extension[..] {
+				"js" | "cjs" | "mjs" => "text/javascript".to_owned(),
+				"htm" | "html" | "xhtml" => "text/html".to_owned(),
+				"png" | "jpg" | "jpeg" | "gif" | "webp" => format!("image/{}", extension),
+				_ => "application/octet-stream".to_owned()
+			};
 			// The Svelte frontend cannot call the connectElgatoStreamDeckSocket function on property inspector frames
 			// because they are served from a different origin (this webserver on port 57118).
 			// Instead, we have to inject a script onto all property inspector frames that receives a message
@@ -246,13 +257,13 @@ async fn init_browser_server(prefix: path::PathBuf) {
 				let response = tiny_http::Response::from_string(content);
 				let _ = request.respond(response.with_header(tiny_http::Header {
 					field: "Content-Type".parse().unwrap(),
-					value: "text/html".parse().unwrap()
+					value: mime.parse().unwrap()
 				}));
 			} else {
 				let response = tiny_http::Response::from_string(fs::read_to_string(url).unwrap_or_default());
 				let _ = request.respond(response.with_header(tiny_http::Header {
 					field: "Content-Type".parse().unwrap(),
-					value: "text/html".parse().unwrap()
+					value: mime.parse().unwrap()
 				}));
 			}
 		} else {
