@@ -1,4 +1,4 @@
-use super::{PayloadEvent, ContextAndPayloadEvent};
+use super::{ContextEvent, PayloadEvent, ContextAndPayloadEvent};
 
 use tauri::{api::shell::open, Manager};
 
@@ -32,5 +32,21 @@ pub async fn send_to_property_inspector(event: ContextAndPayloadEvent<serde_json
 
 pub async fn send_to_plugin(event: ContextAndPayloadEvent<serde_json::Value>) -> Result<(), anyhow::Error> {
 	crate::events::outbound::property_inspector::send_to_plugin(event.context, event.payload).await?;
+	Ok(())
+}
+
+pub async fn show_alert(event: ContextEvent) -> Result<(), anyhow::Error> {
+	let app = crate::APP_HANDLE.lock().await;
+	let app = app.as_ref().unwrap();
+	let window = app.get_window("main").unwrap();
+	window.emit("show_alert", event.context)?;
+	Ok(())
+}
+
+pub async fn show_ok(event: ContextEvent) -> Result<(), anyhow::Error> {
+	let app = crate::APP_HANDLE.lock().await;
+	let app = app.as_ref().unwrap();
+	let window = app.get_window("main").unwrap();
+	window.emit("show_ok", event.context)?;
 	Ok(())
 }

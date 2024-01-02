@@ -33,6 +33,26 @@
 		instance = JSON.parse(await invoke("clear_slot", { context }));
 		if ($inspectedInstance == context) inspectedInstance.set(null);
 	}
+
+	let showAlert = 0;
+	let showOk = 0;
+	let timeouts: number[] = [];
+	listen("show_alert", ({ payload }: { payload: string }) => {
+		if (payload != context) return;
+		timeouts.forEach(clearTimeout);
+		showOk = 0;
+		showAlert = 1;
+		timeouts.push(setTimeout(() => showAlert = 2, 1e3));
+		timeouts.push(setTimeout(() => showAlert = 0, 2e3));
+	});
+	listen("show_ok", ({ payload }: { payload: string }) => {
+		if (payload != context) return;
+		timeouts.forEach(clearTimeout);
+		showAlert = 0;
+		showOk = 1;
+		timeouts.push(setTimeout(() => showOk = 2, 1e3));
+		timeouts.push(setTimeout(() => showOk = 0, 2e3));
+	});
 </script>
 
 <div
@@ -70,6 +90,22 @@
 					{state.text}
 				</span>
 			</div>
+		{/if}
+		{#if showAlert > 0}
+			<img
+				src="/alert.png"
+				alt="Alert"
+				class="absolute top-0 left-0 p-2 w-full h-full transition-opacity duration-1000"
+				class:opacity-0={showAlert == 2}
+			/>
+		{/if}
+		{#if showOk}
+			<img
+				src="/ok.png"
+				alt="OK"
+				class="absolute top-0 left-0 p-2 w-full h-full transition-opacity duration-1000"
+				class:opacity-0={showOk == 2}
+			/>
 		{/if}
 	{/if}
 </div>

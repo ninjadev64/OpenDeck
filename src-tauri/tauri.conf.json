@@ -44,12 +44,15 @@
 			"csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: asset: https://appstore.elgato.com; frame-src http://localhost:57118; connect-src https://appstore.elgato.com;"
 		},
 		"allowlist": {
-			"all": true,
 			"protocol": {
 				"asset": true,
 				"assetScope": [
 					"$APPCONFIG/plugins/**/*"
 				]
+			},
+			"shell": {
+				"open": true,
+				"execute": true
 			}
 		},
 		"updater": {

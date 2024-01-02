@@ -44,6 +44,8 @@ pub enum InboundEventType {
 	SetTitle(ContextAndPayloadEvent<states::SetTitlePayload>),
 	SetImage(ContextAndPayloadEvent<states::SetImagePayload>),
 	SetState(ContextAndPayloadEvent<states::SetStatePayload>),
+	ShowAlert(ContextEvent),
+	ShowOk(ContextEvent),
 	SendToPropertyInspector(ContextAndPayloadEvent<serde_json::Value>),
 	SendToPlugin(ContextAndPayloadEvent<serde_json::Value>)
 }
@@ -65,6 +67,8 @@ pub async fn process_incoming_message(data: tokio_tungstenite::tungstenite::Mess
 			InboundEventType::SetTitle(event) => states::set_title(event).await,
 			InboundEventType::SetImage(event) => states::set_image(event).await,
 			InboundEventType::SetState(event) => states::set_state(event).await,
+			InboundEventType::ShowAlert(event) => misc::show_alert(event).await,
+			InboundEventType::ShowOk(event) => misc::show_ok(event).await,
 			InboundEventType::SendToPropertyInspector(event) => misc::send_to_property_inspector(event).await,
 			InboundEventType::SendToPlugin(_) => Ok(())
 		} {
