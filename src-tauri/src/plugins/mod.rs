@@ -70,7 +70,6 @@ async fn initialise_plugin(path: path::PathBuf) -> anyhow::Result<()> {
 	let platform = "linux";
 
 	let mut code_path = manifest.code_path;
-	let mut use_browser = false;
 	let mut use_wine = false;
 	let mut supported = false;
 
@@ -84,9 +83,6 @@ async fn initialise_plugin(path: path::PathBuf) -> anyhow::Result<()> {
 			#[cfg(target_os = "linux")]
 			if manifest.code_path_linux.is_some() { code_path = manifest.code_path_linux; }
 
-			if let Some(code_path) = &code_path {
-				use_browser = code_path.ends_with(".html");
-			}
 			use_wine = false;
 
 			supported = true;
@@ -110,9 +106,9 @@ async fn initialise_plugin(path: path::PathBuf) -> anyhow::Result<()> {
 
 	let code_path = code_path.unwrap();
 
-	if use_browser {
+	if code_path.ends_with(".html") {
 		// Create a webview window for the plugin and call its registration function.
-		let url = String::from("http://localhost:57118/") + path.join(code_path).to_str().unwrap();
+		let url = String::from("http://localhost:57118") + path.join(code_path).to_str().unwrap();
 		let window = tauri::WindowBuilder::new(
 			APP_HANDLE.lock().await.as_ref().unwrap(),
 			plugin_uuid.replace('.', "_"),
@@ -123,12 +119,15 @@ async fn initialise_plugin(path: path::PathBuf) -> anyhow::Result<()> {
 			.with_context(|| { format!("Failed to initialise plugin with ID {}", plugin_uuid) })?;
 
 		window.eval(&format!(
-			"let a = setInterval(() => {{
+			"const opendeckInit = () => {{
 				try {{
-					connectElgatoStreamDeckSocket({}, \"{}\", \"{}\", {});
-					clearInterval(a);
-				}} catch {{}}
-			}}, 10);",
+					connectElgatoStreamDeckSocket({}, \"{}\", \"{}\", `{}`);
+				}} catch (e) {{
+					setTimeout(opendeckInit, 10);
+				}}
+			}};
+			opendeckInit();
+			",
 			57116, plugin_uuid, "register", serde_json::to_string(&info).unwrap()
 		))?;
 	} else if use_wine {
@@ -201,7 +200,7 @@ pub fn initialise_plugins(app: AppHandle) {
 
 /// Start the WebSocket server that plugins communicate with.
 async fn init_websocket_server() {
-	let listener = match TcpListener::bind("localhost:57116").await {
+	let listener = match TcpListener::bind("0.0.0.0:57116").await {
 		Ok(listener) => listener,
 		Err(error) => {
 			error!("Failed to bind plugin WebSocket server to socket: {}", error);
@@ -230,40 +229,48 @@ async fn accept_connection(stream: TcpStream) {
 
 /// Start a simple webserver to serve files of plugins that run in a browser environment.
 async fn init_browser_server(prefix: path::PathBuf) {
+	fn mime(extension: &str) -> String {
+		match extension {
+			"htm" | "html" | "xhtml" => "text/html".to_owned(),
+			"js" | "cjs" | "mjs" => "text/javascript".to_owned(),
+			"css" => "text/css".to_owned(),
+			"png" | "jpg" | "jpeg" | "gif" | "webp" => format!("image/{}", extension),
+			_ => "application/octet-stream".to_owned()
+		}
+	}
+
 	let server = tiny_http::Server::http("0.0.0.0:57118").unwrap();
 	for request in server.incoming_requests() {
 		let url = urlencoding::decode(request.url()).unwrap().into_owned();
+		let url = format!("/{}", url);
 		// Ensure the requested path is within the OpenDeck config directory to prevent unrestricted access to the filesystem.
-		let filepath = path::Path::new(&url);
-		if filepath.starts_with(&prefix) {
-			let extension = match filepath.extension() {
-				Some(extension) => extension.to_string_lossy().into_owned(),
-				None => "html".to_owned()
-			};
-			let mime = match &extension[..] {
-				"js" | "cjs" | "mjs" => "text/javascript".to_owned(),
-				"htm" | "html" | "xhtml" => "text/html".to_owned(),
-				"png" | "jpg" | "jpeg" | "gif" | "webp" => format!("image/{}", extension),
-				_ => "application/octet-stream".to_owned()
-			};
+		if path::Path::new(&url).starts_with(&prefix) {
 			// The Svelte frontend cannot call the connectElgatoStreamDeckSocket function on property inspector frames
 			// because they are served from a different origin (this webserver on port 57118).
 			// Instead, we have to inject a script onto all property inspector frames that receives a message
 			// from the Svelte frontend over window.postMessage.
 			if url.ends_with("|opendeck_property_inspector") {
 				let path = &url[..url.len() - 28];
+				let extension = match path::Path::new(path).extension() {
+					Some(extension) => extension.to_string_lossy().into_owned(),
+					None => "html".to_owned()
+				};
 				let mut content = fs::read_to_string(path).unwrap_or_default();
 				content += "\n<script> window.addEventListener(\"message\", ({ data }) => connectElgatoStreamDeckSocket(...data)); </script>";
 				let response = tiny_http::Response::from_string(content);
 				let _ = request.respond(response.with_header(tiny_http::Header {
 					field: "Content-Type".parse().unwrap(),
-					value: mime.parse().unwrap()
+					value: mime(&extension).parse().unwrap()
 				}));
 			} else {
+				let extension = match path::Path::new(&url).extension() {
+					Some(extension) => extension.to_string_lossy().into_owned(),
+					None => "html".to_owned()
+				};
 				let response = tiny_http::Response::from_string(fs::read_to_string(url).unwrap_or_default());
 				let _ = request.respond(response.with_header(tiny_http::Header {
 					field: "Content-Type".parse().unwrap(),
-					value: mime.parse().unwrap()
+					value: mime(&extension).parse().unwrap()
 				}));
 			}
 		} else {

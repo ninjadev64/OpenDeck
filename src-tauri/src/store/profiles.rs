@@ -46,6 +46,20 @@ impl ProfileStores {
 		let path = config_dir.join(format!("profiles/{}/{}.json", device, id));
 		let _ = fs::remove_file(path);
 	}
+
+	pub fn all_from_plugin(&self, plugin: &str) -> Vec<crate::shared::ActionContext> {
+		let mut all = vec![];
+		for store in self.stores.values() {
+			for instance in (&store.value.keys).into_iter().chain(&store.value.sliders) {
+				if let Some(instance) = instance {
+					if instance.action.plugin == plugin {
+						all.push(instance.context.clone());
+					}
+				}
+			}
+		}
+		all
+	}
 }
 
 #[derive(Serialize, Deserialize)]

@@ -1,4 +1,4 @@
-use super::{Coordinates, send_to_plugin};
+use super::{Coordinates, send_to_plugin, send_to_property_inspector};
 
 use crate::shared::ActionContext;
 
@@ -30,12 +30,12 @@ pub struct DidReceiveGlobalSettings {
 	payload: DidReceiveGlobalSettingsPayload
 }
 
-pub async fn did_receive_settings(context: crate::shared::ActionContext, instance: &crate::shared::ActionInstance) -> Result<(), anyhow::Error> {
-	send_to_plugin(&instance.action.plugin, DidReceiveSettings {
+pub async fn did_receive_settings(instance: &crate::shared::ActionInstance, to_property_inspector: bool) -> Result<(), anyhow::Error> {
+	let data = DidReceiveSettings {
 		event: "didReceiveSettings".to_owned(),
 		action: instance.action.uuid.clone(),
-		context: context.clone(),
-		device: context.device.clone(),
+		context: instance.context.clone(),
+		device: instance.context.device.clone(),
 		payload: DidReceiveSettingsPayload {
 			settings: instance.settings.clone(),
 			coordinates: Coordinates {
@@ -43,7 +43,12 @@ pub async fn did_receive_settings(context: crate::shared::ActionContext, instanc
 				column: instance.context.position % 3
 			}
 		}
-	}).await
+	};
+	if to_property_inspector {
+		send_to_property_inspector(&instance.context, &data).await
+	} else {
+		send_to_plugin(&instance.action.plugin, &data).await
+	}
 }
 
 pub async fn did_receive_global_settings(context: &str) -> Result<(), anyhow::Error> {
@@ -54,10 +59,18 @@ pub async fn did_receive_global_settings(context: &str) -> Result<(), anyhow::Er
 	let path = settings_dir.join(format!("{}.json", context));
 	let settings: serde_json::Value = serde_json::from_slice(&std::fs::read(path)?)?;
 
-	send_to_plugin(context, DidReceiveGlobalSettings {
+	let data = DidReceiveGlobalSettings {
 		event: "didReceiveGlobalSettings".to_owned(),
 		payload: DidReceiveGlobalSettingsPayload {
 			settings
 		}
-	}).await
+	};
+	send_to_plugin(context, &data).await?;
+
+	let profile_stores = crate::store::profiles::PROFILE_STORES.lock().await;
+	for context in profile_stores.all_from_plugin(context) {
+		send_to_property_inspector(&context, &data).await?;
+	}
+
+	Ok(())
 }

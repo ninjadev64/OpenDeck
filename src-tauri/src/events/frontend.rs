@@ -60,11 +60,40 @@ pub async fn get_selected_profile(app: tauri::AppHandle, device: String) -> Stri
 }
 
 #[tauri::command]
-pub async fn set_selected_profile(app: tauri::AppHandle, device: String, profile: String) {
+pub async fn set_selected_profile(app: tauri::AppHandle, device: String, id: String) -> String {
 	let mut device_stores = DEVICE_STORES.lock().await;
+	let devices = DEVICES.lock().await;
+	let mut profile_stores = PROFILE_STORES.lock().await;
 	let store = device_stores.get_device_store(&device, &app).unwrap();
-	store.value.selected_profile = profile.to_owned();
-	let _ = store.save();
+
+	if store.value.selected_profile != id {
+		let old_profile = match profile_stores.get_profile_store(devices.get(&device).unwrap(), &store.value.selected_profile, &app) {
+			Ok(store) => &store.value,
+			Err(error) => return serde_json::to_string(&Error { description: error.to_string() }).unwrap()
+		};
+		for instance in (&old_profile.keys).into_iter().chain(&old_profile.sliders) {
+			if let Some(instance) = instance {
+				let _ = crate::events::outbound::will_appear::will_disappear(instance).await;
+			}
+		}
+	}
+
+	let new_profile = match profile_stores.get_profile_store(devices.get(&device).unwrap(), &id, &app) {
+		Ok(store) => &store.value,
+		Err(error) => return serde_json::to_string(&Error { description: error.to_string() }).unwrap()
+	};
+	for instance in (&new_profile.keys).into_iter().chain(&new_profile.sliders) {
+		if let Some(instance) = instance {
+			let _ = crate::events::outbound::will_appear::will_appear(instance).await;
+		}
+	}
+
+	store.value.selected_profile = id.to_owned();
+	if let Err(error) = store.save() {
+		return serde_json::to_string(&Error { description: error.to_string() }).unwrap()
+	}
+
+	serde_json::to_string(&store.value).unwrap()
 }
 
 #[tauri::command]
@@ -80,7 +109,7 @@ pub async fn create_instance(app: tauri::AppHandle, action: Action, context: Act
 		context: context.clone(),
 		states: action.states.clone(),
 		current_state: 0,
-		settings: serde_json::Value::Null
+		settings: serde_json::Value::Object(serde_json::Map::new())
 	};
 
 	let mut profile_stores = PROFILE_STORES.lock().await;

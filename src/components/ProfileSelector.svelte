@@ -10,12 +10,13 @@
 	async function getProfiles(device: DeviceInfo) {
 		profiles = JSON.parse(await invoke("get_profiles", { device: device.id }));
 		value = JSON.parse(await invoke("get_selected_profile", { device: device.id })).id;
+		setProfile(value);
 	}
 
 	export let profile: Profile;
 	async function setProfile(id: string) {
 		if (!device || !id) return;
-		await invoke("set_selected_profile", { device: device.id, profile: id });
+		await invoke("set_selected_profile", { device: device.id, id });
 		profile = JSON.parse(await invoke("get_selected_profile", { device: device.id }));
 		if (!profiles.includes(id)) profiles = [ ...profiles, id ];
 	}
@@ -47,7 +48,7 @@
 </select>
 
 <Popup show={showPopup}>
-	<button class="float-right text-xl" on:click={() => showPopup = false}> × </button>
+	<button class="float-right text-xl" on:click={() => showPopup = false}> ✕ </button>
 	<h2 class="text-xl font-bold"> {device.name} </h2>
 
 	<div class="flex flex-row mt-2 mb-1">
@@ -70,7 +71,7 @@
 						invoke("delete_profile", { device: device.id, profile });
 						profiles.splice(i, 1);
 						profiles = profiles;
-					}}> × </button>
+					}}> ✕ </button>
 				{/if}
 			</div>
 		{/each}

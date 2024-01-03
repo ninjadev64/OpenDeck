@@ -53,6 +53,15 @@
 		timeouts.push(setTimeout(() => showOk = 2, 1e3));
 		timeouts.push(setTimeout(() => showOk = 0, 2e3));
 	});
+
+	function getImage(image: string): string {
+		if (!image.startsWith("data:")) return convertFileSrc(image);
+		const svgxmlre = /^data:image\/svg\+xml,(.+)/;
+		if (svgxmlre.test(image)) {
+			image = "data:image/svg+xml;base64," + btoa(decodeURIComponent((svgxmlre.exec(image) as RegExpExecArray)[1].replace(/\;$/, "")));
+		}
+		return image;
+	}
 </script>
 
 <div
@@ -64,7 +73,7 @@
 	{#if instance && state}
 		<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 		<img
-			src={state.image.startsWith("data:") ? state.image : convertFileSrc(state.image)}
+			src={getImage(state.image)}
 			class="p-2 w-full rounded-xl"
 			alt={instance.action.tooltip}
 			on:click={clear} on:keyup={clear}

@@ -1,16 +1,9 @@
-use super::{Coordinates, send_to_plugin};
+use super::{GenericInstancePayload, send_to_plugin};
 
-use crate::shared::{ActionContext, ActionInstance};
+use crate::shared::ActionContext;
 use crate::store::profiles::get_instance;
 
 use serde::Serialize;
-
-#[derive(Serialize)]
-struct KeyPayload {
-	settings: serde_json::Value,
-	coordinates: Coordinates,
-	state: u16
-}
 
 #[derive(Serialize)]
 struct KeyEvent {
@@ -18,18 +11,7 @@ struct KeyEvent {
 	event: String,
 	context: ActionContext,
 	device: String,
-	payload: KeyPayload
-}
-
-fn create_payload(instance: &ActionInstance) -> KeyPayload {
-	KeyPayload {
-		settings: instance.settings.clone(),
-		coordinates: Coordinates {
-			row: instance.context.position / 3,
-			column: instance.context.position % 3
-		},
-		state: instance.current_state
-	}
+	payload: GenericInstancePayload
 }
 
 pub async fn key_down(device: String, key: u8) -> Result<(), anyhow::Error> {
@@ -38,12 +20,12 @@ pub async fn key_down(device: String, key: u8) -> Result<(), anyhow::Error> {
 		None => return Ok(())
 	};
 
-	send_to_plugin(&instance.action.plugin, KeyEvent {
+	send_to_plugin(&instance.action.plugin, &KeyEvent {
 		action: instance.action.uuid.clone(),
 		event: "keyDown".to_owned(),
 		context: instance.context.clone(),
 		device: instance.context.device.clone(),
-		payload: create_payload(&instance)
+		payload: GenericInstancePayload::new(&instance)
 	}).await
 }
 
@@ -67,11 +49,11 @@ pub async fn key_up(device: String, key: u8) -> Result<(), anyhow::Error> {
 
 	instance.current_state = (instance.current_state + 1) % (instance.states.len() as u16);
 
-	send_to_plugin(&instance.action.plugin, KeyEvent {
+	send_to_plugin(&instance.action.plugin, &KeyEvent {
 		action: instance.action.uuid.clone(),
 		event: "keyUp".to_owned(),
 		context: instance.context.clone(),
 		device: instance.context.device.clone(),
-		payload: create_payload(&instance)
+		payload: GenericInstancePayload::new(&instance)
 	}).await
 }

@@ -28,7 +28,7 @@ pub async fn dial_rotate(device: String, index: u8, ticks: i16) -> Result<(), an
 		None => return Ok(())
 	};
 
-	send_to_plugin(&instance.action.plugin, DialRotateEvent {
+	send_to_plugin(&instance.action.plugin, &DialRotateEvent {
 		action: instance.action.uuid.clone(),
 		event: "dialRotate".to_owned(),
 		context: instance.context.clone(),
