@@ -124,12 +124,20 @@ pub async fn create_instance(app: tauri::AppHandle, action: Action, context: Act
 
 	let instance_ref: &Option<ActionInstance>;
 	if context.controller == "Encoder" {
+		if let Some(instance) = &store.value.sliders[context.position as usize] {
+			let _ = crate::events::outbound::will_appear::will_disappear(instance).await;
+		}
 		store.value.sliders[context.position as usize] = Some(instance);
 		instance_ref = &store.value.sliders[context.position as usize];
 	} else {
+		if let Some(instance) = &store.value.keys[context.position as usize] {
+			let _ = crate::events::outbound::will_appear::will_disappear(instance).await;
+		}
 		store.value.keys[context.position as usize] = Some(instance);
 		instance_ref = &store.value.keys[context.position as usize];
 	}
+
+	let _ = crate::events::outbound::will_appear::will_appear(instance_ref.as_ref().unwrap()).await;
 
 	if let Err(error) = store.save() {
 		return serde_json::to_string(&Error { description: error.to_string() }).unwrap();
@@ -152,9 +160,15 @@ pub async fn clear_slot(app: tauri::AppHandle, context: ActionContext) -> String
 
 	let instance_ref: &Option<ActionInstance>;
 	if context.controller == "Encoder" {
+		if let Some(instance) = &store.value.sliders[context.position as usize] {
+			let _ = crate::events::outbound::will_appear::will_disappear(instance).await;
+		}
 		store.value.sliders[context.position as usize] = None;
 		instance_ref = &store.value.sliders[context.position as usize];
 	} else {
+		if let Some(instance) = &store.value.keys[context.position as usize] {
+			let _ = crate::events::outbound::will_appear::will_disappear(instance).await;
+		}
 		store.value.keys[context.position as usize] = None;
 		instance_ref = &store.value.keys[context.position as usize];
 	}

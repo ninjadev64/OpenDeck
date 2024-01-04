@@ -14,8 +14,8 @@ struct KeyEvent {
 	payload: GenericInstancePayload
 }
 
-pub async fn key_down(device: String, key: u8) -> Result<(), anyhow::Error> {
-	let instance = match get_instance(&device, key, "Keypad").await? {
+pub async fn key_down(device: &str, key: u8) -> Result<(), anyhow::Error> {
+	let instance = match get_instance(device, key, "Keypad").await? {
 		Some(instance) => instance,
 		None => return Ok(())
 	};
@@ -29,7 +29,7 @@ pub async fn key_down(device: String, key: u8) -> Result<(), anyhow::Error> {
 	}).await
 }
 
-pub async fn key_up(device: String, key: u8) -> Result<(), anyhow::Error> {
+pub async fn key_up(device: &str, key: u8) -> Result<(), anyhow::Error> {
 	let (
 		app,
 		mut device_stores,
@@ -38,7 +38,7 @@ pub async fn key_up(device: String, key: u8) -> Result<(), anyhow::Error> {
 	) = crate::store::profiles::lock_mutexes().await;
 
 	let selected_profile = &device_stores.get_device_store(&device, app.as_ref().unwrap())?.value.selected_profile;
-	let device = devices.get(&device).unwrap();
+	let device = devices.get(device).unwrap();
 	let store = profile_stores.get_profile_store(device, selected_profile, app.as_ref().unwrap())?;
 	let profile = &mut store.value;
 

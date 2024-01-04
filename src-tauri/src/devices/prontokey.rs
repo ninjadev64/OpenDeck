@@ -1,4 +1,4 @@
-use super::BaseDevice;
+use super::DeviceInfo;
 
 use crate::events::outbound;
 
@@ -8,29 +8,13 @@ use std::time::Duration;
 use serde_json::Value;
 use log::{warn, error};
 
-/// A representation of a ProntoKey device.
-pub struct ProntoKeyDevice {
-	address: String
-}
-
-impl BaseDevice for ProntoKeyDevice {
-	fn num_sliders(&self) -> u8 { 2 }
-	fn num_rows(&self) -> u8 { 3 }
-	fn num_columns(&self) -> u8 { 3 }
-
-	fn id(&self) -> String {
-		format!("pk-{}", self.address)
-	}
-	fn name(&self) -> String {
-		String::from("ProntoKey")
-	}
-	fn r#type(&self) -> u8 { 7 }
-}
+pub struct ProntoKeyDevice {}
 
 impl ProntoKeyDevice {
 	/// Attempt to open a serial connection with the device and handle incoming data.
 	pub async fn init(port: String) {
-		let mut device: Option<ProntoKeyDevice> = Option::None;
+		let mut initialised = false;
+		let mut device_id = "".to_owned();
 		let mut last_key: u8 = 0;
 		let mut last_sliders: Vec<i16> = vec![0; 2];
 
@@ -68,26 +52,30 @@ impl ProntoKeyDevice {
 						holding_string = holding_string[(index + 1)..].to_owned();
 
 						// If the device is uninitialised, attempt to read its MAC address and initialise.
-						if device.is_none() {
+						if !initialised {
 							if let Value::String(address) = &j["address"] {
-								device = Some(ProntoKeyDevice { address: address.clone() });
-								if let Some(device) = &device {
-									super::DEVICES.lock().await.insert(device.id(), super::DeviceInfo::new(device));
-								}
+								initialised = true;
+								device_id = format!("pk-{}", address);
+								super::DEVICES.lock().await.insert(device_id.clone(), DeviceInfo {
+									id: device_id.clone(),
+									name: "ProntoKey".to_owned(),
+									rows: 3,
+									columns: 3,
+									sliders: 2,
+									r#type: 7
+								});
 							}
 							continue;
 						}
-
-						let device = device.as_ref().unwrap();
 
 						// Handle key presses and releases.
 						if let Value::Number(num) = &j["key"] {
 							match num.as_u64().unwrap_or_default() as u8 {
 								0 => {
-									let _ = outbound::keypad::key_up(device.id(), last_key - 1).await;
+									let _ = outbound::keypad::key_up(&device_id, last_key - 1).await;
 								},
 								val => {
-									let _ = outbound::keypad::key_down(device.id(), val - 1).await;
+									let _ = outbound::keypad::key_down(&device_id, val - 1).await;
 									last_key = val;
 								}
 							}
@@ -99,7 +87,7 @@ impl ProntoKeyDevice {
 								Some(v) => v as i16,
 								_ => last_sliders[0]
 							};
-							let _ = outbound::encoder::dial_rotate(device.id(), 0, val - last_sliders[0]).await;
+							let _ = outbound::encoder::dial_rotate(&device_id, 0, val - last_sliders[0]).await;
 							last_sliders[0] = val;
 						}
 						if let Value::Number(val) = &j["slider1"] {
@@ -107,7 +95,7 @@ impl ProntoKeyDevice {
 								Some(v) => v as i16,
 								_ => last_sliders[1]
 							};
-							let _ = outbound::encoder::dial_rotate(device.id(), 1, val - last_sliders[1]).await;
+							let _ = outbound::encoder::dial_rotate(&device_id, 1, val - last_sliders[1]).await;
 							last_sliders[1] = val;
 						}
 					}

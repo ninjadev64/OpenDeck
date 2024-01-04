@@ -22,8 +22,8 @@ struct DialRotateEvent {
 	payload: DialRotatePayload
 }
 
-pub async fn dial_rotate(device: String, index: u8, ticks: i16) -> Result<(), anyhow::Error> {
-	let instance = match get_instance(&device, index, "Encoder").await? {
+pub async fn dial_rotate(device: &str, index: u8, ticks: i16) -> Result<(), anyhow::Error> {
+	let instance = match get_instance(device, index, "Encoder").await? {
 		Some(instance) => instance,
 		None => return Ok(())
 	};

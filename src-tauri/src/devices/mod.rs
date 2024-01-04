@@ -7,20 +7,6 @@ use tokio::sync::Mutex;
 
 use serde::Serialize;
 
-/// A trait implemented by all supported devices.
-pub trait BaseDevice {
-	fn num_sliders(&self) -> u8;
-	fn num_rows(&self) -> u8;
-	fn num_columns(&self) -> u8;
-	fn num_keys(&self) -> u8 {
-		self.num_rows() * self.num_columns()
-	}
-
-	fn id(&self) -> String;
-	fn name(&self) -> String;
-	fn r#type(&self) -> u8;
-}
-
 /// Metadata of a device.
 #[derive(Clone, Serialize)]
 pub struct DeviceInfo {
@@ -30,19 +16,6 @@ pub struct DeviceInfo {
 	pub columns: u8,
 	pub sliders: u8,
 	pub r#type: u8
-}
-
-impl DeviceInfo {
-	fn new(device: &impl BaseDevice) -> DeviceInfo {
-		DeviceInfo {
-			id: device.id(),
-			name: device.name(),
-			rows: device.num_rows(),
-			columns: device.num_columns(),
-			sliders: device.num_sliders(),
-			r#type: device.r#type()
-		}
-	}
 }
 
 lazy_static! {

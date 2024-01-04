@@ -9,8 +9,10 @@
 	let profiles: string[] = [];
 	async function getProfiles(device: DeviceInfo) {
 		profiles = JSON.parse(await invoke("get_profiles", { device: device.id }));
-		value = JSON.parse(await invoke("get_selected_profile", { device: device.id })).id;
-		setProfile(value);
+		profile = JSON.parse(await invoke("get_selected_profile", { device: device.id }));
+		if (value == profile.id) return;
+		value = profile.id;
+		await invoke("set_selected_profile", { device: device.id, id: profile.id });
 	}
 
 	export let profile: Profile;
@@ -27,7 +29,7 @@
 		if (value == "opendeck_edit_profiles") {
 			if (oldValue) showPopup = true;
 			value = oldValue;
-		} else {
+		} else if (value && (!profile || profile.id != value)) {
 			setProfile(value);
 			oldValue = value;
 		}
