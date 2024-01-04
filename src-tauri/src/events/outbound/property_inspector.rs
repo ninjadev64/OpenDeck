@@ -3,11 +3,19 @@ use crate::shared::ActionContext;
 use serde::Serialize;
 
 #[derive(Serialize)]
-pub struct SendTo {
+struct SendToEvent {
 	event: String,
 	action: String,
 	context: ActionContext,
 	payload: serde_json::Value
+}
+
+#[derive(Serialize)]
+struct PropertyInspectorDidAppearEvent {
+	event: &'static str,
+	action: String,
+	context: ActionContext,
+	device: String
 }
 
 pub async fn send_to_property_inspector(context: ActionContext, message: serde_json::Value) -> Result<(), anyhow::Error> {
@@ -16,7 +24,7 @@ pub async fn send_to_property_inspector(context: ActionContext, message: serde_j
 		context.position,
 		&context.controller
 	).await? {
-		super::send_to_property_inspector(&context, &SendTo {
+		super::send_to_property_inspector(&context, &SendToEvent {
 			event: "sendToPropertyInspector".to_owned(),
 			action: instance.action.uuid.clone(),
 			context: context.clone(),
@@ -33,11 +41,31 @@ pub async fn send_to_plugin(context: ActionContext, message: serde_json::Value) 
 		context.position,
 		&context.controller
 	).await? {
-		super::send_to_plugin(&instance.action.plugin, &SendTo {
+		super::send_to_plugin(&instance.action.plugin, &SendToEvent {
 			event: "sendToPlugin".to_owned(),
 			action: instance.action.uuid.clone(),
 			context,
 			payload: message
+		}).await?;
+	}
+
+	Ok(())
+}
+
+pub async fn property_inspector_did_appear(context: ActionContext, event: &'static str) -> Result<(), anyhow::Error> {
+	if let Some(instance) = crate::store::profiles::get_instance(
+		&context.device,
+		context.position,
+		&context.controller
+	).await? {
+		if instance.action.property_inspector.is_empty() {
+			return Ok(())
+		}
+		super::send_to_plugin(&instance.action.plugin, &PropertyInspectorDidAppearEvent {
+			event: event,
+			action: instance.action.uuid.clone(),
+			device: context.device.clone(),
+			context
 		}).await?;
 	}
 

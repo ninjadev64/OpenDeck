@@ -5,13 +5,13 @@ use crate::shared::ActionContext;
 use serde::Serialize;
 
 #[derive(Serialize)]
-pub struct DidReceiveSettingsPayload {
+struct DidReceiveSettingsPayload {
 	settings: serde_json::Value,
 	coordinates: Coordinates
 }
 
 #[derive(Serialize)]
-pub struct DidReceiveSettings {
+struct DidReceiveSettingsEvent {
 	event: String,
 	action: String,
 	context: ActionContext,
@@ -20,18 +20,18 @@ pub struct DidReceiveSettings {
 }
 
 #[derive(Serialize)]
-pub struct DidReceiveGlobalSettingsPayload {
+struct DidReceiveGlobalSettingsPayload {
 	settings: serde_json::Value
 }
 
 #[derive(Serialize)]
-pub struct DidReceiveGlobalSettings {
+struct DidReceiveGlobalSettingsEvent {
 	event: String,
 	payload: DidReceiveGlobalSettingsPayload
 }
 
 pub async fn did_receive_settings(instance: &crate::shared::ActionInstance, to_property_inspector: bool) -> Result<(), anyhow::Error> {
-	let data = DidReceiveSettings {
+	let data = DidReceiveSettingsEvent {
 		event: "didReceiveSettings".to_owned(),
 		action: instance.action.uuid.clone(),
 		context: instance.context.clone(),
@@ -59,7 +59,7 @@ pub async fn did_receive_global_settings(context: &str) -> Result<(), anyhow::Er
 	let path = settings_dir.join(format!("{}.json", context));
 	let settings: serde_json::Value = serde_json::from_slice(&std::fs::read(path)?)?;
 
-	let data = DidReceiveGlobalSettings {
+	let data = DidReceiveGlobalSettingsEvent {
 		event: "didReceiveGlobalSettings".to_owned(),
 		payload: DidReceiveGlobalSettingsPayload {
 			settings

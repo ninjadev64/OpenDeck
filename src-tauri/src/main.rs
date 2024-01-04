@@ -29,7 +29,8 @@ async fn main() {
 			frontend::get_selected_profile,
 			frontend::set_selected_profile,
 			frontend::delete_profile,
-			frontend::make_info
+			frontend::make_info,
+			frontend::switch_property_inspector
 		])
 		.plugin(tauri_plugin_log::Builder::default()
 			.targets([

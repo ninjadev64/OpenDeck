@@ -200,6 +200,16 @@ pub async fn make_info(app: tauri::AppHandle, plugin: String) -> String {
 	serde_json::to_string(&crate::plugins::info_param::make_info(plugin, manifest.version).await).unwrap()
 }
 
+#[tauri::command]
+pub async fn switch_property_inspector(old: Option<ActionContext>, new: Option<ActionContext>) {
+	if let Some(context) = old {
+		let _ = crate::events::outbound::property_inspector::property_inspector_did_appear(context, "propertyInspectorDidDisappear").await;
+	}
+	if let Some(context) = new {
+		let _ = crate::events::outbound::property_inspector::property_inspector_did_appear(context, "propertyInspectorDidAppear").await;
+	}
+}
+
 pub async fn update_state(app: &tauri::AppHandle, instance: &ActionInstance) -> Result<(), anyhow::Error> {
 	let window = app.get_window("main").unwrap();
 	window.emit("update_state", serde_json::to_string(instance).unwrap())?;
