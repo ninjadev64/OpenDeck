@@ -22,7 +22,7 @@ function createWindow(): void {
 		autoHideMenuBar: true,
 		icon: path.join(__dirname, "../src/assets/icon.png")
 	});
-  
+
 	mainWindow.loadFile(path.join(__dirname, "../src/markup/index.html"));
 
 	ipcMain.on("createInstance", (_, action: string, device: string, type: "key" | "slider", position: number, index: number) => {
@@ -31,12 +31,12 @@ function createWindow(): void {
 		updateSlot(instance.context, instance);
 		mainWindow.webContents.send("updateState", instance.context, instance);
 	});
-	
+
 	ipcMain.on("slotUpdate", (_, context: string, instance: ActionInstance) => {
 		updateSlot(context, instance);
 		mainWindow.webContents.send("updateState", context, instance);
 	});
-	
+
 	ipcMain.on("requestCategories", () => {
 		mainWindow.webContents.send("categories", categories);
 	});

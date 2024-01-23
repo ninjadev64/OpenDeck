@@ -11,7 +11,7 @@ class EventHandler {
 	updateState(instance: ActionInstance): void {
 		getProfile(instance.device)[instance.type][instance.position][instance.index] = instance;
 		updateProfile(instance.device);
-		
+
 		if (instance.type == "key") require("./devices").deviceManager.setImage(instance.device, instance.position, instance.states[instance.state].image, instance.states[instance.state].title);
 
 		let window = getMainWindow();

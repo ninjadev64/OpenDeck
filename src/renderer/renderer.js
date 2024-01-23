@@ -64,7 +64,7 @@ ipcRenderer.on("categories", (_, categories) => {
 		let heading = document.createElement("h3");
 		heading.innerText = category;
 		actionList.appendChild(heading);
-		
+
 		actions.forEach((action) => {
 			if (!action.visibleInActionsList) return;
 			let div = document.createElement("div");
@@ -124,7 +124,7 @@ function drop(ev) {
 	} else {
 		return;
 	}
-	
+
 	ev.preventDefault();
 }
 

@@ -29,7 +29,7 @@ function updateList(profiles) {
 	for (const [ id, profile ] of Object.entries(profiles)) {
 		let t = document.createElement("li");
 		t.innerText = profile.name;
-		
+
 		let i = document.createElement("img");
 		i.src = "../assets/cross.png";
 		i.className = "deleteProfile";
@@ -44,7 +44,7 @@ function updateList(profiles) {
 			t.remove();
 		});
 		t.appendChild(i);
-		
+
 		list.appendChild(t);
 	}
 }

@@ -119,7 +119,7 @@ export class ActionInstance {
 		this.position = position;
 		this.index = index;
 		this.context = `${device}.${profile}.${type}.${position}.${index}`;
-		
+
 		this.state = 0;
 		this.states = JSON.parse(JSON.stringify(action.states));
 

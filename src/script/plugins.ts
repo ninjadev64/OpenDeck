@@ -57,7 +57,7 @@ class StreamDeckPlugin {
 				case "linux": this.applicationsToMonitor = manifest.ApplicationsToMonitor.linux ?? []; break;
 			}
 		}
-		
+
 		if (categories[this.category] == undefined) categories[this.category] = [];
 		manifest.Actions.forEach((action: any) => {
 			if (!action.Icon) action.Icon = action.States[0].Image;
@@ -116,11 +116,11 @@ class StreamDeckPlugin {
 			},
 			"devicePixelRatio": 0,
 			"colors": {
-				"buttonPressedBackgroundColor": "#000000", 
-				"buttonPressedBorderColor": "#000000", 
-				"buttonPressedTextColor": "#000000", 
-				"disabledColor": "#000000", 
-				"highlightColor": "#000000", 
+				"buttonPressedBackgroundColor": "#000000",
+				"buttonPressedBorderColor": "#000000",
+				"buttonPressedTextColor": "#000000",
+				"disabledColor": "#000000",
+				"highlightColor": "#000000",
 				"mouseDownColor": "#000000"
 			},
 			"devices": devices
@@ -247,7 +247,7 @@ class StreamDeckPluginManager {
 			.filter((item) => item.isDirectory())
 			.map((item) => item.name);
 		this.plugins = {};
-		
+
 		this.server = new WebSocketServer({ port: store.get("webSocketPort") });
 		this.server.on("error", () => {
 			error("An error occurred. Try removing any recently installed plugins, and make sure your configured ports are free.", true);
@@ -289,7 +289,7 @@ class StreamDeckPluginManager {
 					this.sendGlobalEvent({ event: "systemDidWakeUp" });
 				}
 				this.lastPollTime = now;
-				
+
 				let counts: { [id: string]: number } = {};
 				let processes = await pslist.default();
 				processes.forEach((process) => {

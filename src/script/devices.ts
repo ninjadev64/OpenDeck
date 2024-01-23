@@ -130,7 +130,7 @@ class ElgatoDevice extends EventEmitter implements Device {
 	keys: number;
 	rows: number;
 	columns: number;
-	
+
 	path: string;
 	device: StreamDeck;
 
@@ -177,12 +177,12 @@ class ElgatoDevice extends EventEmitter implements Device {
 
 		let base64re = /^data:image\/(apng|avif|gif|jpeg|png|svg\+xml|webp|bmp|x-icon|tiff);base64,([A-Za-z0-9+/]+={0,2})?/;
 		let svgxmlre = /^data:image\/svg\+xml,(.+)/;
-		
+
 		let d: Buffer;
 		if (base64re.test(source)) d = Buffer.from(base64re.exec(source)[2], "base64");
 		else if (svgxmlre.test(source)) d = Buffer.from(svgxmlre.exec(source)[1]);
 		else d = await promises.readFile(source);
-		
+
 		try {
 			if ("svg" in (new XMLParser().parse(d))) {
 				d = new Resvg(d, {
@@ -267,7 +267,7 @@ class DeviceManager {
 		device.on("dialDown", (dial: number) => eventHandler.dialDown(id, dial));
 		device.on("dialUp", (dial: number) => eventHandler.dialUp(id, dial));
 		device.on("dialRotate", (dial: number, value: number) => eventHandler.dialRotate(id, dial, value));
-		
+
 		store.set("devices", d);
 		if (getMainWindow()) getMainWindow().webContents.send("devices", store.get("devices"));
 		return device;
