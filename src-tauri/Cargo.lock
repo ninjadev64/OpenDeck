@@ -723,6 +723,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "56ce8c6da7551ec6c462cbaf3bfbc75131ebbfa1c944aeaa9dab51ca1c5f0c3b"
 
 [[package]]
+name = "elgato-streamdeck"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fa5a8005cf7a867a16d968803de4b182bc2815448af1d23865fcc025ad45ea38"
+dependencies = [
+ "hidapi",
+ "image",
+]
+
+[[package]]
 name = "embed-resource"
 version = "2.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1287,6 +1297,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 
 [[package]]
+name = "hidapi"
+version = "2.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3b125253e27c9fd67beac20665348f4bfc5b488b5c8a1020610eeb7e6d205cde"
+dependencies = [
+ "cc",
+ "cfg-if",
+ "libc",
+ "pkg-config",
+ "windows-sys 0.48.0",
+]
+
+[[package]]
 name = "html5ever"
 version = "0.25.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1418,6 +1441,7 @@ dependencies = [
  "bytemuck",
  "byteorder",
  "color_quant",
+ "jpeg-decoder",
  "num-rational",
  "num-traits",
 ]
@@ -1516,6 +1540,12 @@ name = "jni-sys"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8eaf4bc02d17cbdd7ff4c7438cafcdf7fb9a4613313ad11b4f8fefe7d3fa0130"
+
+[[package]]
+name = "jpeg-decoder"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f5d4a7da358eff58addd2877a45865158f0d78c911d43a5784ceb7bbf52833b0"
 
 [[package]]
 name = "js-sys"
@@ -1990,7 +2020,9 @@ name = "opendeck"
 version = "2.0.0"
 dependencies = [
  "anyhow",
+ "elgato-streamdeck",
  "futures-util",
+ "hidapi",
  "lazy_static",
  "log",
  "os_info",
