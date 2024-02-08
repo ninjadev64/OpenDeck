@@ -46,7 +46,7 @@ pub async fn set_title(event: ContextAndPayloadEvent<SetTitlePayload>) -> Result
 			);
 		} else {
 			for (index, state) in instance.states.iter_mut().enumerate() {
-				(*state).text = event.payload.title.clone().unwrap_or(instance.action.states[index].text.clone());
+				state.text = event.payload.title.clone().unwrap_or(instance.action.states[index].text.clone());
 			}
 		}
 		update_state(app.as_ref().unwrap(), instance).await?;
@@ -80,7 +80,7 @@ pub async fn set_image(event: ContextAndPayloadEvent<SetImagePayload>) -> Result
 			);
 		} else {
 			for (index, state) in instance.states.iter_mut().enumerate() {
-				(*state).image = event.payload.image.clone().unwrap_or(instance.action.states[index].image.clone());
+				state.image = event.payload.image.clone().unwrap_or(instance.action.states[index].image.clone());
 			}
 		}
 		update_state(app.as_ref().unwrap(), instance).await?;

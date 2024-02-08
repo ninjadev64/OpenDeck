@@ -59,6 +59,7 @@ pub async fn get_selected_profile(app: tauri::AppHandle, device: String) -> Stri
 	}
 }
 
+#[allow(clippy::flat_map_identity)]
 #[tauri::command]
 pub async fn set_selected_profile(app: tauri::AppHandle, device: String, id: String) -> String {
 	let mut device_stores = DEVICE_STORES.lock().await;
@@ -71,10 +72,8 @@ pub async fn set_selected_profile(app: tauri::AppHandle, device: String, id: Str
 			Ok(store) => &store.value,
 			Err(error) => return serde_json::to_string(&Error { description: error.to_string() }).unwrap()
 		};
-		for instance in (&old_profile.keys).into_iter().chain(&old_profile.sliders) {
-			if let Some(instance) = instance {
-				let _ = crate::events::outbound::will_appear::will_disappear(instance).await;
-			}
+		for instance in old_profile.keys.iter().chain(&old_profile.sliders).flat_map(|x| x) {
+			let _ = crate::events::outbound::will_appear::will_disappear(instance).await;
 		}
 	}
 
@@ -82,10 +81,8 @@ pub async fn set_selected_profile(app: tauri::AppHandle, device: String, id: Str
 		Ok(store) => &store.value,
 		Err(error) => return serde_json::to_string(&Error { description: error.to_string() }).unwrap()
 	};
-	for instance in (&new_profile.keys).into_iter().chain(&new_profile.sliders) {
-		if let Some(instance) = instance {
-			let _ = crate::events::outbound::will_appear::will_appear(instance).await;
-		}
+	for instance in new_profile.keys.iter().chain(&new_profile.sliders).flat_map(|x| x) {
+		let _ = crate::events::outbound::will_appear::will_appear(instance).await;
 	}
 
 	store.value.selected_profile = id.to_owned();

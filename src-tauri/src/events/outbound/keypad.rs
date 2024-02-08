@@ -7,8 +7,8 @@ use serde::Serialize;
 
 #[derive(Serialize)]
 struct KeyEvent {
+	event: &'static str,
 	action: String,
-	event: String,
 	context: ActionContext,
 	device: String,
 	payload: GenericInstancePayload
@@ -21,8 +21,8 @@ pub async fn key_down(device: &str, key: u8) -> Result<(), anyhow::Error> {
 	};
 
 	send_to_plugin(&instance.action.plugin, &KeyEvent {
+		event: "keyDown",
 		action: instance.action.uuid.clone(),
-		event: "keyDown".to_owned(),
 		context: instance.context.clone(),
 		device: instance.context.device.clone(),
 		payload: GenericInstancePayload::new(&instance)
@@ -37,7 +37,7 @@ pub async fn key_up(device: &str, key: u8) -> Result<(), anyhow::Error> {
 		mut profile_stores
 	) = crate::store::profiles::lock_mutexes().await;
 
-	let selected_profile = &device_stores.get_device_store(&device, app.as_ref().unwrap())?.value.selected_profile;
+	let selected_profile = &device_stores.get_device_store(device, app.as_ref().unwrap())?.value.selected_profile;
 	let device = devices.get(device).unwrap();
 	let store = profile_stores.get_profile_store(device, selected_profile, app.as_ref().unwrap())?;
 	let profile = &mut store.value;
@@ -50,10 +50,10 @@ pub async fn key_up(device: &str, key: u8) -> Result<(), anyhow::Error> {
 	instance.current_state = (instance.current_state + 1) % (instance.states.len() as u16);
 
 	send_to_plugin(&instance.action.plugin, &KeyEvent {
+		event: "keyUp",
 		action: instance.action.uuid.clone(),
-		event: "keyUp".to_owned(),
 		context: instance.context.clone(),
 		device: instance.context.device.clone(),
-		payload: GenericInstancePayload::new(&instance)
+		payload: GenericInstancePayload::new(instance)
 	}).await
 }

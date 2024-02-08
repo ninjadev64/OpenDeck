@@ -12,7 +12,7 @@ struct DidReceiveSettingsPayload {
 
 #[derive(Serialize)]
 struct DidReceiveSettingsEvent {
-	event: String,
+	event: &'static str,
 	action: String,
 	context: ActionContext,
 	device: String,
@@ -26,13 +26,13 @@ struct DidReceiveGlobalSettingsPayload {
 
 #[derive(Serialize)]
 struct DidReceiveGlobalSettingsEvent {
-	event: String,
+	event: &'static str,
 	payload: DidReceiveGlobalSettingsPayload
 }
 
 pub async fn did_receive_settings(instance: &crate::shared::ActionInstance, to_property_inspector: bool) -> Result<(), anyhow::Error> {
 	let data = DidReceiveSettingsEvent {
-		event: "didReceiveSettings".to_owned(),
+		event: "didReceiveSettings",
 		action: instance.action.uuid.clone(),
 		context: instance.context.clone(),
 		device: instance.context.device.clone(),
@@ -60,7 +60,7 @@ pub async fn did_receive_global_settings(context: &str) -> Result<(), anyhow::Er
 	let settings: serde_json::Value = serde_json::from_slice(&std::fs::read(path)?)?;
 
 	let data = DidReceiveGlobalSettingsEvent {
-		event: "didReceiveGlobalSettings".to_owned(),
+		event: "didReceiveGlobalSettings",
 		payload: DidReceiveGlobalSettingsPayload {
 			settings
 		}

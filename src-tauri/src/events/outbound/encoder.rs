@@ -15,8 +15,8 @@ struct DialRotatePayload {
 
 #[derive(Serialize)]
 struct DialRotateEvent {
+	event: &'static str,
 	action: String,
-	event: String,
 	context: ActionContext,
 	device: String,
 	payload: DialRotatePayload
@@ -29,8 +29,8 @@ pub async fn dial_rotate(device: &str, index: u8, ticks: i16) -> Result<(), anyh
 	};
 
 	send_to_plugin(&instance.action.plugin, &DialRotateEvent {
+		event: "dialRotate",
 		action: instance.action.uuid.clone(),
-		event: "dialRotate".to_owned(),
 		context: instance.context.clone(),
 		device: instance.context.device.clone(),
 		payload: DialRotatePayload {

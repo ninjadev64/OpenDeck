@@ -4,8 +4,8 @@ use crate::shared::{ActionContext, ActionInstance};
 
 #[derive(serde::Serialize)]
 struct AppearEvent {
+	event: &'static str,
 	action: String,
-	event: String,
 	context: ActionContext,
 	device: String,
 	payload: GenericInstancePayload
@@ -13,11 +13,11 @@ struct AppearEvent {
 
 pub async fn will_appear(instance: &ActionInstance) -> Result<(), anyhow::Error> {
 	send_to_plugin(&instance.action.plugin, &AppearEvent {
+		event: "willAppear",
 		action: instance.action.uuid.clone(),
-		event: "willAppear".to_owned(),
 		context: instance.context.clone(),
 		device: instance.context.device.clone(),
-		payload: GenericInstancePayload::new(&instance)
+		payload: GenericInstancePayload::new(instance)
 	}).await?;
 
 	Ok(())
@@ -25,11 +25,11 @@ pub async fn will_appear(instance: &ActionInstance) -> Result<(), anyhow::Error>
 
 pub async fn will_disappear(instance: &ActionInstance) -> Result<(), anyhow::Error> {
 	send_to_plugin(&instance.action.plugin, &AppearEvent {
+		event: "willDisappear",
 		action: instance.action.uuid.clone(),
-		event: "willDisappear".to_owned(),
 		context: instance.context.clone(),
 		device: instance.context.device.clone(),
-		payload: GenericInstancePayload::new(&instance)
+		payload: GenericInstancePayload::new(instance)
 	}).await?;
 
 	Ok(())

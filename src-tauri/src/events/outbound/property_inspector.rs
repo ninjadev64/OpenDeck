@@ -4,7 +4,7 @@ use serde::Serialize;
 
 #[derive(Serialize)]
 struct SendToEvent {
-	event: String,
+	event: &'static str,
 	action: String,
 	context: ActionContext,
 	payload: serde_json::Value
@@ -25,7 +25,7 @@ pub async fn send_to_property_inspector(context: ActionContext, message: serde_j
 		&context.controller
 	).await? {
 		super::send_to_property_inspector(&context, &SendToEvent {
-			event: "sendToPropertyInspector".to_owned(),
+			event: "sendToPropertyInspector",
 			action: instance.action.uuid.clone(),
 			context: context.clone(),
 			payload: message
@@ -42,7 +42,7 @@ pub async fn send_to_plugin(context: ActionContext, message: serde_json::Value) 
 		&context.controller
 	).await? {
 		super::send_to_plugin(&instance.action.plugin, &SendToEvent {
-			event: "sendToPlugin".to_owned(),
+			event: "sendToPlugin",
 			action: instance.action.uuid.clone(),
 			context,
 			payload: message
@@ -62,7 +62,7 @@ pub async fn property_inspector_did_appear(context: ActionContext, event: &'stat
 			return Ok(())
 		}
 		super::send_to_plugin(&instance.action.plugin, &PropertyInspectorDidAppearEvent {
-			event: event,
+			event,
 			action: instance.action.uuid.clone(),
 			device: context.device.clone(),
 			context

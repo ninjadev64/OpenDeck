@@ -50,11 +50,9 @@ impl ProfileStores {
 	pub fn all_from_plugin(&self, plugin: &str) -> Vec<crate::shared::ActionContext> {
 		let mut all = vec![];
 		for store in self.stores.values() {
-			for instance in (&store.value.keys).into_iter().chain(&store.value.sliders) {
-				if let Some(instance) = instance {
-					if instance.action.plugin == plugin {
-						all.push(instance.context.clone());
-					}
+			for instance in store.value.keys.iter().chain(&store.value.sliders).flatten() {
+				if instance.action.plugin == plugin {
+					all.push(instance.context.clone());
 				}
 			}
 		}
