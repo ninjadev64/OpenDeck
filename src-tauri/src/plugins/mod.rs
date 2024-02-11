@@ -242,6 +242,7 @@ async fn init_browser_server(prefix: path::PathBuf) {
 			"js" | "cjs" | "mjs" => "text/javascript".to_owned(),
 			"css" => "text/css".to_owned(),
 			"png" | "jpg" | "jpeg" | "gif" | "webp" => format!("image/{}", extension),
+			"svg" => "image/svg+xml".to_owned(),
 			_ => "application/octet-stream".to_owned()
 		}
 	}
@@ -262,8 +263,40 @@ async fn init_browser_server(prefix: path::PathBuf) {
 					Some(extension) => extension.to_string_lossy().into_owned(),
 					None => "html".to_owned()
 				};
+
 				let mut content = fs::read_to_string(path).unwrap_or_default();
-				content += "\n<script> window.addEventListener(\"message\", ({ data }) => connectElgatoStreamDeckSocket(...data)); </script>";
+				content += r#"
+					<div id="opendeck_iframe_container" style="position: absolute; z-index: 100; top: 0; left: 0; width: 100%; height: 100%; display: none;" />
+					<script>
+						const opendeck_window_open = window.open;
+						const opendeck_iframe_container = document.getElementById("opendeck_iframe_container");
+
+						window.addEventListener("message", ({ data }) => {
+							if (data.event == "connect") {
+								connectElgatoStreamDeckSocket(...data.payload);
+							} else if (data.event == "windowClosed") {
+								opendeck_iframe_container.innerHtml = "";
+								opendeck_iframe_container.style.display = "none";
+							}
+						});
+
+						window.open = (url) => {
+							let iframe = document.createElement("iframe");
+							iframe.src = url;
+							iframe.style.flexGrow = "1";
+							iframe.onload = () => {
+								iframe.contentWindow.opener = window;
+								iframe.contentWindow.onbeforeunload = () => top.postMessage({ event: "windowClosed", payload: window.name }, "*");
+								iframe.contentWindow.document.body.style.overflowY = "auto";
+							};
+							opendeck_iframe_container.appendChild(iframe);
+							opendeck_iframe_container.style.display = "flex";
+							top.postMessage({ event: "windowOpened", payload: window.name }, "*");
+							return iframe.contentWindow;
+						};
+					</script>
+				"#;
+
 				let response = tiny_http::Response::from_string(content);
 				let _ = request.respond(response.with_header(tiny_http::Header {
 					field: "Content-Type".parse().unwrap(),
@@ -274,11 +307,24 @@ async fn init_browser_server(prefix: path::PathBuf) {
 					Some(extension) => extension.to_string_lossy().into_owned(),
 					None => "html".to_owned()
 				};
-				let response = tiny_http::Response::from_string(fs::read_to_string(url).unwrap_or_default());
-				let _ = request.respond(response.with_header(tiny_http::Header {
-					field: "Content-Type".parse().unwrap(),
-					value: mime(&extension).parse().unwrap()
-				}));
+				let content_type = mime(&extension);
+
+				if content_type.starts_with("text/") || content_type == "image/svg+xml" {
+					let response = tiny_http::Response::from_string(fs::read_to_string(url).unwrap_or_default());
+					let _ = request.respond(response.with_header(tiny_http::Header {
+						field: "Content-Type".parse().unwrap(),
+						value: content_type.parse().unwrap()
+					}));
+				} else {
+					let response = tiny_http::Response::from_file(match fs::File::open(url) {
+						Ok(file) => file,
+						Err(_) => continue
+					});
+					let _ = request.respond(response.with_header(tiny_http::Header {
+						field: "Content-Type".parse().unwrap(),
+						value: content_type.parse().unwrap()
+					}));
+				}
 			}
 		} else {
 			let _ = request.respond(tiny_http::Response::empty(403));

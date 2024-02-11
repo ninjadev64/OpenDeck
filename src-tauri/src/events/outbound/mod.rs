@@ -65,6 +65,7 @@ async fn send_to_plugin(plugin: &str, data: &impl Serialize) -> Result<(), anyho
 	Ok(())
 }
 
+#[allow(clippy::map_entry)]
 async fn send_to_property_inspector(context: &crate::shared::ActionContext, data: &impl Serialize) -> Result<(), anyhow::Error> {
 	let message = tokio_tungstenite::tungstenite::Message::Text(serde_json::to_string(data).unwrap());
 	let mut sockets = super::PROPERTY_INSPECTOR_SOCKETS.lock().await;

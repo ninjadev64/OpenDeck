@@ -14,6 +14,10 @@
 	export let profile: Profile;
 
 	let iframes: { [context: string]: HTMLIFrameElement } = {};
+	let iframeContainer: HTMLDivElement;
+	let iframeClosePopup: HTMLButtonElement;
+	let iframePopupsOpen: string[] = [];
+
 	async function iframeOnLoad(instance: ActionInstance) {
 		const iframe = iframes[instance.context];
 		const split = instance.context.split(".");
@@ -28,22 +32,70 @@
 		if (instance == null || !iframe.src || !iframe.src.startsWith("http://localhost:57118")) return;
 		const info = await invoke("make_info", { plugin: instance.action.plugin });
 
-		iframe?.contentWindow?.postMessage([
-			57116,
-			instance.context,
-			"registerPropertyInspector",
-			info,
-			JSON.stringify({
-				action: instance.action.uuid,
-				context: instance.context,
-				device: split[0],
-				payload: {
-					settings: instance.settings,
-					coordinates
-				}
-			})
-		], "http://localhost:57118");
+		iframe?.contentWindow?.postMessage({
+			event: "connect",
+			payload: [
+				57116,
+				instance.context,
+				"registerPropertyInspector",
+				info,
+				JSON.stringify({
+					action: instance.action.uuid,
+					context: instance.context,
+					device: split[0],
+					payload: {
+						settings: instance.settings,
+						coordinates
+					}
+				})
+			]
+		}, "http://localhost:57118");
 	}
+
+	const closePopup = (context: string) => {
+		const iframe = iframes[context];
+		iframe.style.position = "";
+		iframe.style.left = "";
+		iframe.style.top = "";
+		iframe.style.width = "100%";
+		iframe.style.height = "100%";
+		iframe.style.display = $inspectedInstance == context ? "block" : "none";
+		iframe.contentWindow?.postMessage({ event: "windowClosed" }, "http://localhost:57118");
+
+		iframePopupsOpen = iframePopupsOpen.filter((e) => e != context);
+
+		if (iframePopupsOpen.length == 0) {
+			iframeContainer.style.position = "";
+			iframeContainer.style.width = "";
+			iframeContainer.style.height = "";
+			iframeContainer.style.padding = "";
+
+			iframeClosePopup.style.display = "none";
+		}
+	}
+
+	window.addEventListener("message", ({ data }) => {
+		if (data.event == "windowOpened") {
+			const iframe = iframes[data.payload];
+			iframe.style.position = "absolute";
+			iframe.style.left = "36px";
+			iframe.style.top = "36px";
+			iframe.style.width = "calc(100% - 72px)";
+			iframe.style.height = "calc(100% - 72px)";
+			iframe.style.display = "block";
+
+			iframePopupsOpen.push(data.payload);
+
+			iframeContainer.style.position = "absolute";
+			iframeContainer.style.width = "100%";
+			iframeContainer.style.height = "100%";
+			iframeContainer.style.padding = "36px";
+
+			iframeClosePopup.style.display = "block";
+		} else if (data.event == "windowClosed") {
+			closePopup(data.payload);
+		}
+	});
 
 	const nonNull = <T>(o: T | null): o is T => o != null;
 	$: nonNullInstances = profile.keys.filter(nonNull).concat(profile.sliders.filter(nonNull));
@@ -71,7 +123,14 @@
 	</div>
 </div>
 
-<div class="grow overflow-scroll border-t">
+<div class="grow overflow-scroll bg-white border-t" bind:this={iframeContainer}>
+	<button
+		bind:this={iframeClosePopup}
+		on:click={() => closePopup(iframePopupsOpen[iframePopupsOpen.length - 1])}
+		class="absolute top-2 right-2 text-2xl font-bold hidden"
+	>
+		✕
+	</button>
 	{#each nonNullInstances as instance (instance.context)}
 		{#if instance.action.property_inspector}
 			<iframe
@@ -79,6 +138,7 @@
 				class="w-full h-full hidden"
 				class:!block={$inspectedInstance == instance.context}
 				src={"http://localhost:57118" + instance.action.property_inspector + "|opendeck_property_inspector"}
+				name={instance.context}
 				bind:this={iframes[instance.context]}
 				on:load={() => iframeOnLoad(instance)}
 			/>
