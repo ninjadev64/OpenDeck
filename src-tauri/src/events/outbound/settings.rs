@@ -51,13 +51,16 @@ pub async fn did_receive_settings(instance: &crate::shared::ActionInstance, to_p
 	}
 }
 
-pub async fn did_receive_global_settings(context: &str) -> Result<(), anyhow::Error> {
+pub async fn did_receive_global_settings(context: &str, to_property_inspector: bool) -> Result<(), anyhow::Error> {
 	let app = crate::APP_HANDLE.lock().await;
 	let app = app.as_ref().unwrap();
 
 	let settings_dir = app.path_resolver().app_config_dir().unwrap().join("settings/");
 	let path = settings_dir.join(format!("{}.json", context));
-	let settings: serde_json::Value = serde_json::from_slice(&std::fs::read(path)?)?;
+	let settings: serde_json::Value = match std::fs::read(path) {
+		Ok(contents) => serde_json::from_slice(&contents)?,
+		Err(_) => serde_json::Value::Object(serde_json::Map::new())
+	};
 
 	let data = DidReceiveGlobalSettingsEvent {
 		event: "didReceiveGlobalSettings",
@@ -65,11 +68,14 @@ pub async fn did_receive_global_settings(context: &str) -> Result<(), anyhow::Er
 			settings
 		}
 	};
-	send_to_plugin(context, &data).await?;
 
-	let profile_stores = crate::store::profiles::PROFILE_STORES.lock().await;
-	for context in profile_stores.all_from_plugin(context) {
-		send_to_property_inspector(&context, &data).await?;
+	if to_property_inspector {
+		let profile_stores = crate::store::profiles::PROFILE_STORES.lock().await;
+		for context in profile_stores.all_from_plugin(context) {
+			send_to_property_inspector(&context, &data).await?;
+		}
+	} else {
+		send_to_plugin(context, &data).await?;
 	}
 
 	Ok(())

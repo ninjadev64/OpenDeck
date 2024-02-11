@@ -11,6 +11,7 @@
 	export let instance: ActionInstance | null;
 
 	$: state = instance?.states[instance?.current_state];
+	let oldImage: string;
 
 	listen("update_state", ({ payload }: { payload: string }) => {
 		let i = JSON.parse(payload);
@@ -57,9 +58,16 @@
 	function getImage(image: string): string {
 		if (!image.startsWith("data:")) return convertFileSrc(image);
 		const svgxmlre = /^data:image\/svg\+xml,(.+)/;
+		const base64re = /^data:image\/(apng|avif|gif|jpeg|png|svg\+xml|webp|bmp|x-icon|tiff);base64,([A-Za-z0-9+/]+={0,2})?/;
 		if (svgxmlre.test(image)) {
 			image = "data:image/svg+xml;base64," + btoa(decodeURIComponent((svgxmlre.exec(image) as RegExpExecArray)[1].replace(/\;$/, "")));
 		}
+		if (base64re.test(image)) {
+			let exec = base64re.exec(image)!;
+			if (!exec[2]) return oldImage;
+			else image = exec[0];
+		}
+		oldImage = image;
 		return image;
 	}
 </script>

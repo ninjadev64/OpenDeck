@@ -93,6 +93,10 @@ async fn initialise_plugin(path: path::PathBuf) -> anyhow::Result<()> {
 		}
 	}
 
+	if code_path.is_none() && use_wine {
+		code_path = manifest.code_path_windows;
+	}
+
 	if !supported || code_path.is_none() {
 		return Err(anyhow!("Failed to load plugin with ID {}: unsupported on platform {}", plugin_uuid, platform));
 	}
@@ -128,7 +132,7 @@ async fn initialise_plugin(path: path::PathBuf) -> anyhow::Result<()> {
 			}};
 			opendeckInit();
 			",
-			57116, plugin_uuid, "register", serde_json::to_string(&info).unwrap()
+			57116, plugin_uuid, "registerPlugin", serde_json::to_string(&info).unwrap()
 		))?;
 	} else if use_wine {
 		// Start Wine with the appropriate arguments.
@@ -138,7 +142,7 @@ async fn initialise_plugin(path: path::PathBuf) -> anyhow::Result<()> {
 				code_path,
 				String::from("-port"), 57116.to_string(),
 				String::from("-pluginUUID"), plugin_uuid.to_owned(),
-				String::from("-registerEvent"), String::from("register"),
+				String::from("-registerEvent"), String::from("registerPlugin"),
 				String::from("-info"), serde_json::to_string(&info).unwrap()
 			])
 			.stdout(Stdio::null())
@@ -152,7 +156,7 @@ async fn initialise_plugin(path: path::PathBuf) -> anyhow::Result<()> {
 			.args([
 				String::from("-port"), 57116.to_string(),
 				String::from("-pluginUUID"), plugin_uuid.to_owned(),
-				String::from("-registerEvent"), String::from("register"),
+				String::from("-registerEvent"), String::from("registerPlugin"),
 				String::from("-info"), serde_json::to_string(&info).unwrap()
 			])
 			.stdout(Stdio::null())
@@ -224,7 +228,10 @@ async fn accept_connection(stream: TcpStream) {
 	};
 
 	let register_event = socket.next().await.unwrap().unwrap();
-	crate::events::register_plugin(serde_json::from_str(&register_event.into_text().unwrap()).unwrap(), socket).await;
+	match serde_json::from_str(&register_event.clone().into_text().unwrap()) {
+		Ok(event) => crate::events::register_plugin(event, socket).await,
+		Err(_) => { let _ = crate::events::inbound::process_incoming_message(register_event).await; }
+	}
 }
 
 /// Start a simple webserver to serve files of plugins that run in a browser environment.

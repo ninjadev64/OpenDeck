@@ -11,7 +11,7 @@ use log::warn;
 #[serde(tag = "event")]
 #[serde(rename_all = "camelCase")]
 pub enum RegisterEvent {
-	Register { uuid: String },
+	RegisterPlugin { uuid: String },
 	RegisterPropertyInspector { uuid: String }
 }
 
@@ -60,8 +60,8 @@ pub async fn process_incoming_message(data: tokio_tungstenite::tungstenite::Mess
 		if let Err(error) = match decoded {
 			InboundEventType::SetSettings(event) => settings::set_settings(event, false).await,
 			InboundEventType::GetSettings(event) => settings::get_settings(event, false).await,
-			InboundEventType::SetGlobalSettings(event) => settings::set_global_settings(event).await,
-			InboundEventType::GetGlobalSettings(event) => settings::get_global_settings(event).await,
+			InboundEventType::SetGlobalSettings(event) => settings::set_global_settings(event, false).await,
+			InboundEventType::GetGlobalSettings(event) => settings::get_global_settings(event, false).await,
 			InboundEventType::OpenUrl(event) => misc::open_url(event).await,
 			InboundEventType::LogMessage(event) => misc::log_message(event).await,
 			InboundEventType::SetTitle(event) => states::set_title(event).await,
@@ -89,8 +89,8 @@ pub async fn process_incoming_message_pi(data: tokio_tungstenite::tungstenite::M
 		if let Err(error) = match decoded {
 			InboundEventType::SetSettings(event) => settings::set_settings(event, true).await,
 			InboundEventType::GetSettings(event) => settings::get_settings(event, true).await,
-			InboundEventType::SetGlobalSettings(event) => settings::set_global_settings(event).await,
-			InboundEventType::GetGlobalSettings(event) => settings::get_global_settings(event).await,
+			InboundEventType::SetGlobalSettings(event) => settings::set_global_settings(event, true).await,
+			InboundEventType::GetGlobalSettings(event) => settings::get_global_settings(event, true).await,
 			InboundEventType::OpenUrl(event) => misc::open_url(event).await,
 			InboundEventType::LogMessage(event) => misc::log_message(event).await,
 			InboundEventType::SendToPlugin(event) => misc::send_to_plugin(event).await,

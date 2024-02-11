@@ -4,8 +4,6 @@ pub mod settings;
 pub mod property_inspector;
 pub mod will_appear;
 
-use super::{SOCKETS, PROPERTY_INSPECTOR_SOCKETS};
-
 use serde::Serialize;
 use futures_util::SinkExt;
 
@@ -51,18 +49,36 @@ impl GenericInstancePayload {
 
 async fn send_to_plugin(plugin: &str, data: &impl Serialize) -> Result<(), anyhow::Error> {
 	let message = tokio_tungstenite::tungstenite::Message::Text(serde_json::to_string(data).unwrap());
-	let mut sockets = SOCKETS.lock().await;
+	let mut sockets = super::PLUGIN_SOCKETS.lock().await;
+
 	if let Some(socket) = sockets.get_mut(plugin) {
 		socket.send(message).await?;
+	} else {
+		let mut queues = super::PLUGIN_QUEUES.lock().await;
+		if queues.contains_key(plugin) {
+			queues.get_mut(plugin).unwrap().push(message);
+		} else {
+			queues.insert(plugin.to_owned(), vec![message]);
+		}
 	}
+
 	Ok(())
 }
 
 async fn send_to_property_inspector(context: &crate::shared::ActionContext, data: &impl Serialize) -> Result<(), anyhow::Error> {
 	let message = tokio_tungstenite::tungstenite::Message::Text(serde_json::to_string(data).unwrap());
-	let mut sockets = PROPERTY_INSPECTOR_SOCKETS.lock().await;
+	let mut sockets = super::PROPERTY_INSPECTOR_SOCKETS.lock().await;
+
 	if let Some(socket) = sockets.get_mut(&context.to_string()) {
 		socket.send(message).await?;
+	} else {
+		let mut queues = super::PROPERTY_INSPECTOR_QUEUES.lock().await;
+		if queues.contains_key(&context.to_string()) {
+			queues.get_mut(&context.to_string()).unwrap().push(message);
+		} else {
+			queues.insert(context.to_string(), vec![message]);
+		}
 	}
+
 	Ok(())
 }
