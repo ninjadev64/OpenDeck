@@ -1,8 +1,6 @@
 <script lang="ts">
 	import type { Action } from "$lib/Action";
 
-	import { convertFileSrc } from "@tauri-apps/api/tauri";
-
 	export let action: Action;
 
 	function handleDragStart(event: DragEvent) {
@@ -12,7 +10,7 @@
 
 <div class="flex flex-row items-center mt-2 mb-2 space-x-2">
 	<img
-		src={convertFileSrc(action.icon)}
+		src={"http://localhost:57118" + action.icon}
 		alt={action.tooltip}
 		class="w-12 h-12 rounded-sm"
 		draggable

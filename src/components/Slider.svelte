@@ -2,10 +2,10 @@
 	import type { ActionInstance } from "$lib/ActionInstance";
 
 	import { inspectedInstance } from "$lib/propertyInspector";
+	import { getImage } from "$lib/rendererHelper";
 
 	import { invoke } from "@tauri-apps/api";
 	import { listen } from "@tauri-apps/api/event";
-	import { convertFileSrc } from "@tauri-apps/api/tauri";
 
 	export let context: string;
 	export let instance: ActionInstance | null;
@@ -54,13 +54,11 @@
 		timeouts.push(setTimeout(() => showOk = 0, 2e3));
 	});
 
-	function getImage(image: string): string {
-		if (!image.startsWith("data:")) return convertFileSrc(image);
-		const svgxmlre = /^data:image\/svg\+xml,(.+)/;
-		if (svgxmlre.test(image)) {
-			image = "data:image/svg+xml;base64," + btoa(decodeURIComponent((svgxmlre.exec(image) as RegExpExecArray)[1].replace(/\;$/, "")));
-		}
-		return image;
+	let oldImage: string;
+	let image: string;
+	$: {
+		image = getImage(state?.image, oldImage);
+		oldImage = image;
 	}
 </script>
 
@@ -73,7 +71,7 @@
 	{#if instance && state}
 		<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 		<img
-			src={getImage(state.image)}
+			src={image}
 			class="p-2 w-full rounded-xl"
 			alt={instance.action.tooltip}
 			on:click={clear} on:keyup={clear}

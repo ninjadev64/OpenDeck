@@ -4,7 +4,7 @@ export type ActionState = {
 	text: string,
 	show: boolean,
 	colour: string,
-	alignment: string,
+	alignment: "top" | "middle" | "bottom",
 	style: string,
 	size: string,
 	underline: boolean
