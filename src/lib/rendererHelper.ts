@@ -1,3 +1,5 @@
+import { invoke } from "@tauri-apps/api";
+
 import type { ActionState } from "./ActionState";
 
 export function getImage(image: string | undefined, fallback: string): string {
@@ -16,17 +18,13 @@ export function getImage(image: string | undefined, fallback: string): string {
 	return image;
 }
 
-export default async function renderImage(state: ActionState) {
+export async function renderImage(actionContext: string, state: ActionState) {
 	// Create canvas
 	let canvas = document.createElement("canvas");
 	canvas.width = 144;
 	canvas.height = 144;
 	let context = canvas.getContext("2d");
 	if (!context) return;
-
-	// White background
-	context.fillStyle = "white";
-	context.fillRect(0, 0, canvas.width, canvas.height);
 
 	// Load image
 	let image = document.createElement("img");
@@ -58,6 +56,6 @@ export default async function renderImage(state: ActionState) {
 		}
 	}
 
-	console.log(canvas.toDataURL("image/jpeg"));
+	await invoke("update_image", { context: actionContext, image: canvas.toDataURL("image/jpeg") });
 	canvas.remove();
 }

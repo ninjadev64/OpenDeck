@@ -1,5 +1,5 @@
 mod prontokey;
-mod elgato;
+pub mod elgato;
 
 use std::collections::HashMap;
 

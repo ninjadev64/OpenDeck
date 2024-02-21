@@ -207,6 +207,15 @@ pub async fn switch_property_inspector(old: Option<ActionContext>, new: Option<A
 	}
 }
 
+#[tauri::command]
+pub async fn update_image(context: ActionContext, image: String) {
+	if context.device.starts_with("sd-") {
+		if let Err(error) = crate::devices::elgato::update_image(&context, &image).await {
+			log::warn!("Failed to update device image at context {} with image {}: {}", context, image, error);
+		}
+	}
+}
+
 pub async fn update_state(app: &tauri::AppHandle, instance: &ActionInstance) -> Result<(), anyhow::Error> {
 	let window = app.get_window("main").unwrap();
 	window.emit("update_state", serde_json::to_string(instance).unwrap())?;

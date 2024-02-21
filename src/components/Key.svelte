@@ -2,7 +2,7 @@
 	import type { ActionInstance } from "$lib/ActionInstance";
 
 	import { inspectedInstance } from "$lib/propertyInspector";
-	import { getImage } from "$lib/rendererHelper";
+	import { getImage, renderImage } from "$lib/rendererHelper";
 
 	import { invoke } from "@tauri-apps/api";
 	import { listen } from "@tauri-apps/api/event";
@@ -59,6 +59,7 @@
 	$: {
 		image = getImage(state?.image, oldImage);
 		oldImage = image;
+		if (state) renderImage(context, state);
 	}
 </script>
 

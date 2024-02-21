@@ -1,8 +1,34 @@
 use crate::events::outbound::{keypad, encoder};
 
+use std::collections::HashMap;
+
 use elgato_streamdeck::{AsyncStreamDeck, DeviceStateUpdate, info};
 
-pub async fn init(device: AsyncStreamDeck) {
+use lazy_static::lazy_static;
+use tokio::sync::Mutex;
+use base64::Engine as _;
+
+lazy_static! {
+	static ref ELGATO_DEVICES: Mutex<HashMap<String, AsyncStreamDeck>> = Mutex::new(HashMap::new());
+}
+
+pub async fn update_image(context: &crate::shared::ActionContext, url: &str) -> Result<(), anyhow::Error> {
+	if let Some(device) = ELGATO_DEVICES.lock().await.get(&context.device) {
+		let data = url.split_once(',').unwrap().1;
+		let bytes = base64::engine::general_purpose::STANDARD.decode(data)?;
+		device.set_button_image(context.position, image::load_from_memory(&bytes)?).await?;
+	}
+	Ok(())
+}
+
+pub async fn clear_image(context: &crate::shared::ActionContext) -> Result<(), anyhow::Error> {
+	if let Some(device) = ELGATO_DEVICES.lock().await.get(&context.device) {
+		device.clear_button_image(context.position).await?;
+	}
+	Ok(())
+}
+
+pub(super) async fn init(device: AsyncStreamDeck) {
 	let kind = device.kind();
 	let device_type = match kind.product_id() {
 		info::PID_STREAMDECK_ORIGINAL | info::PID_STREAMDECK_ORIGINAL_V2 | info::PID_STREAMDECK_MK2 => 0,
@@ -23,6 +49,7 @@ pub async fn init(device: AsyncStreamDeck) {
 	});
 
 	let reader = device.get_reader();
+	ELGATO_DEVICES.lock().await.insert(device_id.clone(), device);
 	loop {
 		let updates = match reader.read(100.0).await {
 			Ok(updates) => updates,

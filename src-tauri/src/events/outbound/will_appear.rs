@@ -32,5 +32,11 @@ pub async fn will_disappear(instance: &ActionInstance) -> Result<(), anyhow::Err
 		payload: GenericInstancePayload::new(instance)
 	}).await?;
 
+	if instance.context.device.starts_with("sd-") {
+		if let Err(error) = crate::devices::elgato::clear_image(&instance.context).await {
+			log::warn!("Failed to clear device image at context {}: {}", instance.context, error);
+		}
+	}
+
 	Ok(())
 }
