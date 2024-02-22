@@ -2,16 +2,15 @@
 	import type { ActionInstance } from "$lib/ActionInstance";
 
 	import { inspectedInstance } from "$lib/propertyInspector";
+	import { getImage, renderImage } from "$lib/rendererHelper";
 
 	import { invoke } from "@tauri-apps/api";
 	import { listen } from "@tauri-apps/api/event";
-	import { convertFileSrc } from "@tauri-apps/api/tauri";
 
 	export let context: string;
 	export let instance: ActionInstance | null;
 
 	$: state = instance?.states[instance?.current_state];
-	let oldImage: string;
 
 	listen("update_state", ({ payload }: { payload: string }) => {
 		let i = JSON.parse(payload);
@@ -55,20 +54,12 @@
 		timeouts.push(setTimeout(() => showOk = 0, 2e3));
 	});
 
-	function getImage(image: string): string {
-		if (!image.startsWith("data:")) return convertFileSrc(image);
-		const svgxmlre = /^data:image\/svg\+xml,(.+)/;
-		const base64re = /^data:image\/(apng|avif|gif|jpeg|png|svg\+xml|webp|bmp|x-icon|tiff);base64,([A-Za-z0-9+/]+={0,2})?/;
-		if (svgxmlre.test(image)) {
-			image = "data:image/svg+xml;base64," + btoa(decodeURIComponent((svgxmlre.exec(image) as RegExpExecArray)[1].replace(/\;$/, "")));
-		}
-		if (base64re.test(image)) {
-			let exec = base64re.exec(image)!;
-			if (!exec[2]) return oldImage;
-			else image = exec[0];
-		}
+	let oldImage: string;
+	let image: string;
+	$: {
+		image = getImage(state?.image, oldImage);
 		oldImage = image;
-		return image;
+		if (state) renderImage(context, state);
 	}
 </script>
 
@@ -81,7 +72,7 @@
 	{#if instance && state}
 		<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 		<img
-			src={getImage(state.image)}
+			src={image}
 			class="p-2 w-full rounded-xl"
 			alt={instance.action.tooltip}
 			on:click={clear} on:keyup={clear}

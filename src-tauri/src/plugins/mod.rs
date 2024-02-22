@@ -310,20 +310,30 @@ async fn init_browser_server(prefix: path::PathBuf) {
 				let content_type = mime(&extension);
 
 				if content_type.starts_with("text/") || content_type == "image/svg+xml" {
-					let response = tiny_http::Response::from_string(fs::read_to_string(url).unwrap_or_default());
-					let _ = request.respond(response.with_header(tiny_http::Header {
+					let mut response = tiny_http::Response::from_string(fs::read_to_string(url).unwrap_or_default());
+					response.add_header(tiny_http::Header {
+						field: "Access-Control-Allow-Origin".parse().unwrap(),
+						value: "*".parse().unwrap()
+					});
+					response.add_header(tiny_http::Header {
 						field: "Content-Type".parse().unwrap(),
 						value: content_type.parse().unwrap()
-					}));
+					});
+					let _ = request.respond(response);
 				} else {
-					let response = tiny_http::Response::from_file(match fs::File::open(url) {
+					let mut response = tiny_http::Response::from_file(match fs::File::open(url) {
 						Ok(file) => file,
 						Err(_) => continue
 					});
-					let _ = request.respond(response.with_header(tiny_http::Header {
+					response.add_header(tiny_http::Header {
+						field: "Access-Control-Allow-Origin".parse().unwrap(),
+						value: "*".parse().unwrap()
+					});
+					response.add_header(tiny_http::Header {
 						field: "Content-Type".parse().unwrap(),
 						value: content_type.parse().unwrap()
-					}));
+					});
+					let _ = request.respond(response);
 				}
 			}
 		} else {

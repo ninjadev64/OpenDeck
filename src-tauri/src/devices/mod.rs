@@ -1,4 +1,5 @@
 mod prontokey;
+pub mod elgato;
 
 use std::collections::HashMap;
 
@@ -6,6 +7,7 @@ use lazy_static::lazy_static;
 use tokio::sync::Mutex;
 
 use serde::Serialize;
+use log::warn;
 
 /// Metadata of a device.
 #[derive(Clone, Serialize)]
@@ -28,10 +30,24 @@ pub fn initialise_devices() {
 	for port in serialport::available_ports().unwrap_or_default() {
 		if let serialport::SerialPortType::UsbPort(info) = port.port_type {
 			if info.vid == 0x10c4 && info.pid == 0xea60 {
-				tokio::spawn(prontokey::ProntoKeyDevice::init(port.port_name));
+				tokio::spawn(prontokey::init(port.port_name));
 			}
 		}
 	}
+
+	// Iterate through detected Elgato devices and attempt to register them.
+	match elgato_streamdeck::new_hidapi() {
+		Ok(hid) => {
+			for (kind, serial) in elgato_streamdeck::asynchronous::list_devices_async(&hid) {
+				match elgato_streamdeck::AsyncStreamDeck::connect(&hid, kind, &serial) {
+					Ok(device) => { tokio::spawn(elgato::init(device)); },
+					Err(error) => warn!("Failed to connect to Elgato device: {}", error)
+				}
+			}
+		},
+		Err(error) => warn!("Failed to initialise hidapi: {}", error)
+	}
+
 
 	// Create a virtual device for testing without a physical device.
 	tokio::spawn(async move {
