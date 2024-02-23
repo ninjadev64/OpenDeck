@@ -75,6 +75,7 @@ export async function renderImage(actionContext: string, state: ActionState, sho
 		});
 		context.drawImage(alertImage, 0, 0, canvas.width, canvas.height);
 	}
+
 	await invoke("update_image", { context: actionContext, image: canvas.toDataURL("image/jpeg") });
 	canvas.remove();
 }
