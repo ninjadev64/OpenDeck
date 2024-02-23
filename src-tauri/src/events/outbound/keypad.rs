@@ -48,6 +48,7 @@ pub async fn key_up(device: &str, key: u8) -> Result<(), anyhow::Error> {
 	};
 
 	instance.current_state = (instance.current_state + 1) % (instance.states.len() as u16);
+	let _ = crate::events::frontend::update_state(app.as_ref().unwrap(), instance).await;
 
 	send_to_plugin(&instance.action.plugin, &KeyEvent {
 		event: "keyUp",

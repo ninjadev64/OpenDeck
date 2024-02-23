@@ -16,7 +16,7 @@ use anyhow::{Context, anyhow};
 use log::{warn, error};
 
 /// Initialise a plugin from a given directory.
-async fn initialise_plugin(path: path::PathBuf) -> anyhow::Result<()> {
+async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 	let plugin_uuid = path.file_name().unwrap().to_str().unwrap();
 	let manifest_path = path.join("manifest.json");
 
@@ -187,10 +187,15 @@ pub fn initialise_plugins(app: AppHandle) {
 	// Iterate through all directory entries in the plugins folder and initialise them as plugins if appropriate
 	for entry in entries {
 		if let Ok(entry) = entry {
-			if entry.metadata().unwrap().is_dir() {
+			let path = match entry.metadata().unwrap().is_symlink() {
+				true => fs::read_link(entry.path()).unwrap(),
+				false => entry.path()
+			};
+			let metadata = fs::metadata(&path).unwrap();
+			if metadata.is_dir() {
 				tokio::spawn(async move {
-					if let Err(error) = initialise_plugin(entry.path()).await {
-						warn!("Failed to initialise plugin at {}: {}\n\tCaused by: {}", entry.path().display(), error, error.root_cause());
+					if let Err(error) = initialise_plugin(&path).await {
+						warn!("Failed to initialise plugin at {}: {}\n\tCaused by: {}", path.display(), error, error.root_cause());
 					}
 				});
 			} else {
