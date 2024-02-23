@@ -59,7 +59,7 @@ export async function renderImage(actionContext: string, state: ActionState, sho
 	if (showOk) {
 		let okImage = document.createElement("img");
 		okImage.crossOrigin = "anonymous";
-		okImage.src = "http://localhost:5173/ok.png";
+		okImage.src = "ok.png";
 		await new Promise((resolve) => {
 			okImage.onload = resolve;
 		});
@@ -69,7 +69,7 @@ export async function renderImage(actionContext: string, state: ActionState, sho
 	if (showAlert) {
 		let alertImage = document.createElement("img");
 		alertImage.crossOrigin = "anonymous";
-		alertImage.src = "http://localhost:5173/alert.png";
+		alertImage.src = "alert.png";
 		await new Promise((resolve) => {
 			alertImage.onload = resolve;
 		});
