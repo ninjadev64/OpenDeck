@@ -18,7 +18,7 @@ export function getImage(image: string | undefined, fallback: string): string {
 	return image;
 }
 
-export async function renderImage(actionContext: string, state: ActionState) {
+export async function renderImage(actionContext: string, state: ActionState, ok: boolean, alert: boolean) {
 	// Create canvas
 	let canvas = document.createElement("canvas");
 	canvas.width = 144;
@@ -33,6 +33,20 @@ export async function renderImage(actionContext: string, state: ActionState) {
 	if (image.src == undefined) return;
 	await new Promise((resolve) => {
 		image.onload = resolve;
+	});
+
+	let alertImage = document.createElement("img");
+	alertImage.crossOrigin = "anonymous";
+	alertImage.src = "http://localhost:5173/alert.png";
+	await new Promise((resolve) => {
+		alertImage.onload = resolve;
+	});
+
+	let okImage = document.createElement("img");
+	okImage.crossOrigin = "anonymous";
+	okImage.src = "http://localhost:5173/ok.png";
+	await new Promise((resolve) => {
+		okImage.onload = resolve;
 	});
 
 	// Draw image
@@ -55,7 +69,12 @@ export async function renderImage(actionContext: string, state: ActionState) {
 			context.fillRect(x - (width / 2), y + 2, width, 3);
 		}
 	}
-
+	if(alert) {
+		context.drawImage(alertImage, 0, 0, canvas.width, canvas.height);
+	}
+	if (ok) {
+		context.drawImage(okImage, 0, 0, canvas.width, canvas.height);
+	}
 	await invoke("update_image", { context: actionContext, image: canvas.toDataURL("image/jpeg") });
 	canvas.remove();
 }

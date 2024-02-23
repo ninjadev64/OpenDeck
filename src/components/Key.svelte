@@ -59,7 +59,7 @@
 	$: {
 		image = getImage(state?.image, oldImage);
 		oldImage = image;
-		if (state) renderImage(context, state);
+		if (state) renderImage(context, state, showOk > 0, showAlert > 0);
 	}
 </script>
 
