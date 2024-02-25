@@ -1,5 +1,6 @@
 pub mod manifest;
 pub mod info_param;
+mod webserver;
 
 use crate::APP_HANDLE;
 use crate::shared::{Action, CATEGORIES, convert_icon};
@@ -171,7 +172,7 @@ async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 /// Initialise plugins from the plugins directory.
 pub fn initialise_plugins(app: AppHandle) {
 	tokio::spawn(init_websocket_server());
-	tokio::spawn(init_browser_server(app.path_resolver().app_config_dir().unwrap()));
+	tokio::spawn(webserver::init_webserver(app.path_resolver().app_config_dir().unwrap()));
 
 	let plugin_dir = app.path_resolver().app_config_dir().unwrap().join("plugins/");
 	let _ = fs::create_dir_all(&plugin_dir);
@@ -236,113 +237,5 @@ async fn accept_connection(stream: TcpStream) {
 	match serde_json::from_str(&register_event.clone().into_text().unwrap()) {
 		Ok(event) => crate::events::register_plugin(event, socket).await,
 		Err(_) => { let _ = crate::events::inbound::process_incoming_message(register_event).await; }
-	}
-}
-
-/// Start a simple webserver to serve files of plugins that run in a browser environment.
-async fn init_browser_server(prefix: path::PathBuf) {
-	fn mime(extension: &str) -> String {
-		match extension {
-			"htm" | "html" | "xhtml" => "text/html".to_owned(),
-			"js" | "cjs" | "mjs" => "text/javascript".to_owned(),
-			"css" => "text/css".to_owned(),
-			"png" | "jpg" | "jpeg" | "gif" | "webp" => format!("image/{}", extension),
-			"svg" => "image/svg+xml".to_owned(),
-			_ => "application/octet-stream".to_owned()
-		}
-	}
-
-	let server = tiny_http::Server::http("0.0.0.0:57118").unwrap();
-	for request in server.incoming_requests() {
-		let url = urlencoding::decode(request.url()).unwrap().into_owned();
-		let url = format!("/{}", url);
-		// Ensure the requested path is within the OpenDeck config directory to prevent unrestricted access to the filesystem.
-		if path::Path::new(&url).starts_with(&prefix) {
-			// The Svelte frontend cannot call the connectElgatoStreamDeckSocket function on property inspector frames
-			// because they are served from a different origin (this webserver on port 57118).
-			// Instead, we have to inject a script onto all property inspector frames that receives a message
-			// from the Svelte frontend over window.postMessage.
-			if url.ends_with("|opendeck_property_inspector") {
-				let path = &url[..url.len() - 28];
-				let extension = match path::Path::new(path).extension() {
-					Some(extension) => extension.to_string_lossy().into_owned(),
-					None => "html".to_owned()
-				};
-
-				let mut content = fs::read_to_string(path).unwrap_or_default();
-				content += r#"
-					<div id="opendeck_iframe_container" style="position: absolute; z-index: 100; top: 0; left: 0; width: 100%; height: 100%; display: none;" />
-					<script>
-						const opendeck_window_open = window.open;
-						const opendeck_iframe_container = document.getElementById("opendeck_iframe_container");
-
-						window.addEventListener("message", ({ data }) => {
-							if (data.event == "connect") {
-								connectElgatoStreamDeckSocket(...data.payload);
-							} else if (data.event == "windowClosed") {
-								opendeck_iframe_container.innerHtml = "";
-								opendeck_iframe_container.style.display = "none";
-							}
-						});
-
-						window.open = (url) => {
-							let iframe = document.createElement("iframe");
-							iframe.src = url;
-							iframe.style.flexGrow = "1";
-							iframe.onload = () => {
-								iframe.contentWindow.opener = window;
-								iframe.contentWindow.onbeforeunload = () => top.postMessage({ event: "windowClosed", payload: window.name }, "*");
-								iframe.contentWindow.document.body.style.overflowY = "auto";
-							};
-							opendeck_iframe_container.appendChild(iframe);
-							opendeck_iframe_container.style.display = "flex";
-							top.postMessage({ event: "windowOpened", payload: window.name }, "*");
-							return iframe.contentWindow;
-						};
-					</script>
-				"#;
-
-				let response = tiny_http::Response::from_string(content);
-				let _ = request.respond(response.with_header(tiny_http::Header {
-					field: "Content-Type".parse().unwrap(),
-					value: mime(&extension).parse().unwrap()
-				}));
-			} else {
-				let extension = match path::Path::new(&url).extension() {
-					Some(extension) => extension.to_string_lossy().into_owned(),
-					None => "html".to_owned()
-				};
-				let content_type = mime(&extension);
-
-				if content_type.starts_with("text/") || content_type == "image/svg+xml" {
-					let mut response = tiny_http::Response::from_string(fs::read_to_string(url).unwrap_or_default());
-					response.add_header(tiny_http::Header {
-						field: "Access-Control-Allow-Origin".parse().unwrap(),
-						value: "*".parse().unwrap()
-					});
-					response.add_header(tiny_http::Header {
-						field: "Content-Type".parse().unwrap(),
-						value: content_type.parse().unwrap()
-					});
-					let _ = request.respond(response);
-				} else {
-					let mut response = tiny_http::Response::from_file(match fs::File::open(url) {
-						Ok(file) => file,
-						Err(_) => continue
-					});
-					response.add_header(tiny_http::Header {
-						field: "Access-Control-Allow-Origin".parse().unwrap(),
-						value: "*".parse().unwrap()
-					});
-					response.add_header(tiny_http::Header {
-						field: "Content-Type".parse().unwrap(),
-						value: content_type.parse().unwrap()
-					});
-					let _ = request.respond(response);
-				}
-			}
-		} else {
-			let _ = request.respond(tiny_http::Response::empty(403));
-		}
 	}
 }
