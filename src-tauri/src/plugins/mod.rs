@@ -138,7 +138,7 @@ async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 	} else if use_wine {
 		// Start Wine with the appropriate arguments.
 		Command::new("wine")
-			.current_dir(&path)
+			.current_dir(path)
 			.args([
 				code_path,
 				String::from("-port"), 57116.to_string(),
@@ -153,7 +153,7 @@ async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 	} else {
 		// Run the plugin's executable natively.
 		Command::new(code_path)
-			.current_dir(&path)
+			.current_dir(path)
 			.args([
 				String::from("-port"), 57116.to_string(),
 				String::from("-pluginUUID"), plugin_uuid.to_owned(),
