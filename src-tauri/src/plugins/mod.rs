@@ -99,12 +99,12 @@ async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 	}
 
 	if !supported || code_path.is_none() {
-		return Err(anyhow!("Failed to load plugin with ID {}: unsupported on platform {}", plugin_uuid, platform));
+		return Err(anyhow!("Failed to load plugin with ID {}: unsupported on platform {}", plugin_uuid, platform))
 	}
 
 	let mut devices: Vec<info_param::DeviceInfo> = vec![];
 	for device in crate::devices::DEVICES.lock().await.values() {
-		devices.push(info_param::DeviceInfo::new(device));
+		devices.push(device.into());
 	}
 
 	let info = info_param::make_info(plugin_uuid.to_owned(), manifest.version).await;
@@ -122,6 +122,7 @@ async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 			.visible(false)
 			.build()
 			.with_context(|| { format!("Failed to initialise plugin with ID {}", plugin_uuid) })?;
+		window.open_devtools();
 
 		window.eval(&format!(
 			"const opendeckInit = () => {{
@@ -214,7 +215,7 @@ async fn init_websocket_server() {
 		Ok(listener) => listener,
 		Err(error) => {
 			error!("Failed to bind plugin WebSocket server to socket: {}", error);
-			return;
+			return
 		}
 	};
 
@@ -229,7 +230,7 @@ async fn accept_connection(stream: TcpStream) {
 		Ok(socket) => socket,
 		Err(error) => {
 			warn!("Failed to complete WebSocket handshake: {}", error);
-			return;
+			return
 		}
 	};
 

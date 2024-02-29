@@ -137,7 +137,7 @@ pub async fn create_instance(app: tauri::AppHandle, action: Action, context: Act
 	let _ = crate::events::outbound::will_appear::will_appear(instance_ref.as_ref().unwrap()).await;
 
 	if let Err(error) = store.save() {
-		return serde_json::to_string(&Error { description: error.to_string() }).unwrap();
+		return serde_json::to_string(&Error { description: error.to_string() }).unwrap()
 	}
 
 	serde_json::to_string(instance_ref).unwrap()
@@ -171,7 +171,7 @@ pub async fn clear_slot(app: tauri::AppHandle, context: ActionContext) -> String
 	}
 
 	if let Err(error) = store.save() {
-		return serde_json::to_string(&Error { description: error.to_string() }).unwrap();
+		return serde_json::to_string(&Error { description: error.to_string() }).unwrap()
 	}
 
 	serde_json::to_string(instance_ref).unwrap()

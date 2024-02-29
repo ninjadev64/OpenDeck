@@ -39,21 +39,21 @@ pub(super) async fn init(device: AsyncStreamDeck) {
 		_ => 7
 	};
 	let device_id = format!("sd-{}", device.serial_number().await.unwrap());
-	super::DEVICES.lock().await.insert(device_id.clone(), super::DeviceInfo {
+	super::register_device(device_id.clone(), super::DeviceInfo {
 		id: device_id.clone(),
 		name: device.product().await.unwrap(),
 		rows: kind.row_count(),
 		columns: kind.column_count(),
 		sliders: kind.encoder_count(),
 		r#type: device_type
-	});
+	}).await;
 
 	let reader = device.get_reader();
 	ELGATO_DEVICES.lock().await.insert(device_id.clone(), device);
 	loop {
 		let updates = match reader.read(100.0).await {
 			Ok(updates) => updates,
-			Err(_) => continue
+			Err(_) => break
 		};
 		for update in updates {
 			match match update {
@@ -69,4 +69,6 @@ pub(super) async fn init(device: AsyncStreamDeck) {
 			}
 		}
 	}
+
+	super::unregister_device(device_id).await;
 }

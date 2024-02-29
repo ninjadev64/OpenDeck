@@ -29,7 +29,7 @@ pub async fn init(port: String) {
 		Ok(p) => p,
 		Err(error) => {
 			error!("Failed to open serial port: {}", error);
-			return;
+			return
 		}
 	};
 	let _ = port.write("#".as_bytes());
@@ -61,14 +61,14 @@ pub async fn init(port: String) {
 						initialised = true;
 
 						device_id = format!("pk-{}", address);
-						super::DEVICES.lock().await.insert(device_id.clone(), DeviceInfo {
+						super::register_device(device_id.clone(), DeviceInfo {
 							id: device_id.clone(),
 							name: "ProntoKey".to_owned(),
 							rows: 3,
 							columns: 3,
 							sliders: 2,
 							r#type: 7
-						});
+						}).await;
 					} else if let ProntoKeyMessage::Update { k: keys, s: sliders } = data {
 						if !initialised { continue }
 
@@ -95,9 +95,14 @@ pub async fn init(port: String) {
 					}
 				}
 			},
-			Err(ref error) if error.kind() == std::io::ErrorKind::TimedOut => (),
-			Err(error) => warn!("Failed to read serial message from ProntoKey device: {}", error)
+			Err(error) => match error.kind() {
+				std::io::ErrorKind::BrokenPipe => break,
+				std::io::ErrorKind::TimedOut => (),
+				_ => warn!("Failed to read serial message from ProntoKey device: {}", error)
+			}
 		}
 		tokio::time::sleep(Duration::from_millis(10)).await;
 	}
+
+	super::unregister_device(device_id).await;
 }

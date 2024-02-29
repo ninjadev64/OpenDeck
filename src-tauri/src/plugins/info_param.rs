@@ -43,8 +43,8 @@ pub struct DeviceInfo {
 	pub r#type: u8
 }
 
-impl DeviceInfo {
-	pub fn new(device: &crate::devices::DeviceInfo) -> DeviceInfo {
+impl From<&crate::devices::DeviceInfo> for DeviceInfo {
+	fn from(device: &crate::devices::DeviceInfo) -> DeviceInfo {
 		DeviceInfo {
 			id: device.id.clone(),
 			name: device.name.clone(),
@@ -78,7 +78,7 @@ pub async fn make_info(uuid: String, version: String) -> Info {
 
 	let mut devices: Vec<DeviceInfo> = vec![];
 	for device in crate::devices::DEVICES.lock().await.values() {
-		devices.push(DeviceInfo::new(device));
+		devices.push(device.into());
 	}
 
 	Info {

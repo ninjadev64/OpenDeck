@@ -1,7 +1,8 @@
-pub mod keypad;
+pub mod devices;
 pub mod encoder;
-pub mod settings;
+pub mod keypad;
 pub mod property_inspector;
+pub mod settings;
 pub mod will_appear;
 
 use serde::Serialize;
@@ -62,6 +63,23 @@ async fn send_to_plugin(plugin: &str, data: &impl Serialize) -> Result<(), anyho
 		}
 	}
 
+	Ok(())
+}
+
+async fn send_to_all_plugins(data: &impl Serialize) -> Result<(), anyhow::Error> {
+	let app = crate::APP_HANDLE.lock().await;
+	let app = app.as_ref().unwrap();
+	let entries = std::fs::read_dir(app.path_resolver().app_config_dir().unwrap().join("plugins/"))?;
+	for entry in entries.flatten() {
+		let path = match entry.metadata().unwrap().is_symlink() {
+			true => std::fs::read_link(entry.path()).unwrap(),
+			false => entry.path()
+		};
+		let metadata = std::fs::metadata(&path).unwrap();
+		if metadata.is_dir() {
+			let _ = send_to_plugin(entry.file_name().to_str().unwrap(), data).await;
+		}
+	}
 	Ok(())
 }
 
