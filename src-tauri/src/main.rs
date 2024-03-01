@@ -12,14 +12,27 @@ use events::frontend;
 use tokio::sync::Mutex;
 use lazy_static::lazy_static;
 use tauri_plugin_log::LogTarget;
+use tauri::{Builder, AppHandle, Manager, CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem, WindowEvent};
 
 lazy_static! {
-	pub static ref APP_HANDLE: Mutex<Option<tauri::AppHandle>> = Mutex::new(None);
+	pub static ref APP_HANDLE: Mutex<Option<AppHandle>> = Mutex::new(None);
 }
 
 #[tokio::main]
 async fn main() {
-	let app = match tauri::Builder::default()
+	let tray = {
+		let open = CustomMenuItem::new("open".to_string(), "Open");
+		let hide = CustomMenuItem::new("hide".to_string(), "Hide");
+		let quit = CustomMenuItem::new("quit".to_string(), "Quit");
+		let menu = SystemTrayMenu::new()
+			.add_item(open)
+			.add_item(hide)
+			.add_native_item(SystemTrayMenuItem::Separator)
+			.add_item(quit);
+		SystemTray::new().with_menu(menu)
+	};
+
+	let app = match Builder::default()
 		.invoke_handler(tauri::generate_handler![
 			frontend::get_devices,
 			frontend::get_categories,
@@ -41,6 +54,20 @@ async fn main() {
 			.level(log::LevelFilter::Debug)
 			.build()
 		)
+		.system_tray(tray)
+		.on_system_tray_event(|app, event| if let SystemTrayEvent::MenuItemClick { id, .. } = event {
+			let window = app.get_window("main").unwrap();
+			let _ = match id.as_str() {
+				"open" => window.show(),
+				"hide" => window.hide(),
+				"quit" => { app.exit(0); Ok(()) },
+				_ => Ok(())
+			};
+		})
+		.on_window_event(|event| if let WindowEvent::CloseRequested { api, .. } = event.event() {
+			event.window().hide().unwrap();
+			api.prevent_close();
+		})
 		.build(tauri::generate_context!())
 	{
 		Ok(app) => app,

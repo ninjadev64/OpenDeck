@@ -122,6 +122,8 @@ async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 			.visible(false)
 			.build()
 			.with_context(|| { format!("Failed to initialise plugin with ID {}", plugin_uuid) })?;
+
+		#[cfg(debug_assertions)]
 		window.open_devtools();
 
 		window.eval(&format!(
