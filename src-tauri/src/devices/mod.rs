@@ -67,9 +67,11 @@ pub fn initialise_devices() {
 async fn register_device(id: String, device: DeviceInfo) {
 	crate::events::outbound::devices::device_did_connect(&id, (&device).into()).await.ok();
 	DEVICES.lock().await.insert(id, device);
+	crate::events::frontend::update_devices().await;
 }
 
 async fn unregister_device(id: String) {
 	crate::events::outbound::devices::device_did_disconnect(&id).await.ok();
 	DEVICES.lock().await.remove(&id);
+	crate::events::frontend::update_devices().await;
 }

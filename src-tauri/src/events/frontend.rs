@@ -29,6 +29,13 @@ pub async fn get_devices() -> String {
 	serialise_mutex_hashmap(&*DEVICES).await
 }
 
+pub async fn update_devices() {
+	let app = crate::APP_HANDLE.lock().await;
+	let app = app.as_ref().unwrap();
+
+	let _ = app.get_window("main").unwrap().emit("devices", serialise_mutex_hashmap(&*DEVICES).await);
+}
+
 #[tauri::command]
 pub async fn get_categories() -> String {
 	serialise_mutex_hashmap(&*CATEGORIES).await
