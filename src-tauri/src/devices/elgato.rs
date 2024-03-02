@@ -1,12 +1,12 @@
-use crate::events::outbound::{keypad, encoder};
+use crate::events::outbound::{encoder, keypad};
 
 use std::collections::HashMap;
 
-use elgato_streamdeck::{AsyncStreamDeck, DeviceStateUpdate, info};
+use elgato_streamdeck::{info, AsyncStreamDeck, DeviceStateUpdate, StreamDeckError};
 
+use base64::Engine as _;
 use lazy_static::lazy_static;
 use tokio::sync::Mutex;
-use base64::Engine as _;
 
 lazy_static! {
 	static ref ELGATO_DEVICES: Mutex<HashMap<String, AsyncStreamDeck>> = Mutex::new(HashMap::new());
@@ -21,7 +21,7 @@ pub async fn update_image(context: &crate::shared::ActionContext, url: &str) -> 
 	Ok(())
 }
 
-pub async fn clear_image(context: &crate::shared::ActionContext) -> Result<(), anyhow::Error> {
+pub async fn clear_image(context: &crate::shared::ActionContext) -> Result<(), StreamDeckError> {
 	if let Some(device) = ELGATO_DEVICES.lock().await.get(&context.device) {
 		device.clear_button_image(context.position).await?;
 	}
@@ -36,24 +36,28 @@ pub(super) async fn init(device: AsyncStreamDeck) {
 		info::PID_STREAMDECK_XL | info::PID_STREAMDECK_XL_V2 => 2,
 		info::PID_STREAMDECK_PEDAL => 5,
 		info::PID_STREAMDECK_PLUS => 7,
-		_ => 7
+		_ => 7,
 	};
 	let device_id = format!("sd-{}", device.serial_number().await.unwrap());
-	super::register_device(device_id.clone(), super::DeviceInfo {
-		id: device_id.clone(),
-		name: device.product().await.unwrap(),
-		rows: kind.row_count(),
-		columns: kind.column_count(),
-		sliders: kind.encoder_count(),
-		r#type: device_type
-	}).await;
+	super::register_device(
+		device_id.clone(),
+		super::DeviceInfo {
+			id: device_id.clone(),
+			name: device.product().await.unwrap(),
+			rows: kind.row_count(),
+			columns: kind.column_count(),
+			sliders: kind.encoder_count(),
+			r#type: device_type,
+		},
+	)
+	.await;
 
 	let reader = device.get_reader();
 	ELGATO_DEVICES.lock().await.insert(device_id.clone(), device);
 	loop {
 		let updates = match reader.read(100.0).await {
 			Ok(updates) => updates,
-			Err(_) => break
+			Err(_) => break,
 		};
 		for update in updates {
 			match match update {
@@ -62,10 +66,10 @@ pub(super) async fn init(device: AsyncStreamDeck) {
 				DeviceStateUpdate::EncoderTwist(dial, ticks) => encoder::dial_rotate(&device_id, dial, ticks.into()).await,
 				DeviceStateUpdate::EncoderDown(dial) => encoder::dial_press(&device_id, "dialDown", dial).await,
 				DeviceStateUpdate::EncoderUp(dial) => encoder::dial_press(&device_id, "dialUp", dial).await,
-				_ => Ok(())
+				_ => Ok(()),
 			} {
 				Ok(_) => (),
-				Err(error) => log::warn!("Failed to process device event {:?}: {}", update, error)
+				Err(error) => log::warn!("Failed to process device event {:?}: {}", update, error),
 			}
 		}
 	}

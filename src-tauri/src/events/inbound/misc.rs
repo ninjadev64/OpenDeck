@@ -1,4 +1,4 @@
-use super::{ContextEvent, PayloadEvent, ContextAndPayloadEvent};
+use super::{ContextAndPayloadEvent, ContextEvent, PayloadEvent};
 
 use tauri::{api::shell::open, Manager};
 
@@ -6,12 +6,12 @@ use serde::Deserialize;
 
 #[derive(Deserialize)]
 pub struct OpenUrlEvent {
-	pub url: String
+	pub url: String,
 }
 
 #[derive(Deserialize)]
 pub struct LogMessageEvent {
-	pub message: String
+	pub message: String,
 }
 
 pub async fn open_url(event: PayloadEvent<OpenUrlEvent>) -> Result<(), anyhow::Error> {

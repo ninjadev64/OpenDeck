@@ -1,18 +1,18 @@
 use super::Store;
 use crate::shared::Profile;
 
-use std::fs;
 use std::collections::HashMap;
+use std::fs;
 use std::iter::repeat_with;
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 use anyhow::Context;
 use lazy_static::lazy_static;
 use tokio::sync::{Mutex, MutexGuard};
 
 pub struct ProfileStores {
-	stores: HashMap<String, Store<Profile>>
+	stores: HashMap<String, Store<Profile>>,
 }
 
 impl ProfileStores {
@@ -26,14 +26,12 @@ impl ProfileStores {
 				device: device.id.clone(),
 				id: id.to_owned(),
 				keys: repeat_with(|| None).take((device.rows * device.columns).into()).collect(),
-				sliders: repeat_with(|| None).take(device.sliders.into()).collect()
+				sliders: repeat_with(|| None).take(device.sliders.into()).collect(),
 			};
 
-			let store =
-				Store::new(&path, app.path_resolver().app_config_dir().unwrap(), default)
-				.with_context(|| { format!("Failed to create store for profile {}", path) })?;
+			let store = Store::new(&path, app.path_resolver().app_config_dir().unwrap(), default).with_context(|| format!("Failed to create store for profile {}", path))?;
 
-			store.save().with_context(|| { format!("Failed to save store for profile {}", path) })?;
+			store.save().with_context(|| format!("Failed to save store for profile {}", path))?;
 
 			self.stores.insert(path.clone(), store);
 			Ok(self.stores.get_mut(&path).unwrap())
@@ -62,11 +60,11 @@ impl ProfileStores {
 
 #[derive(Serialize, Deserialize)]
 pub struct DeviceConfig {
-	pub selected_profile: String
+	pub selected_profile: String,
 }
 
 pub struct DeviceStores {
-	stores: HashMap<String, Store<DeviceConfig>>
+	stores: HashMap<String, Store<DeviceConfig>>,
 }
 
 impl DeviceStores {
@@ -75,14 +73,13 @@ impl DeviceStores {
 			Ok(self.stores.get_mut(device).unwrap())
 		} else {
 			let default = DeviceConfig {
-				selected_profile: String::from("Default")
+				selected_profile: String::from("Default"),
 			};
 
 			let store =
-				Store::new(&format!("profiles/{}", device), app.path_resolver().app_config_dir().unwrap(), default)
-				.with_context(|| { format!("Failed to create config store for device {}", device) })?;
+				Store::new(&format!("profiles/{}", device), app.path_resolver().app_config_dir().unwrap(), default).with_context(|| format!("Failed to create config store for device {}", device))?;
 
-			store.save().with_context(|| { format!("Failed to save config store for device {}", device) })?;
+			store.save().with_context(|| format!("Failed to save config store for device {}", device))?;
 
 			self.stores.insert(device.to_owned(), store);
 			Ok(self.stores.get_mut(device).unwrap())
@@ -94,11 +91,9 @@ pub fn get_device_profiles(device: &str, app: &tauri::AppHandle) -> Result<Vec<S
 	let mut profiles: Vec<String> = vec![];
 
 	let device_path = app.path_resolver().app_config_dir().unwrap().join(format!("profiles/{}", device));
-	fs::create_dir_all(&device_path).with_context(|| { format!("Failed to create directories for device {}", device) })?;
+	fs::create_dir_all(&device_path).with_context(|| format!("Failed to create directories for device {}", device))?;
 
-	let entries =
-		fs::read_dir(device_path)
-		.with_context(|| { format!("Failed to read directory for device {}", device) })?;
+	let entries = fs::read_dir(device_path).with_context(|| format!("Failed to read directory for device {}", device))?;
 
 	for entry in entries.flatten() {
 		if entry.metadata().unwrap().is_file() && entry.file_name() != "config.json" {
@@ -125,7 +120,7 @@ pub async fn lock_mutexes() -> (
 	MutexGuard<'static, Option<tauri::AppHandle>>,
 	MutexGuard<'static, DeviceStores>,
 	MutexGuard<'static, HashMap<String, crate::devices::DeviceInfo>>,
-	MutexGuard<'static, ProfileStores>
+	MutexGuard<'static, ProfileStores>,
 ) {
 	let app = crate::APP_HANDLE.lock().await;
 	let device_stores = DEVICE_STORES.lock().await;
@@ -135,12 +130,7 @@ pub async fn lock_mutexes() -> (
 }
 
 pub async fn get_instance(device: &str, position: u8, controller: &str) -> Result<Option<crate::shared::ActionInstance>, anyhow::Error> {
-	let (
-		app,
-		mut device_stores,
-		devices,
-		mut profile_stores
-	) = lock_mutexes().await;
+	let (app, mut device_stores, devices, mut profile_stores) = lock_mutexes().await;
 
 	let selected_profile = &device_stores.get_device_store(device, app.as_ref().unwrap())?.value.selected_profile;
 	let device = devices.get(device).unwrap();
@@ -149,11 +139,11 @@ pub async fn get_instance(device: &str, position: u8, controller: &str) -> Resul
 
 	let configured = match controller {
 		"Encoder" => profile.sliders[position as usize].as_ref(),
-		_ => profile.keys[position as usize].as_ref()
+		_ => profile.keys[position as usize].as_ref(),
 	};
 
 	match configured {
 		Some(configured) => Ok(Some(configured.clone())),
-		None => Ok(None)
+		None => Ok(None),
 	}
 }

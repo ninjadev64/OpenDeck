@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::path::Path;
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use serde_inline_default::serde_inline_default;
 
 use lazy_static::lazy_static;
@@ -55,7 +55,7 @@ pub struct ActionState {
 
 	#[serde_inline_default(false)]
 	#[serde(alias = "FontUnderline")]
-	pub underline: bool
+	pub underline: bool,
 }
 
 /// An action, deserialised from the plugin manifest.
@@ -90,7 +90,7 @@ pub struct Action {
 	pub controllers: Vec<String>,
 
 	#[serde(alias = "States")]
-	pub states: Vec<ActionState>
+	pub states: Vec<ActionState>,
 }
 
 /// Information about the slot an instance is located in.
@@ -100,7 +100,7 @@ pub struct ActionContext {
 	pub profile: String,
 	pub controller: String,
 	pub position: u8,
-	pub index: u16
+	pub index: u16,
 }
 
 impl std::fmt::Display for ActionContext {
@@ -110,7 +110,7 @@ impl std::fmt::Display for ActionContext {
 }
 
 impl std::str::FromStr for ActionContext {
-	type Err = anyhow::Error;
+	type Err = std::num::ParseIntError;
 	fn from_str(s: &str) -> Result<Self, Self::Err> {
 		let segments: Vec<&str> = s.split('.').collect();
 		let device = segments[0].to_owned();
@@ -118,7 +118,13 @@ impl std::str::FromStr for ActionContext {
 		let controller = segments[2].to_owned();
 		let position = u8::from_str(segments[3])?;
 		let index = u16::from_str(segments[4])?;
-		Ok(Self { device, profile, controller, position, index })
+		Ok(Self {
+			device,
+			profile,
+			controller,
+			position,
+			index,
+		})
 	}
 }
 
@@ -129,7 +135,7 @@ pub struct ActionInstance {
 	pub context: ActionContext,
 	pub states: Vec<ActionState>,
 	pub current_state: u16,
-	pub settings: serde_json::Value
+	pub settings: serde_json::Value,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -137,7 +143,7 @@ pub struct Profile {
 	pub device: String,
 	pub id: String,
 	pub keys: Vec<Option<ActionInstance>>,
-	pub sliders: Vec<Option<ActionInstance>>
+	pub sliders: Vec<Option<ActionInstance>>,
 }
 
 lazy_static! {

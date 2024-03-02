@@ -1,18 +1,18 @@
 // Prevents additional console window on Windows in release.
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-mod shared;
-mod store;
+mod devices;
 mod events;
 mod plugins;
-mod devices;
+mod shared;
+mod store;
 
 use events::frontend;
 
-use tokio::sync::Mutex;
 use lazy_static::lazy_static;
+use tauri::{AppHandle, Builder, CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem, WindowEvent};
 use tauri_plugin_log::LogTarget;
-use tauri::{Builder, AppHandle, Manager, CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem, WindowEvent};
+use tokio::sync::Mutex;
 
 lazy_static! {
 	pub static ref APP_HANDLE: Mutex<Option<AppHandle>> = Mutex::new(None);
@@ -24,11 +24,7 @@ async fn main() {
 		let open = CustomMenuItem::new("open".to_string(), "Open");
 		let hide = CustomMenuItem::new("hide".to_string(), "Hide");
 		let quit = CustomMenuItem::new("quit".to_string(), "Quit");
-		let menu = SystemTrayMenu::new()
-			.add_item(open)
-			.add_item(hide)
-			.add_native_item(SystemTrayMenuItem::Separator)
-			.add_item(quit);
+		let menu = SystemTrayMenu::new().add_item(open).add_item(hide).add_native_item(SystemTrayMenuItem::Separator).add_item(quit);
 		SystemTray::new().with_menu(menu)
 	};
 
@@ -46,32 +42,37 @@ async fn main() {
 			frontend::switch_property_inspector,
 			frontend::update_image
 		])
-		.plugin(tauri_plugin_log::Builder::default()
-			.targets([
-				LogTarget::LogDir,
-				LogTarget::Stdout
-			])
-			.level(log::LevelFilter::Debug)
-			.build()
+		.plugin(
+			tauri_plugin_log::Builder::default()
+				.targets([LogTarget::LogDir, LogTarget::Stdout])
+				.level(log::LevelFilter::Debug)
+				.build(),
 		)
 		.system_tray(tray)
-		.on_system_tray_event(|app, event| if let SystemTrayEvent::MenuItemClick { id, .. } = event {
-			let window = app.get_window("main").unwrap();
-			let _ = match id.as_str() {
-				"open" => window.show(),
-				"hide" => window.hide(),
-				"quit" => { app.exit(0); Ok(()) },
-				_ => Ok(())
-			};
+		.on_system_tray_event(|app, event| {
+			if let SystemTrayEvent::MenuItemClick { id, .. } = event {
+				let window = app.get_window("main").unwrap();
+				let _ = match id.as_str() {
+					"open" => window.show(),
+					"hide" => window.hide(),
+					"quit" => {
+						app.exit(0);
+						Ok(())
+					}
+					_ => Ok(()),
+				};
+			}
 		})
-		.on_window_event(|event| if let WindowEvent::CloseRequested { api, .. } = event.event() {
-			event.window().hide().unwrap();
-			api.prevent_close();
+		.on_window_event(|event| {
+			if let WindowEvent::CloseRequested { api, .. } = event.event() {
+				event.window().hide().unwrap();
+				api.prevent_close();
+			}
 		})
 		.build(tauri::generate_context!())
 	{
 		Ok(app) => app,
-		Err(error) => panic!("Failed to create Tauri application: {}", error)
+		Err(error) => panic!("Failed to create Tauri application: {}", error),
 	};
 
 	*APP_HANDLE.lock().await = Some(app.handle());

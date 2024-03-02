@@ -5,13 +5,13 @@ pub mod property_inspector;
 pub mod settings;
 pub mod will_appear;
 
-use serde::Serialize;
 use futures_util::SinkExt;
+use serde::Serialize;
 
 #[derive(Serialize)]
 struct Coordinates {
 	row: u8,
-	column: u8
+	column: u8,
 }
 
 #[derive(Serialize)]
@@ -19,31 +19,27 @@ struct GenericInstancePayload {
 	settings: serde_json::Value,
 	coordinates: Coordinates,
 	controller: String,
-	state: u16
+	state: u16,
 }
 
 impl GenericInstancePayload {
 	fn new(instance: &crate::shared::ActionInstance) -> Self {
 		let coordinates = match &instance.context.controller[..] {
-			"Encoder" => {
-				Coordinates {
-					row: 0,
-					column: instance.context.position
-				}
+			"Encoder" => Coordinates {
+				row: 0,
+				column: instance.context.position,
 			},
-			_ => {
-				Coordinates {
-					row: instance.context.position / 3,
-					column: instance.context.position % 3
-				}
-			}
+			_ => Coordinates {
+				row: instance.context.position / 3,
+				column: instance.context.position % 3,
+			},
 		};
 
 		Self {
 			settings: instance.settings.clone(),
 			coordinates,
 			controller: instance.context.controller.clone(),
-			state: instance.current_state
+			state: instance.current_state,
 		}
 	}
 }
@@ -73,7 +69,7 @@ async fn send_to_all_plugins(data: &impl Serialize) -> Result<(), anyhow::Error>
 	for entry in entries.flatten() {
 		let path = match entry.metadata().unwrap().is_symlink() {
 			true => std::fs::read_link(entry.path()).unwrap(),
-			false => entry.path()
+			false => entry.path(),
 		};
 		let metadata = std::fs::metadata(&path).unwrap();
 		if metadata.is_dir() {

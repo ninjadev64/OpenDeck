@@ -1,13 +1,13 @@
-mod prontokey;
 pub mod elgato;
+mod prontokey;
 
 use std::collections::HashMap;
 
 use lazy_static::lazy_static;
 use tokio::sync::Mutex;
 
-use serde::Serialize;
 use log::warn;
+use serde::Serialize;
 
 /// Metadata of a device.
 #[derive(Clone, Serialize)]
@@ -17,7 +17,7 @@ pub struct DeviceInfo {
 	pub rows: u8,
 	pub columns: u8,
 	pub sliders: u8,
-	pub r#type: u8
+	pub r#type: u8,
 }
 
 lazy_static! {
@@ -40,14 +40,15 @@ pub fn initialise_devices() {
 		Ok(hid) => {
 			for (kind, serial) in elgato_streamdeck::asynchronous::list_devices_async(&hid) {
 				match elgato_streamdeck::AsyncStreamDeck::connect(&hid, kind, &serial) {
-					Ok(device) => { tokio::spawn(elgato::init(device)); },
-					Err(error) => warn!("Failed to connect to Elgato device: {}", error)
+					Ok(device) => {
+						tokio::spawn(elgato::init(device));
+					}
+					Err(error) => warn!("Failed to connect to Elgato device: {}", error),
 				}
 			}
-		},
-		Err(error) => warn!("Failed to initialise hidapi: {}", error)
+		}
+		Err(error) => warn!("Failed to initialise hidapi: {}", error),
 	}
-
 
 	// Create a virtual device for testing without a physical device.
 	tokio::spawn(async move {
@@ -58,7 +59,7 @@ pub fn initialise_devices() {
 			rows: 3,
 			columns: 3,
 			sliders: 2,
-			r#type: 7
+			r#type: 7,
 		};
 		devices.insert("virtual".to_owned(), device);
 	});

@@ -1,6 +1,6 @@
-use crate::store::profiles::{PROFILE_STORES, DEVICE_STORES, get_device_profiles};
 use crate::devices::DEVICES;
 use crate::shared::{Action, ActionContext, ActionInstance, CATEGORIES};
+use crate::store::profiles::{get_device_profiles, DEVICE_STORES, PROFILE_STORES};
 
 use std::collections::HashMap;
 
@@ -8,10 +8,13 @@ use tauri::Manager;
 
 #[derive(serde::Serialize, serde::Deserialize)]
 struct Error {
-	pub description: String
+	pub description: String,
 }
 
-async fn serialise_mutex_hashmap<T>(map: &tokio::sync::Mutex<HashMap<String, T>>) -> String where T: serde::Serialize {
+async fn serialise_mutex_hashmap<T>(map: &tokio::sync::Mutex<HashMap<String, T>>) -> String
+where
+	T: serde::Serialize,
+{
 	// Here, we "duplicate" the HashMap so it isn't captured in a MutexGuard, allowing it to be serialised
 	let mut hash_map: HashMap<String, &T> = HashMap::new();
 	let locked = map.lock().await;
@@ -45,7 +48,7 @@ pub async fn get_categories() -> String {
 pub fn get_profiles(app: tauri::AppHandle, device: &str) -> String {
 	match get_device_profiles(device, &app) {
 		Ok(profiles) => serde_json::to_string(&profiles).unwrap(),
-		Err(error) => serde_json::to_string(&Error { description: error.to_string() }).unwrap()
+		Err(error) => serde_json::to_string(&Error { description: error.to_string() }).unwrap(),
 	}
 }
 
@@ -53,16 +56,16 @@ pub fn get_profiles(app: tauri::AppHandle, device: &str) -> String {
 pub async fn get_selected_profile(app: tauri::AppHandle, device: String) -> String {
 	match DEVICE_STORES.lock().await.get_device_store(&device, &app) {
 		Ok(store) => {
-			match PROFILE_STORES.lock().await.get_profile_store(
-				DEVICES.lock().await.get(&device).unwrap(),
-				&store.value.selected_profile,
-				&app
-			) {
+			match PROFILE_STORES
+				.lock()
+				.await
+				.get_profile_store(DEVICES.lock().await.get(&device).unwrap(), &store.value.selected_profile, &app)
+			{
 				Ok(store) => serde_json::to_string(&store.value).unwrap(),
-				Err(error) => serde_json::to_string(&Error { description: error.to_string() }).unwrap()
+				Err(error) => serde_json::to_string(&Error { description: error.to_string() }).unwrap(),
 			}
-		},
-		Err(error) => serde_json::to_string(&Error { description: error.to_string() }).unwrap()
+		}
+		Err(error) => serde_json::to_string(&Error { description: error.to_string() }).unwrap(),
 	}
 }
 
@@ -77,7 +80,7 @@ pub async fn set_selected_profile(app: tauri::AppHandle, device: String, id: Str
 	if store.value.selected_profile != id {
 		let old_profile = match profile_stores.get_profile_store(devices.get(&device).unwrap(), &store.value.selected_profile, &app) {
 			Ok(store) => &store.value,
-			Err(error) => return serde_json::to_string(&Error { description: error.to_string() }).unwrap()
+			Err(error) => return serde_json::to_string(&Error { description: error.to_string() }).unwrap(),
 		};
 		for instance in old_profile.keys.iter().chain(&old_profile.sliders).flat_map(|x| x) {
 			let _ = crate::events::outbound::will_appear::will_disappear(instance).await;
@@ -86,7 +89,7 @@ pub async fn set_selected_profile(app: tauri::AppHandle, device: String, id: Str
 
 	let new_profile = match profile_stores.get_profile_store(devices.get(&device).unwrap(), &id, &app) {
 		Ok(store) => &store.value,
-		Err(error) => return serde_json::to_string(&Error { description: error.to_string() }).unwrap()
+		Err(error) => return serde_json::to_string(&Error { description: error.to_string() }).unwrap(),
 	};
 	for instance in new_profile.keys.iter().chain(&new_profile.sliders).flat_map(|x| x) {
 		let _ = crate::events::outbound::will_appear::will_appear(instance).await;
@@ -94,7 +97,7 @@ pub async fn set_selected_profile(app: tauri::AppHandle, device: String, id: Str
 
 	store.value.selected_profile = id.to_owned();
 	if let Err(error) = store.save() {
-		return serde_json::to_string(&Error { description: error.to_string() }).unwrap()
+		return serde_json::to_string(&Error { description: error.to_string() }).unwrap();
 	}
 
 	serde_json::to_string(&store.value).unwrap()
@@ -113,17 +116,13 @@ pub async fn create_instance(app: tauri::AppHandle, action: Action, context: Act
 		context: context.clone(),
 		states: action.states.clone(),
 		current_state: 0,
-		settings: serde_json::Value::Object(serde_json::Map::new())
+		settings: serde_json::Value::Object(serde_json::Map::new()),
 	};
 
 	let mut profile_stores = PROFILE_STORES.lock().await;
-	let store = match profile_stores.get_profile_store(
-		DEVICES.lock().await.get(&context.device).unwrap(),
-		&context.profile,
-		&app
-	) {
+	let store = match profile_stores.get_profile_store(DEVICES.lock().await.get(&context.device).unwrap(), &context.profile, &app) {
 		Ok(store) => store,
-		Err(error) => return serde_json::to_string(&Error { description: error.to_string() }).unwrap()
+		Err(error) => return serde_json::to_string(&Error { description: error.to_string() }).unwrap(),
 	};
 
 	let instance_ref: &Option<ActionInstance>;
@@ -144,7 +143,7 @@ pub async fn create_instance(app: tauri::AppHandle, action: Action, context: Act
 	let _ = crate::events::outbound::will_appear::will_appear(instance_ref.as_ref().unwrap()).await;
 
 	if let Err(error) = store.save() {
-		return serde_json::to_string(&Error { description: error.to_string() }).unwrap()
+		return serde_json::to_string(&Error { description: error.to_string() }).unwrap();
 	}
 
 	serde_json::to_string(instance_ref).unwrap()
@@ -153,13 +152,9 @@ pub async fn create_instance(app: tauri::AppHandle, action: Action, context: Act
 #[tauri::command]
 pub async fn clear_slot(app: tauri::AppHandle, context: ActionContext) -> String {
 	let mut profile_stores = PROFILE_STORES.lock().await;
-	let store = match profile_stores.get_profile_store(
-		DEVICES.lock().await.get(&context.device).unwrap(),
-		&context.profile,
-		&app
-	) {
+	let store = match profile_stores.get_profile_store(DEVICES.lock().await.get(&context.device).unwrap(), &context.profile, &app) {
 		Ok(store) => store,
-		Err(error) => return serde_json::to_string(&Error { description: error.to_string() }).unwrap()
+		Err(error) => return serde_json::to_string(&Error { description: error.to_string() }).unwrap(),
 	};
 
 	let instance_ref: &Option<ActionInstance>;
@@ -178,7 +173,7 @@ pub async fn clear_slot(app: tauri::AppHandle, context: ActionContext) -> String
 	}
 
 	if let Err(error) = store.save() {
-		return serde_json::to_string(&Error { description: error.to_string() }).unwrap()
+		return serde_json::to_string(&Error { description: error.to_string() }).unwrap();
 	}
 
 	serde_json::to_string(instance_ref).unwrap()
@@ -193,12 +188,12 @@ pub async fn make_info(app: tauri::AppHandle, plugin: String) -> String {
 
 	let manifest = match std::fs::read(&path) {
 		Ok(data) => data,
-		Err(error) => return serde_json::to_string(&Error { description: error.to_string() }).unwrap()
+		Err(error) => return serde_json::to_string(&Error { description: error.to_string() }).unwrap(),
 	};
 
 	let manifest: crate::plugins::manifest::PluginManifest = match serde_json::from_slice(&manifest) {
 		Ok(manifest) => manifest,
-		Err(error) => return serde_json::to_string(&Error { description: error.to_string() }).unwrap()
+		Err(error) => return serde_json::to_string(&Error { description: error.to_string() }).unwrap(),
 	};
 
 	serde_json::to_string(&crate::plugins::info_param::make_info(plugin, manifest.version).await).unwrap()
@@ -223,7 +218,7 @@ pub async fn update_image(context: ActionContext, image: String) {
 	}
 }
 
-pub async fn update_state(app: &tauri::AppHandle, instance: &ActionInstance) -> Result<(), anyhow::Error> {
+pub async fn update_state(app: &tauri::AppHandle, instance: &ActionInstance) -> Result<(), tauri::Error> {
 	let window = app.get_window("main").unwrap();
 	window.emit("update_state", serde_json::to_string(instance).unwrap())?;
 	Ok(())

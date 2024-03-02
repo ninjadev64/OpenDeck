@@ -1,32 +1,28 @@
-pub mod manifest;
 pub mod info_param;
+pub mod manifest;
 mod webserver;
 
+use crate::shared::{convert_icon, Action, CATEGORIES};
 use crate::APP_HANDLE;
-use crate::shared::{Action, CATEGORIES, convert_icon};
 
-use std::{fs, path};
 use std::process::{Command, Stdio};
+use std::{fs, path};
 
 use tauri::AppHandle;
 
-use tokio::net::{TcpListener, TcpStream};
 use futures_util::StreamExt;
+use tokio::net::{TcpListener, TcpStream};
 
-use anyhow::{Context, anyhow};
-use log::{warn, error};
+use anyhow::{anyhow, Context};
+use log::{error, warn};
 
 /// Initialise a plugin from a given directory.
 async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 	let plugin_uuid = path.file_name().unwrap().to_str().unwrap();
 	let manifest_path = path.join("manifest.json");
 
-	let manifest =
-		fs::read(&manifest_path)
-		.with_context(|| { format!("Failed to read manifest of plugin at {}", manifest_path.display()) })?;
-	let mut manifest: manifest::PluginManifest =
-		serde_json::from_slice(&manifest)
-		.with_context(|| { format!("Failed to parse manifest of plugin at {}", manifest_path.display()) })?;
+	let manifest = fs::read(&manifest_path).with_context(|| format!("Failed to read manifest of plugin at {}", manifest_path.display()))?;
+	let mut manifest: manifest::PluginManifest = serde_json::from_slice(&manifest).with_context(|| format!("Failed to parse manifest of plugin at {}", manifest_path.display()))?;
 
 	for action in &mut manifest.actions {
 		action.plugin = plugin_uuid.to_owned();
@@ -78,11 +74,17 @@ async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 	for os in manifest.os {
 		if os.platform == platform {
 			#[cfg(target_os = "windows")]
-			if manifest.code_path_windows.is_some() { code_path = manifest.code_path_windows; }
+			if manifest.code_path_windows.is_some() {
+				code_path = manifest.code_path_windows;
+			}
 			#[cfg(target_os = "macos")]
-			if manifest.code_path_macos.is_some() { code_path = manifest.code_path_macos; }
+			if manifest.code_path_macos.is_some() {
+				code_path = manifest.code_path_macos;
+			}
 			#[cfg(target_os = "linux")]
-			if manifest.code_path_linux.is_some() { code_path = manifest.code_path_linux; }
+			if manifest.code_path_linux.is_some() {
+				code_path = manifest.code_path_linux;
+			}
 
 			use_wine = false;
 
@@ -99,7 +101,7 @@ async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 	}
 
 	if !supported || code_path.is_none() {
-		return Err(anyhow!("Failed to load plugin with ID {}: unsupported on platform {}", plugin_uuid, platform))
+		return Err(anyhow!("Failed to load plugin with ID {}: unsupported on platform {}", plugin_uuid, platform));
 	}
 
 	let mut devices: Vec<info_param::DeviceInfo> = vec![];
@@ -117,11 +119,11 @@ async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 		let window = tauri::WindowBuilder::new(
 			APP_HANDLE.lock().await.as_ref().unwrap(),
 			plugin_uuid.replace('.', "_"),
-			tauri::WindowUrl::External(url.parse().unwrap())
+			tauri::WindowUrl::External(url.parse().unwrap()),
 		)
-			.visible(false)
-			.build()
-			.with_context(|| { format!("Failed to initialise plugin with ID {}", plugin_uuid) })?;
+		.visible(false)
+		.build()
+		.with_context(|| format!("Failed to initialise plugin with ID {}", plugin_uuid))?;
 
 		#[cfg(debug_assertions)]
 		window.open_devtools();
@@ -136,7 +138,10 @@ async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 			}};
 			opendeckInit();
 			",
-			57116, plugin_uuid, "registerPlugin", serde_json::to_string(&info).unwrap()
+			57116,
+			plugin_uuid,
+			"registerPlugin",
+			serde_json::to_string(&info).unwrap()
 		))?;
 	} else if use_wine {
 		// Start Wine with the appropriate arguments.
@@ -144,29 +149,37 @@ async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 			.current_dir(path)
 			.args([
 				code_path,
-				String::from("-port"), 57116.to_string(),
-				String::from("-pluginUUID"), plugin_uuid.to_owned(),
-				String::from("-registerEvent"), String::from("registerPlugin"),
-				String::from("-info"), serde_json::to_string(&info).unwrap()
+				String::from("-port"),
+				57116.to_string(),
+				String::from("-pluginUUID"),
+				plugin_uuid.to_owned(),
+				String::from("-registerEvent"),
+				String::from("registerPlugin"),
+				String::from("-info"),
+				serde_json::to_string(&info).unwrap(),
 			])
 			.stdout(Stdio::null())
 			.stderr(Stdio::null())
 			.spawn()
-			.with_context(|| { format!("Failed to initialise plugin with ID {}", plugin_uuid) })?;
+			.with_context(|| format!("Failed to initialise plugin with ID {}", plugin_uuid))?;
 	} else {
 		// Run the plugin's executable natively.
 		Command::new(code_path)
 			.current_dir(path)
 			.args([
-				String::from("-port"), 57116.to_string(),
-				String::from("-pluginUUID"), plugin_uuid.to_owned(),
-				String::from("-registerEvent"), String::from("registerPlugin"),
-				String::from("-info"), serde_json::to_string(&info).unwrap()
+				String::from("-port"),
+				57116.to_string(),
+				String::from("-pluginUUID"),
+				plugin_uuid.to_owned(),
+				String::from("-registerEvent"),
+				String::from("registerPlugin"),
+				String::from("-info"),
+				serde_json::to_string(&info).unwrap(),
 			])
 			.stdout(Stdio::null())
 			.stderr(Stdio::null())
 			.spawn()
-			.with_context(|| { format!("Failed to initialise plugin with ID {}", path.file_name().unwrap().to_str().unwrap()) })?;
+			.with_context(|| format!("Failed to initialise plugin with ID {}", path.file_name().unwrap().to_str().unwrap()))?;
 	}
 
 	Ok(())
@@ -193,7 +206,7 @@ pub fn initialise_plugins(app: AppHandle) {
 		if let Ok(entry) = entry {
 			let path = match entry.metadata().unwrap().is_symlink() {
 				true => fs::read_link(entry.path()).unwrap(),
-				false => entry.path()
+				false => entry.path(),
 			};
 			let metadata = fs::metadata(&path).unwrap();
 			if metadata.is_dir() {
@@ -217,7 +230,7 @@ async fn init_websocket_server() {
 		Ok(listener) => listener,
 		Err(error) => {
 			error!("Failed to bind plugin WebSocket server to socket: {}", error);
-			return
+			return;
 		}
 	};
 
@@ -232,13 +245,15 @@ async fn accept_connection(stream: TcpStream) {
 		Ok(socket) => socket,
 		Err(error) => {
 			warn!("Failed to complete WebSocket handshake: {}", error);
-			return
+			return;
 		}
 	};
 
 	let register_event = socket.next().await.unwrap().unwrap();
 	match serde_json::from_str(&register_event.clone().into_text().unwrap()) {
 		Ok(event) => crate::events::register_plugin(event, socket).await,
-		Err(_) => { let _ = crate::events::inbound::process_incoming_message(register_event).await; }
+		Err(_) => {
+			let _ = crate::events::inbound::process_incoming_message(register_event).await;
+		}
 	}
 }

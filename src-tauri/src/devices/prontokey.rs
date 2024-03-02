@@ -4,13 +4,13 @@ use crate::events::outbound;
 
 use std::time::Duration;
 
-use log::{warn, error};
+use log::{error, warn};
 
 #[derive(serde::Deserialize)]
 #[serde(untagged)]
 enum ProntoKeyMessage {
 	Registration { a: String },
-	Update { k: [u8; 9], s: [u16; 2] }
+	Update { k: [u8; 9], s: [u16; 2] },
 }
 
 /// Attempt to open a serial connection with the device and handle incoming data.
@@ -21,15 +21,11 @@ pub async fn init(port: String) {
 	let mut last_keys: [u8; 9] = [0; 9];
 	let mut last_sliders: [u16; 2] = [0; 2];
 
-	let mut port = match
-		serialport::new(port, 115200)
-		.timeout(Duration::from_millis(10))
-		.open()
-	{
+	let mut port = match serialport::new(port, 115200).timeout(Duration::from_millis(10)).open() {
 		Ok(p) => p,
 		Err(error) => {
 			error!("Failed to open serial port: {}", error);
-			return
+			return;
 		}
 	};
 	let _ = port.write("#".as_bytes());
@@ -42,7 +38,7 @@ pub async fn init(port: String) {
 			Ok(t) => {
 				match std::str::from_utf8(&serial_buf[..t]) {
 					Ok(data) => holding_string += data,
-					Err(_) => break
+					Err(_) => break,
 				}
 
 				// Iterate through JSON objects received from device that are being held in the buffer.
@@ -51,26 +47,34 @@ pub async fn init(port: String) {
 					let chunk = holding_string[..=index].trim();
 					let data: ProntoKeyMessage = match serde_json::from_str(chunk) {
 						Ok(data) => data,
-						Err(_) => continue
+						Err(_) => continue,
 					};
 					holding_string = holding_string[(index + 1)..].to_owned();
 
 					if let ProntoKeyMessage::Registration { a: address } = data {
 						// If the device is uninitialised, attempt to read its MAC address and initialise.
-						if initialised { continue }
+						if initialised {
+							continue;
+						}
 						initialised = true;
 
 						device_id = format!("pk-{}", address);
-						super::register_device(device_id.clone(), DeviceInfo {
-							id: device_id.clone(),
-							name: "ProntoKey".to_owned(),
-							rows: 3,
-							columns: 3,
-							sliders: 2,
-							r#type: 7
-						}).await;
+						super::register_device(
+							device_id.clone(),
+							DeviceInfo {
+								id: device_id.clone(),
+								name: "ProntoKey".to_owned(),
+								rows: 3,
+								columns: 3,
+								sliders: 2,
+								r#type: 7,
+							},
+						)
+						.await;
 					} else if let ProntoKeyMessage::Update { k: keys, s: sliders } = data {
-						if !initialised { continue }
+						if !initialised {
+							continue;
+						}
 
 						// Handle key presses and releases.
 						for (index, value) in keys.iter().enumerate() {
@@ -94,12 +98,12 @@ pub async fn init(port: String) {
 						}
 					}
 				}
-			},
+			}
 			Err(error) => match error.kind() {
 				std::io::ErrorKind::BrokenPipe => break,
 				std::io::ErrorKind::TimedOut => (),
-				_ => warn!("Failed to read serial message from ProntoKey device: {}", error)
-			}
+				_ => warn!("Failed to read serial message from ProntoKey device: {}", error),
+			},
 		}
 		tokio::time::sleep(Duration::from_millis(10)).await;
 	}

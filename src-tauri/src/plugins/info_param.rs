@@ -9,13 +9,13 @@ pub struct ApplicationInfo {
 	pub language: String,
 	pub platform: String,
 	pub platformVersion: String,
-	pub version: String
+	pub version: String,
 }
 
 #[derive(Serialize)]
 pub struct PluginInfo {
 	pub uuid: String,
-	pub version: String
+	pub version: String,
 }
 
 #[allow(non_snake_case)]
@@ -26,13 +26,13 @@ pub struct ColoursInfo {
 	pub buttonPressedTextColor: String,
 	pub disabledColor: String,
 	pub highlightColor: String,
-	pub mouseDownColor: String
+	pub mouseDownColor: String,
 }
 
 #[derive(Clone, Serialize)]
 pub struct DeviceSizeInfo {
 	pub rows: u8,
-	pub columns: u8
+	pub columns: u8,
 }
 
 #[derive(Clone, Serialize)]
@@ -40,7 +40,7 @@ pub struct DeviceInfo {
 	pub id: String,
 	pub name: String,
 	pub size: DeviceSizeInfo,
-	pub r#type: u8
+	pub r#type: u8,
 }
 
 impl From<&crate::devices::DeviceInfo> for DeviceInfo {
@@ -50,9 +50,9 @@ impl From<&crate::devices::DeviceInfo> for DeviceInfo {
 			name: device.name.clone(),
 			size: DeviceSizeInfo {
 				rows: device.rows,
-				columns: device.columns
+				columns: device.columns,
 			},
-			r#type: device.r#type
+			r#type: device.r#type,
 		}
 	}
 }
@@ -64,7 +64,7 @@ pub struct Info {
 	pub plugin: PluginInfo,
 	pub devicePixelRatio: u8,
 	pub colors: ColoursInfo,
-	pub devices: Vec<DeviceInfo>
+	pub devices: Vec<DeviceInfo>,
 }
 
 /// Construct the info parameter for a given plugin's UUID and version.
@@ -87,12 +87,9 @@ pub async fn make_info(uuid: String, version: String) -> Info {
 			language: "en".to_owned(),
 			platform: platform.to_owned(),
 			platformVersion: os_info::get().version().to_string(),
-			version: env!("CARGO_PKG_VERSION").to_owned()
+			version: env!("CARGO_PKG_VERSION").to_owned(),
 		},
-		plugin: PluginInfo {
-			uuid,
-			version
-		},
+		plugin: PluginInfo { uuid, version },
 		devicePixelRatio: 0,
 		colors: ColoursInfo {
 			buttonPressedBackgroundColor: "#303030FF".to_owned(),
@@ -100,8 +97,8 @@ pub async fn make_info(uuid: String, version: String) -> Info {
 			buttonPressedTextColor: "#969696FF".to_owned(),
 			disabledColor: "#F7821B59".to_owned(),
 			highlightColor: "#F7821BFF".to_owned(),
-			mouseDownColor: "#CF6304FF".to_owned()
+			mouseDownColor: "#CF6304FF".to_owned(),
 		},
-		devices
+		devices,
 	}
 }

@@ -1,7 +1,7 @@
-use std::path::{Path, PathBuf};
 use std::fs;
+use std::path::{Path, PathBuf};
 
-use tiny_http::{Server, Response, Header};
+use tiny_http::{Header, Response, Server};
 
 /// Start a simple webserver to serve files of plugins that run in a browser environment.
 pub async fn init_webserver(prefix: PathBuf) {
@@ -12,7 +12,7 @@ pub async fn init_webserver(prefix: PathBuf) {
 			"css" => "text/css".to_owned(),
 			"png" | "jpg" | "jpeg" | "gif" | "webp" => format!("image/{}", extension),
 			"svg" => "image/svg+xml".to_owned(),
-			_ => "application/octet-stream".to_owned()
+			_ => "application/octet-stream".to_owned(),
 		}
 	}
 
@@ -28,7 +28,7 @@ pub async fn init_webserver(prefix: PathBuf) {
 
 		let access_control_allow_origin = Header {
 			field: "Access-Control-Allow-Origin".parse().unwrap(),
-			value: "*".parse().unwrap()
+			value: "*".parse().unwrap(),
 		};
 
 		// The Svelte frontend cannot call the connectElgatoStreamDeckSocket function on property inspector frames
@@ -80,18 +80,18 @@ pub async fn init_webserver(prefix: PathBuf) {
 			response.add_header(access_control_allow_origin);
 			response.add_header(Header {
 				field: "Content-Type".parse().unwrap(),
-				value: "text/html".parse().unwrap()
+				value: "text/html".parse().unwrap(),
 			});
 			let _ = request.respond(response);
 		} else {
 			let mime_type = mime(&match Path::new(&url).extension() {
 				Some(extension) => extension.to_string_lossy().into_owned(),
-				None => "html".to_owned()
+				None => "html".to_owned(),
 			});
 
 			let content_type = Header {
 				field: "Content-Type".parse().unwrap(),
-				value: mime_type.parse().unwrap()
+				value: mime_type.parse().unwrap(),
 			};
 
 			if mime_type.starts_with("text/") || mime_type == "image/svg+xml" {
@@ -102,7 +102,7 @@ pub async fn init_webserver(prefix: PathBuf) {
 			} else {
 				let mut response = Response::from_file(match fs::File::open(url) {
 					Ok(file) => file,
-					Err(_) => continue
+					Err(_) => continue,
 				});
 				response.add_header(access_control_allow_origin);
 				response.add_header(content_type);

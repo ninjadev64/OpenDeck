@@ -1,4 +1,4 @@
-use super::{Coordinates, send_to_plugin, send_to_property_inspector};
+use super::{send_to_plugin, send_to_property_inspector, Coordinates};
 
 use crate::shared::ActionContext;
 
@@ -7,7 +7,7 @@ use serde::Serialize;
 #[derive(Serialize)]
 struct DidReceiveSettingsPayload {
 	settings: serde_json::Value,
-	coordinates: Coordinates
+	coordinates: Coordinates,
 }
 
 #[derive(Serialize)]
@@ -16,18 +16,18 @@ struct DidReceiveSettingsEvent {
 	action: String,
 	context: ActionContext,
 	device: String,
-	payload: DidReceiveSettingsPayload
+	payload: DidReceiveSettingsPayload,
 }
 
 #[derive(Serialize)]
 struct DidReceiveGlobalSettingsPayload {
-	settings: serde_json::Value
+	settings: serde_json::Value,
 }
 
 #[derive(Serialize)]
 struct DidReceiveGlobalSettingsEvent {
 	event: &'static str,
-	payload: DidReceiveGlobalSettingsPayload
+	payload: DidReceiveGlobalSettingsPayload,
 }
 
 pub async fn did_receive_settings(instance: &crate::shared::ActionInstance, to_property_inspector: bool) -> Result<(), anyhow::Error> {
@@ -40,9 +40,9 @@ pub async fn did_receive_settings(instance: &crate::shared::ActionInstance, to_p
 			settings: instance.settings.clone(),
 			coordinates: Coordinates {
 				row: instance.context.position / 3,
-				column: instance.context.position % 3
-			}
-		}
+				column: instance.context.position % 3,
+			},
+		},
 	};
 	if to_property_inspector {
 		send_to_property_inspector(&instance.context, &data).await
@@ -59,14 +59,12 @@ pub async fn did_receive_global_settings(context: &str, to_property_inspector: b
 	let path = settings_dir.join(format!("{}.json", context));
 	let settings: serde_json::Value = match std::fs::read(path) {
 		Ok(contents) => serde_json::from_slice(&contents)?,
-		Err(_) => serde_json::Value::Object(serde_json::Map::new())
+		Err(_) => serde_json::Value::Object(serde_json::Map::new()),
 	};
 
 	let data = DidReceiveGlobalSettingsEvent {
 		event: "didReceiveGlobalSettings",
-		payload: DidReceiveGlobalSettingsPayload {
-			settings
-		}
+		payload: DidReceiveGlobalSettingsPayload { settings },
 	};
 
 	if to_property_inspector {

@@ -1,22 +1,21 @@
+pub mod frontend;
 pub mod inbound;
 pub mod outbound;
-pub mod frontend;
 
 use inbound::RegisterEvent;
 
 use std::collections::HashMap;
 
-use tokio::sync::Mutex;
-use tokio::net::TcpStream;
-use tokio_tungstenite::{WebSocketStream, tungstenite::Message};
 use futures_util::{stream::SplitSink, SinkExt, StreamExt, TryStreamExt};
+use tokio::net::TcpStream;
+use tokio::sync::Mutex;
+use tokio_tungstenite::{tungstenite::Message, WebSocketStream};
 
 use lazy_static::lazy_static;
 
 lazy_static! {
 	static ref PLUGIN_SOCKETS: Mutex<HashMap<String, SplitSink<WebSocketStream<TcpStream>, Message>>> = Mutex::new(HashMap::new());
 	static ref PROPERTY_INSPECTOR_SOCKETS: Mutex<HashMap<String, SplitSink<WebSocketStream<TcpStream>, Message>>> = Mutex::new(HashMap::new());
-
 	static ref PLUGIN_QUEUES: Mutex<HashMap<String, Vec<Message>>> = Mutex::new(HashMap::new());
 	static ref PROPERTY_INSPECTOR_QUEUES: Mutex<HashMap<String, Vec<Message>>> = Mutex::new(HashMap::new());
 }

@@ -6,7 +6,7 @@ use serde_inline_default::serde_inline_default;
 #[derive(Deserialize)]
 pub struct OS {
 	#[serde(alias = "Platform")]
-	pub platform: String
+	pub platform: String,
 }
 
 #[allow(dead_code)]
@@ -39,5 +39,5 @@ pub struct PluginManifest {
 	pub code_path_linux: Option<String>,
 
 	#[serde(alias = "PropertyInspectorPath")]
-	pub property_inspector_path: Option<String>
+	pub property_inspector_path: Option<String>,
 }
