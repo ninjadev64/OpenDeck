@@ -12,6 +12,7 @@
 		profile = JSON.parse(await invoke("get_selected_profile", { device: device.id }));
 		if (value == profile.id) return;
 		value = profile.id;
+		oldValue = value;
 	}
 
 	export let profile: Profile;

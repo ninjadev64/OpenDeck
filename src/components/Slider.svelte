@@ -57,7 +57,7 @@
 	let oldImage: string;
 	let image: string;
 	$: {
-		image = getImage(state?.image, oldImage);
+		image = getImage(state?.image, oldImage, instance?.action.icon);
 		oldImage = image;
 	}
 </script>
