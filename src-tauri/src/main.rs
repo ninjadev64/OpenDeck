@@ -33,6 +33,7 @@ async fn main() {
 			frontend::get_devices,
 			frontend::get_categories,
 			frontend::create_instance,
+			frontend::move_instance,
 			frontend::clear_slot,
 			frontend::get_profiles,
 			frontend::get_selected_profile,

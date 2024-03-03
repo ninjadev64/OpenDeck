@@ -13,6 +13,34 @@
 	export let device: DeviceInfo;
 	export let profile: Profile;
 
+	function handleDragOver(event: DragEvent) {
+		event.preventDefault();
+		return true;
+	}
+
+	async function handleDrop({ dataTransfer }: DragEvent, controller: string, position: number) {
+		let context = `${profile.device}.${profile.id}.${controller}.${position}.0`;
+		let array = controller == "Encoder" ? profile.sliders : profile.keys;
+		if (dataTransfer?.getData("action")) {
+			array[position] = JSON.parse(await invoke("create_instance", { context, action: JSON.parse(dataTransfer?.getData("action")) }));
+			profile = profile;
+		} else if (dataTransfer?.getData("controller")) {
+			let oldArray = dataTransfer?.getData("controller") == "Encoder" ? profile.sliders : profile.keys;
+			let oldPosition = parseInt(dataTransfer?.getData("position"));
+			let response = JSON.parse(await invoke("move_instance", { context, instance: oldArray[oldPosition] }));
+			if (response) {
+				array[position] = response;
+				oldArray[oldPosition] = null;
+				profile = profile;
+			}
+		}
+	}
+
+	function handleDragStart({ dataTransfer }: DragEvent, controller: string, position: number) {
+		dataTransfer?.setData("controller", controller);
+		dataTransfer?.setData("position", position.toString());
+	}
+
 	let iframes: { [context: string]: HTMLIFrameElement } = {};
 	let iframeContainer: HTMLDivElement;
 	let iframeClosePopup: HTMLButtonElement;
@@ -106,6 +134,9 @@
 		<Slider
 			context="{device.id}.{profile.id}.Encoder.{i}.0"
 			bind:instance={profile.sliders[i]}
+			on:dragover={handleDragOver}
+			on:drop={(event) => handleDrop(event, "Encoder", i)}
+			on:dragstart={(event) => handleDragStart(event, "Encoder", i)}
 		/>
 	{/each}
 
@@ -116,6 +147,9 @@
 					<Key
 						context="{device.id}.{profile.id}.Keypad.{(r * device.columns) + c}.0"
 						bind:instance={profile.keys[(r * device.columns) + c]}
+						on:dragover={handleDragOver}
+						on:drop={(event) => handleDrop(event, "Keypad", (r * device.columns) + c)}
+						on:dragstart={(event) => handleDragStart(event, "Keypad", (r * device.columns) + c)}
 					/>
 				{/each}
 			</div>

@@ -111,6 +111,10 @@ pub async fn delete_profile(app: tauri::AppHandle, device: String, profile: Stri
 
 #[tauri::command]
 pub async fn create_instance(app: tauri::AppHandle, action: Action, context: ActionContext) -> String {
+	if !action.controllers.contains(&context.controller) {
+		return "null".to_owned();
+	}
+
 	let instance = ActionInstance {
 		action: action.clone(),
 		context: context.clone(),
@@ -127,15 +131,60 @@ pub async fn create_instance(app: tauri::AppHandle, action: Action, context: Act
 
 	let instance_ref: &Option<ActionInstance>;
 	if context.controller == "Encoder" {
-		if let Some(instance) = &store.value.sliders[context.position as usize] {
-			let _ = crate::events::outbound::will_appear::will_disappear(instance).await;
+		if let Some(old) = &store.value.sliders[context.position as usize] {
+			let _ = crate::events::outbound::will_appear::will_disappear(old).await;
 		}
 		store.value.sliders[context.position as usize] = Some(instance);
 		instance_ref = &store.value.sliders[context.position as usize];
 	} else {
-		if let Some(instance) = &store.value.keys[context.position as usize] {
-			let _ = crate::events::outbound::will_appear::will_disappear(instance).await;
+		if let Some(old) = &store.value.keys[context.position as usize] {
+			let _ = crate::events::outbound::will_appear::will_disappear(old).await;
 		}
+		store.value.keys[context.position as usize] = Some(instance);
+		instance_ref = &store.value.keys[context.position as usize];
+	}
+
+	let _ = crate::events::outbound::will_appear::will_appear(instance_ref.as_ref().unwrap()).await;
+
+	if let Err(error) = store.save() {
+		return serde_json::to_string(&Error { description: error.to_string() }).unwrap();
+	}
+
+	serde_json::to_string(instance_ref).unwrap()
+}
+
+#[tauri::command]
+pub async fn move_instance(app: tauri::AppHandle, mut instance: ActionInstance, context: ActionContext) -> String {
+	if !instance.action.controllers.contains(&context.controller) {
+		return "null".to_owned();
+	}
+
+	let mut profile_stores = PROFILE_STORES.lock().await;
+	let store = match profile_stores.get_profile_store(DEVICES.lock().await.get(&context.device).unwrap(), &context.profile, &app) {
+		Ok(store) => store,
+		Err(error) => return serde_json::to_string(&Error { description: error.to_string() }).unwrap(),
+	};
+
+	let _ = crate::events::outbound::will_appear::will_disappear(&instance).await;
+	if instance.context.controller == "Encoder" {
+		store.value.sliders[instance.context.position as usize] = None;
+	} else {
+		store.value.keys[instance.context.position as usize] = None;
+	}
+
+	let instance_ref: &Option<ActionInstance>;
+	if context.controller == "Encoder" {
+		if let Some(old) = &store.value.sliders[context.position as usize] {
+			let _ = crate::events::outbound::will_appear::will_disappear(old).await;
+		}
+		instance.context = context.clone();
+		store.value.sliders[context.position as usize] = Some(instance);
+		instance_ref = &store.value.sliders[context.position as usize];
+	} else {
+		if let Some(old) = &store.value.keys[context.position as usize] {
+			let _ = crate::events::outbound::will_appear::will_disappear(old).await;
+		}
+		instance.context = context.clone();
 		store.value.keys[context.position as usize] = Some(instance);
 		instance_ref = &store.value.keys[context.position as usize];
 	}

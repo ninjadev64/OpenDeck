@@ -17,18 +17,12 @@
 		if (i.context == context) instance = i;
 	});
 
-	function handleDragOver(event: DragEvent) {
+	function select() {
+		inspectedInstance.set(context);
+	}
+
+	async function clear(event: MouseEvent) {
 		event.preventDefault();
-		return true;
-	}
-
-	async function handleDrop({ dataTransfer }: DragEvent) {
-		let action = dataTransfer?.getData("action");
-		if (!action) return;
-		instance = JSON.parse(await invoke("create_instance", { context, action: JSON.parse(action) }));
-	}
-
-	async function clear(event: MouseEvent | KeyboardEvent) {
 		if (event.ctrlKey) return;
 		instance = JSON.parse(await invoke("clear_slot", { context }));
 		if ($inspectedInstance == context) inspectedInstance.set(null);
@@ -54,19 +48,18 @@
 		timeouts.push(setTimeout(() => showOk = 0, 2e3));
 	});
 
-	let oldImage: string;
 	let image: string;
 	$: {
-		image = getImage(state?.image, oldImage, instance?.action.icon);
-		oldImage = image;
-		if (state) renderImage(context, state, oldImage, instance?.action.icon, showOk > 0, showAlert > 0);
+		let fallback = instance?.action.states[instance?.current_state].image ?? instance?.action.icon;
+		image = getImage(state?.image, fallback);
+		if (state) renderImage(context, state, fallback, showOk > 0, showAlert > 0);
 	}
 </script>
 
 <div
 	class="relative m-2 w-32 h-32 border-2 rounded-md select-none"
-	on:dragover={handleDragOver}
-	on:drop={handleDrop}
+	on:dragover on:drop
+	draggable on:dragstart
 	role="cell" tabindex="-1"
 >
 	{#if instance && state}
@@ -75,11 +68,8 @@
 			src={image}
 			class="p-2 w-full rounded-xl"
 			alt={instance.action.tooltip}
-			on:click={clear} on:keyup={clear}
-			on:contextmenu={(event) => {
-				event.preventDefault();
-				inspectedInstance.set(context);
-			}}
+			on:click={select} on:keyup={select}
+			on:contextmenu={clear}
 		/>
 		{#if state.show}
 			<div class="absolute flex justify-center w-full h-full top-0 left-0 pointer-events-none">

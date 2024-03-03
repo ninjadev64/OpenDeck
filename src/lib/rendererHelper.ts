@@ -2,10 +2,10 @@ import { invoke } from "@tauri-apps/api";
 
 import type { ActionState } from "./ActionState";
 
-export function getImage(image: string | undefined, fallback: string | undefined, hardFallback: string | undefined): string {
+export function getImage(image: string | undefined, fallback: string | undefined): string {
 	if (!image) {
-		if (!fallback && !hardFallback) return "/alert.png";
-		return fallback ?? getImage(hardFallback, undefined, undefined);
+		if (!fallback) return "/alert.png";
+		return getImage(fallback, undefined);
 	}
 	if (!image.startsWith("data:")) return "http://localhost:57118" + image;
 	const svgxmlre = /^data:image\/svg\+xml,(.+)/;
@@ -15,13 +15,13 @@ export function getImage(image: string | undefined, fallback: string | undefined
 	}
 	if (base64re.test(image)) {
 		let exec = base64re.exec(image)!;
-		if (!exec[2]) return fallback ?? getImage(hardFallback, undefined, undefined);
+		if (!exec[2]) return getImage(fallback, undefined);
 		else image = exec[0];
 	}
 	return image;
 }
 
-export async function renderImage(actionContext: string, state: ActionState, fallback: string | undefined, hardFallback: string | undefined, showOk: boolean, showAlert: boolean) {
+export async function renderImage(actionContext: string, state: ActionState, fallback: string | undefined, showOk: boolean, showAlert: boolean) {
 	// Create canvas
 	let canvas = document.createElement("canvas");
 	canvas.width = 144;
@@ -32,7 +32,7 @@ export async function renderImage(actionContext: string, state: ActionState, fal
 	// Load image
 	let image = document.createElement("img");
 	image.crossOrigin = "anonymous";
-	image.src = getImage(state.image, fallback, hardFallback);
+	image.src = getImage(state.image, fallback);
 	if (image.src == undefined) return;
 	await new Promise((resolve) => {
 		image.onload = resolve;
