@@ -8,8 +8,8 @@
 
 	let profiles: string[] = [];
 	async function getProfiles(device: DeviceInfo) {
-		profiles = JSON.parse(await invoke("get_profiles", { device: device.id }));
-		profile = JSON.parse(await invoke("get_selected_profile", { device: device.id }));
+		profiles = await invoke("get_profiles", { device: device.id });
+		profile = await invoke("get_selected_profile", { device: device.id });
 		if (value == profile.id) return;
 		value = profile.id;
 		oldValue = value;
@@ -19,7 +19,7 @@
 	async function setProfile(id: string) {
 		if (!device || !id) return;
 		await invoke("set_selected_profile", { device: device.id, id });
-		profile = JSON.parse(await invoke("get_selected_profile", { device: device.id }));
+		profile = await invoke("get_selected_profile", { device: device.id });
 		if (!profiles.includes(id)) profiles = [ ...profiles, id ];
 	}
 

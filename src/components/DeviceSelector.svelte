@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { DeviceInfo } from "$lib/DeviceInfo";
+    import type { Profile } from "$lib/Profile";
 
 	import { invoke } from "@tauri-apps/api";
 	import { listen } from "@tauri-apps/api/event";
@@ -15,7 +16,7 @@
 		for (const [ id, device ] of Object.entries(devices)) {
 			if (!registered.includes(id)) {
 				(async () => {
-					let profile = JSON.parse(await invoke("get_selected_profile", { device: device.id }));
+					let profile: Profile = await invoke("get_selected_profile", { device: device.id });
 					await invoke("set_selected_profile", { device: id, id: profile.id });
 				})();
 				registered.push(id);
@@ -23,8 +24,8 @@
 		}
 	}
 
-	(async () => devices = JSON.parse(await invoke("get_devices")))();
-	listen("devices", ({ payload }: { payload: string }) => devices = JSON.parse(payload));
+	(async () => devices = await invoke("get_devices"))();
+	listen("devices", ({ payload }: { payload: { [id: string]: DeviceInfo }}) => devices = payload);
 </script>
 
 <select bind:value class="w-full">

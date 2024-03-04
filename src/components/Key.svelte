@@ -12,9 +12,8 @@
 
 	$: state = instance?.states[instance?.current_state];
 
-	listen("update_state", ({ payload }: { payload: string }) => {
-		let i = JSON.parse(payload);
-		if (i.context == context) instance = i;
+	listen("update_state", ({ payload }: { payload: ActionInstance }) => {
+		if (payload.context == context) instance = payload;
 	});
 
 	function select() {
@@ -24,7 +23,8 @@
 	async function clear(event: MouseEvent) {
 		event.preventDefault();
 		if (event.ctrlKey) return;
-		instance = JSON.parse(await invoke("clear_slot", { context }));
+		await invoke("clear_slot", { context });
+		instance = null;
 		if ($inspectedInstance == context) inspectedInstance.set(null);
 	}
 

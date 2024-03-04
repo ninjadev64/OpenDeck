@@ -138,7 +138,7 @@ pub struct ActionInstance {
 	pub settings: serde_json::Value,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Profile {
 	pub device: String,
 	pub id: String,

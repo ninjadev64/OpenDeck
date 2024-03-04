@@ -3,10 +3,7 @@ import { invoke } from "@tauri-apps/api";
 import type { ActionState } from "./ActionState";
 
 export function getImage(image: string | undefined, fallback: string | undefined): string {
-	if (!image) {
-		if (!fallback) return "/alert.png";
-		return getImage(fallback, undefined);
-	}
+	if (!image) return fallback ? getImage(fallback, undefined) : "/alert.png";
 	if (!image.startsWith("data:")) return "http://localhost:57118" + image;
 	const svgxmlre = /^data:image\/svg\+xml,(.+)/;
 	const base64re = /^data:image\/(apng|avif|gif|jpeg|png|svg\+xml|webp|bmp|x-icon|tiff);base64,([A-Za-z0-9+/]+={0,2})?/;
@@ -15,7 +12,7 @@ export function getImage(image: string | undefined, fallback: string | undefined
 	}
 	if (base64re.test(image)) {
 		let exec = base64re.exec(image)!;
-		if (!exec[2]) return getImage(fallback, undefined);
+		if (!exec[2]) return fallback ? getImage(fallback, undefined) : "/alert.png";
 		else image = exec[0];
 	}
 	return image;

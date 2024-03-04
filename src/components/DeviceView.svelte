@@ -22,12 +22,12 @@
 		let context = `${profile.device}.${profile.id}.${controller}.${position}.0`;
 		let array = controller == "Encoder" ? profile.sliders : profile.keys;
 		if (dataTransfer?.getData("action")) {
-			array[position] = JSON.parse(await invoke("create_instance", { context, action: JSON.parse(dataTransfer?.getData("action")) }));
+			array[position] = await invoke("create_instance", { context, action: JSON.parse(dataTransfer?.getData("action")) });
 			profile = profile;
 		} else if (dataTransfer?.getData("controller")) {
 			let oldArray = dataTransfer?.getData("controller") == "Encoder" ? profile.sliders : profile.keys;
 			let oldPosition = parseInt(dataTransfer?.getData("position"));
-			let response = JSON.parse(await invoke("move_instance", { context, instance: oldArray[oldPosition] }));
+			let response: ActionInstance = await invoke("move_instance", { context, instance: oldArray[oldPosition] });
 			if (response) {
 				array[position] = response;
 				oldArray[oldPosition] = null;
@@ -58,7 +58,7 @@
 		}
 
 		if (instance == null || !iframe.src || !iframe.src.startsWith("http://localhost:57118")) return;
-		const info = await invoke("make_info", { plugin: instance.action.plugin });
+		const info = JSON.stringify(await invoke("make_info", { plugin: instance.action.plugin }));
 
 		iframe?.contentWindow?.postMessage({
 			event: "connect",

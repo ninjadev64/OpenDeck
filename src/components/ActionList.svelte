@@ -7,9 +7,9 @@
 
 	let categories: { [name: string]: Action[] } = {};
 
-	invoke("get_categories").then((data) => {
-		categories = JSON.parse(data as string)
-	});
+	(async () => {
+		categories = await invoke("get_categories");
+	})();
 </script>
 
 <div class="mt-1 overflow-auto">
