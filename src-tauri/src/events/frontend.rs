@@ -60,14 +60,18 @@ pub async fn set_selected_profile(app: tauri::AppHandle, device: String, id: Str
 
 	if store.value.selected_profile != id {
 		let old_profile = &profile_stores.get_profile_store(devices.get(&device).unwrap(), &store.value.selected_profile, &app)?.value;
-		for instance in old_profile.keys.iter().chain(&old_profile.sliders).flat_map(|x| x) {
-			let _ = crate::events::outbound::will_appear::will_disappear(instance).await;
+		for slot in old_profile.keys.iter().chain(&old_profile.sliders).flat_map(|x| x) {
+			for instance in slot {
+				let _ = crate::events::outbound::will_appear::will_disappear(instance).await;
+			}
 		}
 	}
 
 	let new_profile = &profile_stores.get_profile_store(devices.get(&device).unwrap(), &id, &app)?.value;
-	for instance in new_profile.keys.iter().chain(&new_profile.sliders).flat_map(|x| x) {
-		let _ = crate::events::outbound::will_appear::will_appear(instance).await;
+	for slot in new_profile.keys.iter().chain(&new_profile.sliders).flat_map(|x| x) {
+		for instance in slot {
+			let _ = crate::events::outbound::will_appear::will_appear(instance).await;
+		}
 	}
 
 	store.value.selected_profile = id.to_owned();
@@ -99,26 +103,27 @@ pub async fn create_instance(app: tauri::AppHandle, action: Action, context: Act
 	let mut profile_stores = PROFILE_STORES.lock().await;
 	let store = profile_stores.get_profile_store(DEVICES.lock().await.get(&context.device).unwrap(), &context.profile, &app)?;
 
-	let instance_ref: &Option<ActionInstance>;
 	if context.controller == "Encoder" {
 		if let Some(old) = &store.value.sliders[context.position as usize] {
-			let _ = crate::events::outbound::will_appear::will_disappear(old).await;
+			for instance in old {
+				let _ = crate::events::outbound::will_appear::will_disappear(instance).await;
+			}
 		}
-		store.value.sliders[context.position as usize] = Some(instance);
-		instance_ref = &store.value.sliders[context.position as usize];
+		store.value.sliders[context.position as usize] = Some(vec![instance.clone()]);
 	} else {
 		if let Some(old) = &store.value.keys[context.position as usize] {
-			let _ = crate::events::outbound::will_appear::will_disappear(old).await;
+			for instance in old {
+				let _ = crate::events::outbound::will_appear::will_disappear(instance).await;
+			}
 		}
-		store.value.keys[context.position as usize] = Some(instance);
-		instance_ref = &store.value.keys[context.position as usize];
+		store.value.keys[context.position as usize] = Some(vec![instance.clone()]);
 	}
 
-	let _ = crate::events::outbound::will_appear::will_appear(instance_ref.as_ref().unwrap()).await;
+	let _ = crate::events::outbound::will_appear::will_appear(&instance).await;
 
 	store.save()?;
 
-	Ok(instance_ref.clone())
+	Ok(Some(instance))
 }
 
 #[tauri::command]
@@ -137,28 +142,29 @@ pub async fn move_instance(app: tauri::AppHandle, mut instance: ActionInstance, 
 		store.value.keys[instance.context.position as usize] = None;
 	}
 
-	let instance_ref: &Option<ActionInstance>;
 	if context.controller == "Encoder" {
 		if let Some(old) = &store.value.sliders[context.position as usize] {
-			let _ = crate::events::outbound::will_appear::will_disappear(old).await;
+			for instance in old {
+				let _ = crate::events::outbound::will_appear::will_disappear(instance).await;
+			}
 		}
 		instance.context = context.clone();
-		store.value.sliders[context.position as usize] = Some(instance);
-		instance_ref = &store.value.sliders[context.position as usize];
+		store.value.sliders[context.position as usize] = Some(vec![instance.clone()]);
 	} else {
 		if let Some(old) = &store.value.keys[context.position as usize] {
-			let _ = crate::events::outbound::will_appear::will_disappear(old).await;
+			for instance in old {
+				let _ = crate::events::outbound::will_appear::will_disappear(instance).await;
+			}
 		}
 		instance.context = context.clone();
-		store.value.keys[context.position as usize] = Some(instance);
-		instance_ref = &store.value.keys[context.position as usize];
+		store.value.keys[context.position as usize] = Some(vec![instance.clone()]);
 	}
 
-	let _ = crate::events::outbound::will_appear::will_appear(instance_ref.as_ref().unwrap()).await;
+	let _ = crate::events::outbound::will_appear::will_appear(&instance).await;
 
 	store.save()?;
 
-	Ok(instance_ref.clone())
+	Ok(Some(instance))
 }
 
 #[tauri::command]
@@ -167,13 +173,17 @@ pub async fn clear_slot(app: tauri::AppHandle, context: ActionContext) -> Result
 	let store = profile_stores.get_profile_store(DEVICES.lock().await.get(&context.device).unwrap(), &context.profile, &app)?;
 
 	if context.controller == "Encoder" {
-		if let Some(instance) = &store.value.sliders[context.position as usize] {
-			let _ = crate::events::outbound::will_appear::will_disappear(instance).await;
+		if let Some(slot) = &store.value.sliders[context.position as usize] {
+			for instance in slot {
+				let _ = crate::events::outbound::will_appear::will_disappear(instance).await;
+			}
 		}
 		store.value.sliders[context.position as usize] = None;
 	} else {
-		if let Some(instance) = &store.value.keys[context.position as usize] {
-			let _ = crate::events::outbound::will_appear::will_disappear(instance).await;
+		if let Some(slot) = &store.value.keys[context.position as usize] {
+			for instance in slot {
+				let _ = crate::events::outbound::will_appear::will_disappear(instance).await;
+			}
 		}
 		store.value.keys[context.position as usize] = None;
 	}

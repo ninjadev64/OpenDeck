@@ -8,12 +8,13 @@ pub async fn set_settings(event: super::ContextAndPayloadEvent<serde_json::Value
 	let store = profile_stores.get_profile_store(device, selected_profile, app.as_ref().unwrap())?;
 	let profile = &mut store.value;
 
-	let instance = match event.context.controller.as_str() {
+	let slot = match event.context.controller.as_str() {
 		"Encoder" => profile.sliders[event.context.position as usize].as_mut(),
 		_ => profile.keys[event.context.position as usize].as_mut(),
 	};
 
-	if let Some(instance) = instance {
+	if let Some(slot) = slot {
+		let instance = &mut slot[event.context.index as usize];
 		instance.settings = event.payload;
 		outbound::did_receive_settings(instance, !from_property_inspector).await?;
 		store.save()?;
@@ -23,7 +24,7 @@ pub async fn set_settings(event: super::ContextAndPayloadEvent<serde_json::Value
 }
 
 pub async fn get_settings(event: super::ContextEvent, from_property_inspector: bool) -> Result<(), anyhow::Error> {
-	if let Some(instance) = crate::store::profiles::get_instance(&event.context.device, event.context.position, &event.context.controller).await? {
+	if let Some(instance) = crate::store::profiles::get_instance(&event.context.device, &event.context.controller, event.context.position, 0).await? {
 		outbound::did_receive_settings(&instance, from_property_inspector).await?;
 	}
 

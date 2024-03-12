@@ -22,14 +22,14 @@
 		let context = `${profile.device}.${profile.id}.${controller}.${position}.0`;
 		let array = controller == "Encoder" ? profile.sliders : profile.keys;
 		if (dataTransfer?.getData("action")) {
-			array[position] = await invoke("create_instance", { context, action: JSON.parse(dataTransfer?.getData("action")) });
+			array[position] = [await invoke("create_instance", { context, action: JSON.parse(dataTransfer?.getData("action")) })];
 			profile = profile;
 		} else if (dataTransfer?.getData("controller")) {
 			let oldArray = dataTransfer?.getData("controller") == "Encoder" ? profile.sliders : profile.keys;
 			let oldPosition = parseInt(dataTransfer?.getData("position"));
-			let response: ActionInstance = await invoke("move_instance", { context, instance: oldArray[oldPosition] });
+			let response: ActionInstance = await invoke("move_instance", { context, instance: (oldArray[oldPosition] ?? [null])[0] });
 			if (response) {
-				array[position] = response;
+				array[position] = [response];
 				oldArray[oldPosition] = null;
 				profile = profile;
 			}
@@ -126,14 +126,14 @@
 	});
 
 	const nonNull = <T>(o: T | null): o is T => o != null;
-	$: nonNullInstances = profile.keys.filter(nonNull).concat(profile.sliders.filter(nonNull));
+	$: nonEmptySlots = profile.keys.filter(nonNull).concat(profile.sliders.filter(nonNull));
 </script>
 
 <div class="flex flex-row">
 	{#each { length: device.sliders } as _, i}
 		<Slider
 			context="{device.id}.{profile.id}.Encoder.{i}.0"
-			bind:instance={profile.sliders[i]}
+			bind:slot={profile.sliders[i]}
 			on:dragover={handleDragOver}
 			on:drop={(event) => handleDrop(event, "Encoder", i)}
 			on:dragstart={(event) => handleDragStart(event, "Encoder", i)}
@@ -146,7 +146,7 @@
 				{#each { length: device.columns } as _, c}
 					<Key
 						context="{device.id}.{profile.id}.Keypad.{(r * device.columns) + c}.0"
-						bind:instance={profile.keys[(r * device.columns) + c]}
+						bind:slot={profile.keys[(r * device.columns) + c]}
 						on:dragover={handleDragOver}
 						on:drop={(event) => handleDrop(event, "Keypad", (r * device.columns) + c)}
 						on:dragstart={(event) => handleDragStart(event, "Keypad", (r * device.columns) + c)}
@@ -165,16 +165,16 @@
 	>
 		✕
 	</button>
-	{#each nonNullInstances as instance (instance.context)}
-		{#if instance.action.property_inspector}
+	{#each nonEmptySlots as slot (slot[0].context)}
+		{#if slot[0].action.property_inspector}
 			<iframe
 				title="Property inspector"
 				class="w-full h-full hidden"
-				class:!block={$inspectedInstance == instance.context}
-				src={"http://localhost:57118" + instance.action.property_inspector + "|opendeck_property_inspector"}
-				name={instance.context}
-				bind:this={iframes[instance.context]}
-				on:load={() => iframeOnLoad(instance)}
+				class:!block={$inspectedInstance == slot[0].context}
+				src={"http://localhost:57118" + slot[0].action.property_inspector + "|opendeck_property_inspector"}
+				name={slot[0].context}
+				bind:this={iframes[slot[0].context]}
+				on:load={() => iframeOnLoad(slot[0])}
 			/>
 		{/if}
 	{/each}

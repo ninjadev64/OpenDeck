@@ -142,8 +142,8 @@ pub struct ActionInstance {
 pub struct Profile {
 	pub device: String,
 	pub id: String,
-	pub keys: Vec<Option<ActionInstance>>,
-	pub sliders: Vec<Option<ActionInstance>>,
+	pub keys: Vec<Option<Vec<ActionInstance>>>,
+	pub sliders: Vec<Option<Vec<ActionInstance>>>,
 }
 
 lazy_static! {

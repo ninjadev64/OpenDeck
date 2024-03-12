@@ -8,12 +8,13 @@
 	import { listen } from "@tauri-apps/api/event";
 
 	export let context: string;
-	export let instance: ActionInstance | null;
+	export let slot: ActionInstance[] | null;
 
+	$: instance = (slot ?? [null])[0];
 	$: state = instance?.states[instance?.current_state];
 
 	listen("update_state", ({ payload }: { payload: ActionInstance }) => {
-		if (payload.context == context) instance = payload;
+		if (payload.context == context) slot = [payload];
 	});
 
 	function select() {

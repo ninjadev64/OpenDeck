@@ -29,12 +29,13 @@ pub async fn set_title(event: ContextAndPayloadEvent<SetTitlePayload>) -> Result
 	let store = profile_stores.get_profile_store(device, selected_profile, app.as_ref().unwrap())?;
 	let profile = &mut store.value;
 
-	let instance = match event.context.controller.as_str() {
+	let slot = match event.context.controller.as_str() {
 		"Encoder" => profile.sliders[event.context.position as usize].as_mut(),
 		_ => profile.keys[event.context.position as usize].as_mut(),
 	};
 
-	if let Some(instance) = instance {
+	if let Some(slot) = slot {
+		let instance = &mut slot[event.context.index as usize];
 		if let Some(state) = event.payload.state {
 			instance.states[state as usize].text = event.payload.title.unwrap_or(instance.action.states[state as usize].text.clone());
 		} else {
@@ -56,12 +57,13 @@ pub async fn set_image(event: ContextAndPayloadEvent<SetImagePayload>) -> Result
 	let store = profile_stores.get_profile_store(device, selected_profile, app.as_ref().unwrap())?;
 	let profile = &mut store.value;
 
-	let instance = match event.context.controller.as_str() {
+	let slot = match event.context.controller.as_str() {
 		"Encoder" => profile.sliders[event.context.position as usize].as_mut(),
 		_ => profile.keys[event.context.position as usize].as_mut(),
 	};
 
-	if let Some(instance) = instance {
+	if let Some(slot) = slot {
+		let instance = &mut slot[event.context.index as usize];
 		if let Some(state) = event.payload.state {
 			instance.states[state as usize].image = event.payload.image.unwrap_or(instance.action.states[state as usize].image.clone());
 		} else {
@@ -83,12 +85,13 @@ pub async fn set_state(event: ContextAndPayloadEvent<SetStatePayload>) -> Result
 	let store = profile_stores.get_profile_store(device, selected_profile, app.as_ref().unwrap())?;
 	let profile = &mut store.value;
 
-	let instance = match event.context.controller.as_str() {
+	let slot = match event.context.controller.as_str() {
 		"Encoder" => profile.sliders[event.context.position as usize].as_mut(),
 		_ => profile.keys[event.context.position as usize].as_mut(),
 	};
 
-	if let Some(instance) = instance {
+	if let Some(slot) = slot {
+		let instance = &mut slot[event.context.index as usize];
 		instance.current_state = event.payload.state;
 		update_state(app.as_ref().unwrap(), instance).await?;
 	}

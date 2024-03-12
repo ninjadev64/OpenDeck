@@ -39,7 +39,7 @@ struct DialPressEvent {
 }
 
 pub async fn dial_rotate(device: &str, index: u8, ticks: i16) -> Result<(), anyhow::Error> {
-	let instance = match get_instance(device, index, "Encoder").await? {
+	let instance = match get_instance(device, "Encoder", index, 0).await? {
 		Some(instance) => instance,
 		None => return Ok(()),
 	};
@@ -66,7 +66,7 @@ pub async fn dial_rotate(device: &str, index: u8, ticks: i16) -> Result<(), anyh
 }
 
 pub async fn dial_press(device: &str, event: &'static str, index: u8) -> Result<(), anyhow::Error> {
-	let instance = match get_instance(device, index, "Encoder").await? {
+	let instance = match get_instance(device, "Encoder", index, 0).await? {
 		Some(instance) => instance,
 		None => return Ok(()),
 	};

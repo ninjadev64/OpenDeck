@@ -48,9 +48,11 @@ impl ProfileStores {
 	pub fn all_from_plugin(&self, plugin: &str) -> Vec<crate::shared::ActionContext> {
 		let mut all = vec![];
 		for store in self.stores.values() {
-			for instance in store.value.keys.iter().chain(&store.value.sliders).flatten() {
-				if instance.action.plugin == plugin {
-					all.push(instance.context.clone());
+			for slot in store.value.keys.iter().chain(&store.value.sliders).flatten() {
+				for instance in slot {
+					if instance.action.plugin == plugin {
+						all.push(instance.context.clone());
+					}
 				}
 			}
 		}
@@ -129,7 +131,7 @@ pub async fn lock_mutexes() -> (
 	(app, device_stores, devices, profile_stores)
 }
 
-pub async fn get_instance(device: &str, position: u8, controller: &str) -> Result<Option<crate::shared::ActionInstance>, anyhow::Error> {
+pub async fn get_slot(device: &str, controller: &str, position: u8) -> Result<Option<Vec<crate::shared::ActionInstance>>, anyhow::Error> {
 	let (app, mut device_stores, devices, mut profile_stores) = lock_mutexes().await;
 
 	let selected_profile = &device_stores.get_device_store(device, app.as_ref().unwrap())?.value.selected_profile;
@@ -144,6 +146,15 @@ pub async fn get_instance(device: &str, position: u8, controller: &str) -> Resul
 
 	match configured {
 		Some(configured) => Ok(Some(configured.clone())),
+		None => Ok(None),
+	}
+}
+
+pub async fn get_instance(device: &str, controller: &str, position: u8, index: u16) -> Result<Option<crate::shared::ActionInstance>, anyhow::Error> {
+	let slot = get_slot(device, controller, position).await?;
+
+	match slot {
+		Some(mut slot) => Ok(Some(slot.remove(index as usize))),
 		None => Ok(None),
 	}
 }
