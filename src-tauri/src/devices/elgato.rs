@@ -5,12 +5,10 @@ use std::collections::HashMap;
 use elgato_streamdeck::{info, AsyncStreamDeck, DeviceStateUpdate, StreamDeckError};
 
 use base64::Engine as _;
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use tokio::sync::Mutex;
 
-lazy_static! {
-	static ref ELGATO_DEVICES: Mutex<HashMap<String, AsyncStreamDeck>> = Mutex::new(HashMap::new());
-}
+static ELGATO_DEVICES: Lazy<Mutex<HashMap<String, AsyncStreamDeck>>> = Lazy::new(|| Mutex::new(HashMap::new()));
 
 pub async fn update_image(context: &crate::shared::ActionContext, url: &str) -> Result<(), anyhow::Error> {
 	if let Some(device) = ELGATO_DEVICES.lock().await.get(&context.device) {

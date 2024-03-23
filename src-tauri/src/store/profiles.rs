@@ -8,7 +8,7 @@ use std::iter::repeat_with;
 use serde::{Deserialize, Serialize};
 
 use anyhow::Context;
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use tokio::sync::{Mutex, MutexGuard};
 
 pub struct ProfileStores {
@@ -23,7 +23,6 @@ impl ProfileStores {
 			Ok(self.stores.get_mut(&path).unwrap())
 		} else {
 			let default = Profile {
-				device: device.id.clone(),
 				id: id.to_owned(),
 				keys: repeat_with(|| None).take((device.rows * device.columns).into()).collect(),
 				sliders: repeat_with(|| None).take(device.sliders.into()).collect(),
@@ -110,51 +109,55 @@ pub fn get_device_profiles(device: &str, app: &tauri::AppHandle) -> Result<Vec<S
 	Ok(profiles)
 }
 
-lazy_static! {
-	/// A singleton object to contain all active Store instances that hold a profile.
-	pub static ref PROFILE_STORES: Mutex<ProfileStores> = Mutex::new(ProfileStores { stores: HashMap::new() });
+/// A singleton object to contain all active Store instances that hold a profile.
+pub static PROFILE_STORES: Lazy<Mutex<ProfileStores>> = Lazy::new(|| Mutex::new(ProfileStores { stores: HashMap::new() }));
 
-	/// A singleton object to manage Store instances for device configurations.
-	pub static ref DEVICE_STORES: Mutex<DeviceStores> = Mutex::new(DeviceStores { stores: HashMap::new() });
+/// A singleton object to manage Store instances for device configurations.
+pub static DEVICE_STORES: Lazy<Mutex<DeviceStores>> = Lazy::new(|| Mutex::new(DeviceStores { stores: HashMap::new() }));
+
+pub struct Locks<'a> {
+	pub device_stores: MutexGuard<'a, DeviceStores>,
+	pub devices: MutexGuard<'a, HashMap<String, crate::devices::DeviceInfo>>,
+	pub profile_stores: MutexGuard<'a, ProfileStores>,
 }
 
-pub async fn lock_mutexes() -> (
-	MutexGuard<'static, Option<tauri::AppHandle>>,
-	MutexGuard<'static, DeviceStores>,
-	MutexGuard<'static, HashMap<String, crate::devices::DeviceInfo>>,
-	MutexGuard<'static, ProfileStores>,
-) {
-	let app = crate::APP_HANDLE.lock().await;
+pub async fn lock_mutexes() -> Locks<'static> {
 	let device_stores = DEVICE_STORES.lock().await;
 	let devices = crate::devices::DEVICES.lock().await;
 	let profile_stores = PROFILE_STORES.lock().await;
-	(app, device_stores, devices, profile_stores)
+	Locks {
+		device_stores,
+		devices,
+		profile_stores,
+	}
 }
 
-pub async fn get_slot(device: &str, controller: &str, position: u8) -> Result<Option<Vec<crate::shared::ActionInstance>>, anyhow::Error> {
-	let (app, mut device_stores, devices, mut profile_stores) = lock_mutexes().await;
-
-	let selected_profile = &device_stores.get_device_store(device, app.as_ref().unwrap())?.value.selected_profile;
-	let device = devices.get(device).unwrap();
-	let store = profile_stores.get_profile_store(device, selected_profile, app.as_ref().unwrap())?;
-	let profile = &store.value;
+pub async fn get_slot<'a>(device: &str, controller: &str, position: u8, locks: &'a mut Locks<'_>) -> Result<Option<&'a mut Vec<crate::shared::ActionInstance>>, anyhow::Error> {
+	let selected_profile = &locks.device_stores.get_device_store(device, crate::APP_HANDLE.get().unwrap())?.value.selected_profile;
+	let device = locks.devices.get(device).unwrap();
+	let store = locks.profile_stores.get_profile_store(device, selected_profile, crate::APP_HANDLE.get().unwrap())?;
+	let profile = &mut store.value;
 
 	let configured = match controller {
-		"Encoder" => profile.sliders[position as usize].as_ref(),
-		_ => profile.keys[position as usize].as_ref(),
+		"Encoder" => profile.sliders[position as usize].as_mut(),
+		_ => profile.keys[position as usize].as_mut(),
 	};
 
-	match configured {
-		Some(configured) => Ok(Some(configured.clone())),
+	Ok(configured)
+}
+
+pub async fn get_instance<'a>(device: &str, controller: &str, position: u8, index: u16, locks: &'a mut Locks<'_>) -> Result<Option<&'a mut crate::shared::ActionInstance>, anyhow::Error> {
+	let slot = get_slot(device, controller, position, locks).await?;
+
+	match slot {
+		Some(slot) => Ok(Some(&mut slot[index as usize])),
 		None => Ok(None),
 	}
 }
 
-pub async fn get_instance(device: &str, controller: &str, position: u8, index: u16) -> Result<Option<crate::shared::ActionInstance>, anyhow::Error> {
-	let slot = get_slot(device, controller, position).await?;
-
-	match slot {
-		Some(mut slot) => Ok(Some(slot.remove(index as usize))),
-		None => Ok(None),
-	}
+pub async fn save_profile<'a>(device: &str, locks: &'a mut Locks<'_>) -> Result<(), anyhow::Error> {
+	let selected_profile = &locks.device_stores.get_device_store(device, crate::APP_HANDLE.get().unwrap())?.value.selected_profile;
+	let device = locks.devices.get(device).unwrap();
+	let store = locks.profile_stores.get_profile_store(device, selected_profile, crate::APP_HANDLE.get().unwrap())?;
+	store.save()
 }

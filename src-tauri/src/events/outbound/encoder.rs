@@ -1,7 +1,7 @@
 use super::{send_to_plugin, Coordinates};
 
 use crate::shared::ActionContext;
-use crate::store::profiles::get_instance;
+use crate::store::profiles::{get_instance, lock_mutexes};
 
 use serde::Serialize;
 
@@ -39,7 +39,8 @@ struct DialPressEvent {
 }
 
 pub async fn dial_rotate(device: &str, index: u8, ticks: i16) -> Result<(), anyhow::Error> {
-	let instance = match get_instance(device, "Encoder", index, 0).await? {
+	let mut locks = lock_mutexes().await;
+	let instance = match get_instance(device, "Encoder", index, 0, &mut locks).await? {
 		Some(instance) => instance,
 		None => return Ok(()),
 	};
@@ -66,7 +67,8 @@ pub async fn dial_rotate(device: &str, index: u8, ticks: i16) -> Result<(), anyh
 }
 
 pub async fn dial_press(device: &str, event: &'static str, index: u8) -> Result<(), anyhow::Error> {
-	let instance = match get_instance(device, "Encoder", index, 0).await? {
+	let mut locks = lock_mutexes().await;
+	let instance = match get_instance(device, "Encoder", index, 0, &mut locks).await? {
 		Some(instance) => instance,
 		None => return Ok(()),
 	};

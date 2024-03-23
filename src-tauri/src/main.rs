@@ -9,14 +9,11 @@ mod store;
 
 use events::frontend;
 
-use lazy_static::lazy_static;
+use once_cell::sync::OnceCell;
 use tauri::{AppHandle, Builder, CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem, WindowEvent};
 use tauri_plugin_log::LogTarget;
-use tokio::sync::Mutex;
 
-lazy_static! {
-	pub static ref APP_HANDLE: Mutex<Option<AppHandle>> = Mutex::new(None);
-}
+static APP_HANDLE: OnceCell<AppHandle> = OnceCell::new();
 
 #[tokio::main]
 async fn main() {
@@ -76,7 +73,7 @@ async fn main() {
 		Err(error) => panic!("Failed to create Tauri application: {}", error),
 	};
 
-	*APP_HANDLE.lock().await = Some(app.handle());
+	APP_HANDLE.set(app.handle()).unwrap();
 
 	devices::initialise_devices();
 	plugins::initialise_plugins(app.handle());

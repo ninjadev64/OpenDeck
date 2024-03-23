@@ -52,8 +52,7 @@ pub async fn did_receive_settings(instance: &crate::shared::ActionInstance, to_p
 }
 
 pub async fn did_receive_global_settings(context: &str, to_property_inspector: bool) -> Result<(), anyhow::Error> {
-	let app = crate::APP_HANDLE.lock().await;
-	let app = app.as_ref().unwrap();
+	let app = crate::APP_HANDLE.get().unwrap();
 
 	let settings_dir = app.path_resolver().app_config_dir().unwrap().join("settings/");
 	let path = settings_dir.join(format!("{}.json", context));

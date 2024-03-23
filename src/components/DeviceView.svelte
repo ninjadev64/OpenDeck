@@ -19,7 +19,7 @@
 	}
 
 	async function handleDrop({ dataTransfer }: DragEvent, controller: string, position: number) {
-		let context = `${profile.device}.${profile.id}.${controller}.${position}.0`;
+		let context = `${device.id}.${profile.id}.${controller}.${position}.0`;
 		let array = controller == "Encoder" ? profile.sliders : profile.keys;
 		if (dataTransfer?.getData("action")) {
 			array[position] = [await invoke("create_instance", { context, action: JSON.parse(dataTransfer?.getData("action")) })];

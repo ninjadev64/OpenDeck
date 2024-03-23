@@ -116,14 +116,10 @@ async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 	if code_path.ends_with(".html") {
 		// Create a webview window for the plugin and call its registration function.
 		let url = String::from("http://localhost:57118") + path.join(code_path).to_str().unwrap();
-		let window = tauri::WindowBuilder::new(
-			APP_HANDLE.lock().await.as_ref().unwrap(),
-			plugin_uuid.replace('.', "_"),
-			tauri::WindowUrl::External(url.parse().unwrap()),
-		)
-		.visible(false)
-		.build()
-		.with_context(|| format!("Failed to initialise plugin with ID {}", plugin_uuid))?;
+		let window = tauri::WindowBuilder::new(APP_HANDLE.get().unwrap(), plugin_uuid.replace('.', "_"), tauri::WindowUrl::External(url.parse().unwrap()))
+			.visible(false)
+			.build()
+			.with_context(|| format!("Failed to initialise plugin with ID {}", plugin_uuid))?;
 
 		#[cfg(debug_assertions)]
 		window.open_devtools();

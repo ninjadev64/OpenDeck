@@ -63,8 +63,7 @@ async fn send_to_plugin(plugin: &str, data: &impl Serialize) -> Result<(), anyho
 }
 
 async fn send_to_all_plugins(data: &impl Serialize) -> Result<(), anyhow::Error> {
-	let app = crate::APP_HANDLE.lock().await;
-	let app = app.as_ref().unwrap();
+	let app = crate::APP_HANDLE.get().unwrap();
 	let entries = std::fs::read_dir(app.path_resolver().app_config_dir().unwrap().join("plugins/"))?;
 	for entry in entries.flatten() {
 		let path = match entry.metadata().unwrap().is_symlink() {

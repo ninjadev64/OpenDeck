@@ -3,7 +3,7 @@ mod prontokey;
 
 use std::collections::HashMap;
 
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use tokio::sync::Mutex;
 
 use log::warn;
@@ -20,9 +20,7 @@ pub struct DeviceInfo {
 	pub r#type: u8,
 }
 
-lazy_static! {
-	pub static ref DEVICES: Mutex<HashMap<String, DeviceInfo>> = Mutex::new(HashMap::new());
-}
+pub static DEVICES: Lazy<Mutex<HashMap<String, DeviceInfo>>> = Lazy::new(|| Mutex::new(HashMap::new()));
 
 /// Attempt to initialise all connected devices.
 pub fn initialise_devices() {

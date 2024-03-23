@@ -31,10 +31,10 @@ log = "0.4.20"
 tauri-plugin-log = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 serde-inline-default = "0.1.1"
 serde_with = "3.4.0"
-lazy_static = "1.4.0"
 os_info = "3.7.0"
 urlencoding = "2.1.3"
 base64 = "0.21.7"
+once_cell = "1.19.0"
 
 [features]
 custom-protocol = [ "tauri/custom-protocol" ]

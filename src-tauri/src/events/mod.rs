@@ -7,18 +7,15 @@ use inbound::RegisterEvent;
 use std::collections::HashMap;
 
 use futures_util::{stream::SplitSink, SinkExt, StreamExt, TryStreamExt};
+use once_cell::sync::Lazy;
 use tokio::net::TcpStream;
 use tokio::sync::Mutex;
 use tokio_tungstenite::{tungstenite::Message, WebSocketStream};
 
-use lazy_static::lazy_static;
-
-lazy_static! {
-	static ref PLUGIN_SOCKETS: Mutex<HashMap<String, SplitSink<WebSocketStream<TcpStream>, Message>>> = Mutex::new(HashMap::new());
-	static ref PROPERTY_INSPECTOR_SOCKETS: Mutex<HashMap<String, SplitSink<WebSocketStream<TcpStream>, Message>>> = Mutex::new(HashMap::new());
-	static ref PLUGIN_QUEUES: Mutex<HashMap<String, Vec<Message>>> = Mutex::new(HashMap::new());
-	static ref PROPERTY_INSPECTOR_QUEUES: Mutex<HashMap<String, Vec<Message>>> = Mutex::new(HashMap::new());
-}
+static PLUGIN_SOCKETS: Lazy<Mutex<HashMap<String, SplitSink<WebSocketStream<TcpStream>, Message>>>> = Lazy::new(|| Mutex::new(HashMap::new()));
+static PROPERTY_INSPECTOR_SOCKETS: Lazy<Mutex<HashMap<String, SplitSink<WebSocketStream<TcpStream>, Message>>>> = Lazy::new(|| Mutex::new(HashMap::new()));
+static PLUGIN_QUEUES: Lazy<Mutex<HashMap<String, Vec<Message>>>> = Lazy::new(|| Mutex::new(HashMap::new()));
+static PROPERTY_INSPECTOR_QUEUES: Lazy<Mutex<HashMap<String, Vec<Message>>>> = Lazy::new(|| Mutex::new(HashMap::new()));
 
 /// Register a plugin or property inspector to send and receive events with its WebSocket.
 pub async fn register_plugin(event: RegisterEvent, stream: WebSocketStream<TcpStream>) {

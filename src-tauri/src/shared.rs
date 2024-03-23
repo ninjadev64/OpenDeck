@@ -4,7 +4,7 @@ use std::path::Path;
 use serde::{Deserialize, Serialize};
 use serde_inline_default::serde_inline_default;
 
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use tokio::sync::Mutex;
 
 /// Convert an icon specified in a plugin manifest to its full path.
@@ -140,13 +140,10 @@ pub struct ActionInstance {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Profile {
-	pub device: String,
 	pub id: String,
 	pub keys: Vec<Option<Vec<ActionInstance>>>,
 	pub sliders: Vec<Option<Vec<ActionInstance>>>,
 }
 
-lazy_static! {
-	/// A map of category names to a list of actions in that category.
-	pub static ref CATEGORIES: Mutex<HashMap<String, Vec<Action>>> = Mutex::new(HashMap::new());
-}
+/// A map of category names to a list of actions in that category.
+pub static CATEGORIES: Lazy<Mutex<HashMap<String, Vec<Action>>>> = Lazy::new(|| Mutex::new(HashMap::new()));

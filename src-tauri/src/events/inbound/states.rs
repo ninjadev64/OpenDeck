@@ -1,6 +1,7 @@
 use super::ContextAndPayloadEvent;
 
 use crate::events::frontend::update_state;
+use crate::store::profiles::{get_instance, lock_mutexes, save_profile};
 
 use serde::Deserialize;
 
@@ -22,20 +23,9 @@ pub struct SetStatePayload {
 }
 
 pub async fn set_title(event: ContextAndPayloadEvent<SetTitlePayload>) -> Result<(), anyhow::Error> {
-	let (app, mut device_stores, devices, mut profile_stores) = crate::store::profiles::lock_mutexes().await;
+	let mut locks = lock_mutexes().await;
 
-	let selected_profile = &device_stores.get_device_store(&event.context.device, app.as_ref().unwrap())?.value.selected_profile;
-	let device = devices.get(&event.context.device).unwrap();
-	let store = profile_stores.get_profile_store(device, selected_profile, app.as_ref().unwrap())?;
-	let profile = &mut store.value;
-
-	let slot = match event.context.controller.as_str() {
-		"Encoder" => profile.sliders[event.context.position as usize].as_mut(),
-		_ => profile.keys[event.context.position as usize].as_mut(),
-	};
-
-	if let Some(slot) = slot {
-		let instance = &mut slot[event.context.index as usize];
+	if let Some(instance) = get_instance(&event.context.device, &event.context.controller, event.context.position, event.context.index, &mut locks).await? {
 		if let Some(state) = event.payload.state {
 			instance.states[state as usize].text = event.payload.title.unwrap_or(instance.action.states[state as usize].text.clone());
 		} else {
@@ -43,27 +33,17 @@ pub async fn set_title(event: ContextAndPayloadEvent<SetTitlePayload>) -> Result
 				state.text = event.payload.title.clone().unwrap_or(instance.action.states[index].text.clone());
 			}
 		}
-		update_state(app.as_ref().unwrap(), instance).await?;
+		update_state(crate::APP_HANDLE.get().unwrap(), instance).await?;
 	}
+	save_profile(&event.context.device, &mut locks).await?;
 
 	Ok(())
 }
 
 pub async fn set_image(event: ContextAndPayloadEvent<SetImagePayload>) -> Result<(), anyhow::Error> {
-	let (app, mut device_stores, devices, mut profile_stores) = crate::store::profiles::lock_mutexes().await;
+	let mut locks = lock_mutexes().await;
 
-	let selected_profile = &device_stores.get_device_store(&event.context.device, app.as_ref().unwrap())?.value.selected_profile;
-	let device = devices.get(&event.context.device).unwrap();
-	let store = profile_stores.get_profile_store(device, selected_profile, app.as_ref().unwrap())?;
-	let profile = &mut store.value;
-
-	let slot = match event.context.controller.as_str() {
-		"Encoder" => profile.sliders[event.context.position as usize].as_mut(),
-		_ => profile.keys[event.context.position as usize].as_mut(),
-	};
-
-	if let Some(slot) = slot {
-		let instance = &mut slot[event.context.index as usize];
+	if let Some(instance) = get_instance(&event.context.device, &event.context.controller, event.context.position, event.context.index, &mut locks).await? {
 		if let Some(state) = event.payload.state {
 			instance.states[state as usize].image = event.payload.image.unwrap_or(instance.action.states[state as usize].image.clone());
 		} else {
@@ -71,30 +51,21 @@ pub async fn set_image(event: ContextAndPayloadEvent<SetImagePayload>) -> Result
 				state.image = event.payload.image.clone().unwrap_or(instance.action.states[index].image.clone());
 			}
 		}
-		update_state(app.as_ref().unwrap(), instance).await?;
+		update_state(crate::APP_HANDLE.get().unwrap(), instance).await?;
 	}
+	save_profile(&event.context.device, &mut locks).await?;
 
 	Ok(())
 }
 
 pub async fn set_state(event: ContextAndPayloadEvent<SetStatePayload>) -> Result<(), anyhow::Error> {
-	let (app, mut device_stores, devices, mut profile_stores) = crate::store::profiles::lock_mutexes().await;
+	let mut locks = lock_mutexes().await;
 
-	let selected_profile = &device_stores.get_device_store(&event.context.device, app.as_ref().unwrap())?.value.selected_profile;
-	let device = devices.get(&event.context.device).unwrap();
-	let store = profile_stores.get_profile_store(device, selected_profile, app.as_ref().unwrap())?;
-	let profile = &mut store.value;
-
-	let slot = match event.context.controller.as_str() {
-		"Encoder" => profile.sliders[event.context.position as usize].as_mut(),
-		_ => profile.keys[event.context.position as usize].as_mut(),
-	};
-
-	if let Some(slot) = slot {
-		let instance = &mut slot[event.context.index as usize];
+	if let Some(instance) = get_instance(&event.context.device, &event.context.controller, event.context.position, event.context.index, &mut locks).await? {
 		instance.current_state = event.payload.state;
-		update_state(app.as_ref().unwrap(), instance).await?;
+		update_state(crate::APP_HANDLE.get().unwrap(), instance).await?;
 	}
+	save_profile(&event.context.device, &mut locks).await?;
 
 	Ok(())
 }
