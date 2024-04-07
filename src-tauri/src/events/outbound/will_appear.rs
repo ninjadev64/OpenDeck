@@ -11,7 +11,7 @@ struct AppearEvent {
 	payload: GenericInstancePayload,
 }
 
-pub async fn will_appear(instance: &ActionInstance) -> Result<(), anyhow::Error> {
+pub async fn will_appear(instance: &ActionInstance, multi_action: bool) -> Result<(), anyhow::Error> {
 	send_to_plugin(
 		&instance.action.plugin,
 		&AppearEvent {
@@ -19,7 +19,7 @@ pub async fn will_appear(instance: &ActionInstance) -> Result<(), anyhow::Error>
 			action: instance.action.uuid.clone(),
 			context: instance.context.clone(),
 			device: instance.context.device.clone(),
-			payload: GenericInstancePayload::new(instance),
+			payload: GenericInstancePayload::new(instance, multi_action),
 		},
 	)
 	.await?;
@@ -27,7 +27,7 @@ pub async fn will_appear(instance: &ActionInstance) -> Result<(), anyhow::Error>
 	Ok(())
 }
 
-pub async fn will_disappear(instance: &ActionInstance) -> Result<(), anyhow::Error> {
+pub async fn will_disappear(instance: &ActionInstance, multi_action: bool) -> Result<(), anyhow::Error> {
 	send_to_plugin(
 		&instance.action.plugin,
 		&AppearEvent {
@@ -35,13 +35,13 @@ pub async fn will_disappear(instance: &ActionInstance) -> Result<(), anyhow::Err
 			action: instance.action.uuid.clone(),
 			context: instance.context.clone(),
 			device: instance.context.device.clone(),
-			payload: GenericInstancePayload::new(instance),
+			payload: GenericInstancePayload::new(instance, multi_action),
 		},
 	)
 	.await?;
 
 	if instance.context.device.starts_with("sd-") {
-		if let Err(error) = crate::devices::elgato::clear_image(&instance.context).await {
+		if let Err(error) = crate::devices::elgato::clear_image(&(&instance.context).into()).await {
 			log::warn!("Failed to clear device image at context {}: {}", instance.context, error);
 		}
 	}

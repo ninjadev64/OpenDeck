@@ -1,6 +1,6 @@
 use crate::devices::DEVICES;
-use crate::shared::{Action, ActionContext, ActionInstance, CATEGORIES};
-use crate::store::profiles::{get_device_profiles, DEVICE_STORES, PROFILE_STORES};
+use crate::shared::{Action, ActionContext, ActionInstance, Context, CATEGORIES};
+use crate::store::profiles::{get_device_profiles, get_slot, lock_mutexes, save_profile, Locks, DEVICE_STORES, PROFILE_STORES};
 
 use std::collections::HashMap;
 
@@ -58,17 +58,17 @@ pub async fn set_selected_profile(app: tauri::AppHandle, device: String, id: Str
 
 	if store.value.selected_profile != id {
 		let old_profile = &profile_stores.get_profile_store(devices.get(&device).unwrap(), &store.value.selected_profile, &app)?.value;
-		for slot in old_profile.keys.iter().chain(&old_profile.sliders).flat_map(|x| x) {
+		for slot in old_profile.keys.iter().chain(&old_profile.sliders) {
 			for instance in slot {
-				let _ = crate::events::outbound::will_appear::will_disappear(instance).await;
+				let _ = crate::events::outbound::will_appear::will_disappear(instance, slot.len() > 1).await;
 			}
 		}
 	}
 
 	let new_profile = &profile_stores.get_profile_store(devices.get(&device).unwrap(), &id, &app)?.value;
-	for slot in new_profile.keys.iter().chain(&new_profile.sliders).flat_map(|x| x) {
+	for slot in new_profile.keys.iter().chain(&new_profile.sliders) {
 		for instance in slot {
-			let _ = crate::events::outbound::will_appear::will_appear(instance).await;
+			let _ = crate::events::outbound::will_appear::will_appear(instance, slot.len() > 1).await;
 		}
 	}
 
@@ -85,108 +85,84 @@ pub async fn delete_profile(app: tauri::AppHandle, device: String, profile: Stri
 }
 
 #[tauri::command]
-pub async fn create_instance(app: tauri::AppHandle, action: Action, context: ActionContext) -> Result<Option<ActionInstance>, Error> {
+pub async fn create_instance(action: Action, context: Context) -> Result<Option<Vec<ActionInstance>>, Error> {
 	if !action.controllers.contains(&context.controller) {
 		return Ok(None);
 	}
 
+	let mut locks = lock_mutexes().await;
+	let slot = get_slot(&context, &mut locks).await?;
+	let index = match slot.last() {
+		None => 0,
+		Some(instance) => instance.context.index + 1,
+	};
+
 	let instance = ActionInstance {
 		action: action.clone(),
-		context: context.clone(),
+		context: ActionContext::from_context(context.clone(), index),
 		states: action.states.clone(),
 		current_state: 0,
 		settings: serde_json::Value::Object(serde_json::Map::new()),
 	};
 
-	let mut profile_stores = PROFILE_STORES.lock().await;
-	let store = profile_stores.get_profile_store(DEVICES.lock().await.get(&context.device).unwrap(), &context.profile, &app)?;
+	slot.push(instance.clone());
+	let slot = slot.clone();
 
-	if context.controller == "Encoder" {
-		if let Some(old) = &store.value.sliders[context.position as usize] {
-			for instance in old {
-				let _ = crate::events::outbound::will_appear::will_disappear(instance).await;
-			}
-		}
-		store.value.sliders[context.position as usize] = Some(vec![instance.clone()]);
-	} else {
-		if let Some(old) = &store.value.keys[context.position as usize] {
-			for instance in old {
-				let _ = crate::events::outbound::will_appear::will_disappear(instance).await;
-			}
-		}
-		store.value.keys[context.position as usize] = Some(vec![instance.clone()]);
-	}
+	save_profile(&context.device, &mut locks).await?;
+	let _ = crate::events::outbound::will_appear::will_appear(&instance, index != 0).await;
 
-	let _ = crate::events::outbound::will_appear::will_appear(&instance).await;
-
-	store.save()?;
-
-	Ok(Some(instance))
+	Ok(Some(slot))
 }
 
 #[tauri::command]
-pub async fn move_instance(app: tauri::AppHandle, mut instance: ActionInstance, context: ActionContext) -> Result<Option<ActionInstance>, Error> {
-	if !instance.action.controllers.contains(&context.controller) {
+pub async fn move_slot(source: Context, destination: Context) -> Result<Option<Vec<ActionInstance>>, Error> {
+	if source.controller != destination.controller {
 		return Ok(None);
 	}
 
-	let mut profile_stores = PROFILE_STORES.lock().await;
-	let store = profile_stores.get_profile_store(DEVICES.lock().await.get(&context.device).unwrap(), &context.profile, &app)?;
+	let mut locks = lock_mutexes().await;
+	let src = get_slot(&source, &mut locks).await?;
+	let multi_action = src.len() > 1;
 
-	let _ = crate::events::outbound::will_appear::will_disappear(&instance).await;
-	if instance.context.controller == "Encoder" {
-		store.value.sliders[instance.context.position as usize] = None;
-	} else {
-		store.value.keys[instance.context.position as usize] = None;
+	let mut vec: Vec<ActionInstance> = vec![];
+
+	for (index, instance) in src.iter_mut().enumerate() {
+		let mut new = instance.clone();
+		new.context = ActionContext::from_context(destination.clone(), index as u16);
+		vec.push(new);
 	}
 
-	if context.controller == "Encoder" {
-		if let Some(old) = &store.value.sliders[context.position as usize] {
-			for instance in old {
-				let _ = crate::events::outbound::will_appear::will_disappear(instance).await;
-			}
-		}
-		instance.context = context.clone();
-		store.value.sliders[context.position as usize] = Some(vec![instance.clone()]);
-	} else {
-		if let Some(old) = &store.value.keys[context.position as usize] {
-			for instance in old {
-				let _ = crate::events::outbound::will_appear::will_disappear(instance).await;
-			}
-		}
-		instance.context = context.clone();
-		store.value.keys[context.position as usize] = Some(vec![instance.clone()]);
+	let dst = get_slot(&destination, &mut locks).await?;
+	if !dst.is_empty() {
+		return Ok(None);
+	}
+	*dst = vec.clone();
+
+	let src = get_slot(&source, &mut locks).await?;
+	for old in &*src {
+		let _ = crate::events::outbound::will_appear::will_disappear(old, multi_action).await;
+	}
+	*src = vec![];
+	for new in &vec {
+		let _ = crate::events::outbound::will_appear::will_appear(new, multi_action).await;
 	}
 
-	let _ = crate::events::outbound::will_appear::will_appear(&instance).await;
+	save_profile(&destination.device, &mut locks).await?;
 
-	store.save()?;
-
-	Ok(Some(instance))
+	Ok(Some(vec))
 }
 
 #[tauri::command]
-pub async fn clear_slot(app: tauri::AppHandle, context: ActionContext) -> Result<(), Error> {
-	let mut profile_stores = PROFILE_STORES.lock().await;
-	let store = profile_stores.get_profile_store(DEVICES.lock().await.get(&context.device).unwrap(), &context.profile, &app)?;
+pub async fn clear_slot(context: Context) -> Result<(), Error> {
+	let mut locks = lock_mutexes().await;
+	let slot = get_slot(&context, &mut locks).await?;
 
-	if context.controller == "Encoder" {
-		if let Some(slot) = &store.value.sliders[context.position as usize] {
-			for instance in slot {
-				let _ = crate::events::outbound::will_appear::will_disappear(instance).await;
-			}
-		}
-		store.value.sliders[context.position as usize] = None;
-	} else {
-		if let Some(slot) = &store.value.keys[context.position as usize] {
-			for instance in slot {
-				let _ = crate::events::outbound::will_appear::will_disappear(instance).await;
-			}
-		}
-		store.value.keys[context.position as usize] = None;
+	for instance in &*slot {
+		let _ = crate::events::outbound::will_appear::will_disappear(instance, slot.len() > 1).await;
 	}
 
-	store.save()?;
+	*slot = vec![];
+	save_profile(&context.device, &mut locks).await?;
 
 	Ok(())
 }
@@ -222,16 +198,28 @@ pub async fn switch_property_inspector(old: Option<ActionContext>, new: Option<A
 }
 
 #[tauri::command]
-pub async fn update_image(context: ActionContext, image: String) {
+pub async fn update_image(context: Context, image: String) {
 	if context.device.starts_with("sd-") {
 		if let Err(error) = crate::devices::elgato::update_image(&context, &image).await {
-			log::warn!("Failed to update device image at context {} with image {}: {}", context, image, error);
+			log::warn!("Failed to update device image: {}", error);
 		}
 	}
 }
 
-pub async fn update_state(app: &tauri::AppHandle, instance: &ActionInstance) -> Result<(), tauri::Error> {
+#[derive(Clone, serde::Serialize)]
+struct UpdateStateEvent {
+	context: Context,
+	contents: Vec<ActionInstance>,
+}
+
+pub async fn update_state(app: &tauri::AppHandle, context: Context, locks: &mut Locks<'_>) -> Result<(), anyhow::Error> {
 	let window = app.get_window("main").unwrap();
-	window.emit("update_state", instance)?;
+	window.emit(
+		"update_state",
+		UpdateStateEvent {
+			contents: get_slot(&context, locks).await?.clone(),
+			context,
+		},
+	)?;
 	Ok(())
 }

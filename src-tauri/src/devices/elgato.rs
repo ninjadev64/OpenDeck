@@ -10,7 +10,7 @@ use tokio::sync::Mutex;
 
 static ELGATO_DEVICES: Lazy<Mutex<HashMap<String, AsyncStreamDeck>>> = Lazy::new(|| Mutex::new(HashMap::new()));
 
-pub async fn update_image(context: &crate::shared::ActionContext, url: &str) -> Result<(), anyhow::Error> {
+pub async fn update_image(context: &crate::shared::Context, url: &str) -> Result<(), anyhow::Error> {
 	if let Some(device) = ELGATO_DEVICES.lock().await.get(&context.device) {
 		let data = url.split_once(',').unwrap().1;
 		let bytes = base64::engine::general_purpose::STANDARD.decode(data)?;
@@ -19,7 +19,7 @@ pub async fn update_image(context: &crate::shared::ActionContext, url: &str) -> 
 	Ok(())
 }
 
-pub async fn clear_image(context: &crate::shared::ActionContext) -> Result<(), StreamDeckError> {
+pub async fn clear_image(context: &crate::shared::Context) -> Result<(), StreamDeckError> {
 	if let Some(device) = ELGATO_DEVICES.lock().await.get(&context.device) {
 		device.clear_button_image(context.position).await?;
 	}

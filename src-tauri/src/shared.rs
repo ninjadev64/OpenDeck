@@ -93,7 +93,16 @@ pub struct Action {
 	pub states: Vec<ActionState>,
 }
 
-/// Information about the slot an instance is located in.
+/// Location metadata of a slot.
+#[derive(Clone, Serialize, Deserialize)]
+pub struct Context {
+	pub device: String,
+	pub profile: String,
+	pub controller: String,
+	pub position: u8,
+}
+
+/// Information about the slot and index an instance is located in.
 #[derive(Clone, serde_with::SerializeDisplay, serde_with::DeserializeFromStr)]
 pub struct ActionContext {
 	pub device: String,
@@ -128,6 +137,35 @@ impl std::str::FromStr for ActionContext {
 	}
 }
 
+impl ActionContext {
+	pub fn from_context(context: Context, index: u16) -> Self {
+		Self {
+			device: context.device,
+			profile: context.profile,
+			controller: context.controller,
+			position: context.position,
+			index,
+		}
+	}
+}
+
+impl From<ActionContext> for Context {
+	fn from(value: ActionContext) -> Self {
+		Self {
+			device: value.device,
+			profile: value.profile,
+			controller: value.controller,
+			position: value.position,
+		}
+	}
+}
+
+impl From<&ActionContext> for Context {
+	fn from(value: &ActionContext) -> Self {
+		Self::from(value.clone())
+	}
+}
+
 /// An instance of an action.
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ActionInstance {
@@ -141,8 +179,8 @@ pub struct ActionInstance {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Profile {
 	pub id: String,
-	pub keys: Vec<Option<Vec<ActionInstance>>>,
-	pub sliders: Vec<Option<Vec<ActionInstance>>>,
+	pub keys: Vec<Vec<ActionInstance>>,
+	pub sliders: Vec<Vec<ActionInstance>>,
 }
 
 /// A map of category names to a list of actions in that category.

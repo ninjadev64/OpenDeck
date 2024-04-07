@@ -24,8 +24,8 @@ impl ProfileStores {
 		} else {
 			let default = Profile {
 				id: id.to_owned(),
-				keys: repeat_with(|| None).take((device.rows * device.columns).into()).collect(),
-				sliders: repeat_with(|| None).take(device.sliders.into()).collect(),
+				keys: repeat_with(Vec::new).take((device.rows * device.columns).into()).collect(),
+				sliders: repeat_with(Vec::new).take(device.sliders.into()).collect(),
 			};
 
 			let store = Store::new(&path, app.path_resolver().app_config_dir().unwrap(), default).with_context(|| format!("Failed to create store for profile {}", path))?;
@@ -47,7 +47,7 @@ impl ProfileStores {
 	pub fn all_from_plugin(&self, plugin: &str) -> Vec<crate::shared::ActionContext> {
 		let mut all = vec![];
 		for store in self.stores.values() {
-			for slot in store.value.keys.iter().chain(&store.value.sliders).flatten() {
+			for slot in store.value.keys.iter().chain(&store.value.sliders) {
 				for instance in slot {
 					if instance.action.plugin == plugin {
 						all.push(instance.context.clone());
@@ -132,26 +132,25 @@ pub async fn lock_mutexes() -> Locks<'static> {
 	}
 }
 
-pub async fn get_slot<'a>(device: &str, controller: &str, position: u8, locks: &'a mut Locks<'_>) -> Result<Option<&'a mut Vec<crate::shared::ActionInstance>>, anyhow::Error> {
-	let selected_profile = &locks.device_stores.get_device_store(device, crate::APP_HANDLE.get().unwrap())?.value.selected_profile;
-	let device = locks.devices.get(device).unwrap();
-	let store = locks.profile_stores.get_profile_store(device, selected_profile, crate::APP_HANDLE.get().unwrap())?;
+pub async fn get_slot<'a>(context: &crate::shared::Context, locks: &'a mut Locks<'_>) -> Result<&'a mut Vec<crate::shared::ActionInstance>, anyhow::Error> {
+	let device = locks.devices.get(&context.device).unwrap();
+	let store = locks.profile_stores.get_profile_store(device, &context.profile, crate::APP_HANDLE.get().unwrap())?;
 	let profile = &mut store.value;
 
-	let configured = match controller {
-		"Encoder" => profile.sliders[position as usize].as_mut(),
-		_ => profile.keys[position as usize].as_mut(),
+	let configured = match &context.controller[..] {
+		"Encoder" => &mut profile.sliders[context.position as usize],
+		_ => &mut profile.keys[context.position as usize],
 	};
 
 	Ok(configured)
 }
 
-pub async fn get_instance<'a>(device: &str, controller: &str, position: u8, index: u16, locks: &'a mut Locks<'_>) -> Result<Option<&'a mut crate::shared::ActionInstance>, anyhow::Error> {
-	let slot = get_slot(device, controller, position, locks).await?;
-
-	match slot {
-		Some(slot) => Ok(Some(&mut slot[index as usize])),
-		None => Ok(None),
+pub async fn get_instance<'a>(context: &crate::shared::ActionContext, locks: &'a mut Locks<'_>) -> Result<Option<&'a mut crate::shared::ActionInstance>, anyhow::Error> {
+	let slot = get_slot(&(context.into()), locks).await?;
+	if (context.index as usize) < slot.len() {
+		Ok(Some(&mut slot[context.index as usize]))
+	} else {
+		Ok(None)
 	}
 }
 

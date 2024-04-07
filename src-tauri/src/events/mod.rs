@@ -12,8 +12,9 @@ use tokio::net::TcpStream;
 use tokio::sync::Mutex;
 use tokio_tungstenite::{tungstenite::Message, WebSocketStream};
 
-static PLUGIN_SOCKETS: Lazy<Mutex<HashMap<String, SplitSink<WebSocketStream<TcpStream>, Message>>>> = Lazy::new(|| Mutex::new(HashMap::new()));
-static PROPERTY_INSPECTOR_SOCKETS: Lazy<Mutex<HashMap<String, SplitSink<WebSocketStream<TcpStream>, Message>>>> = Lazy::new(|| Mutex::new(HashMap::new()));
+type Sockets = Lazy<Mutex<HashMap<String, SplitSink<WebSocketStream<TcpStream>, Message>>>>;
+static PLUGIN_SOCKETS: Sockets = Lazy::new(|| Mutex::new(HashMap::new()));
+static PROPERTY_INSPECTOR_SOCKETS: Sockets = Lazy::new(|| Mutex::new(HashMap::new()));
 static PLUGIN_QUEUES: Lazy<Mutex<HashMap<String, Vec<Message>>>> = Lazy::new(|| Mutex::new(HashMap::new()));
 static PROPERTY_INSPECTOR_QUEUES: Lazy<Mutex<HashMap<String, Vec<Message>>>> = Lazy::new(|| Mutex::new(HashMap::new()));
 

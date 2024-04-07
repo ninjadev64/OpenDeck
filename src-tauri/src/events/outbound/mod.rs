@@ -15,15 +15,17 @@ struct Coordinates {
 }
 
 #[derive(Serialize)]
+#[allow(non_snake_case)]
 struct GenericInstancePayload {
 	settings: serde_json::Value,
 	coordinates: Coordinates,
 	controller: String,
 	state: u16,
+	isInMultiAction: bool,
 }
 
 impl GenericInstancePayload {
-	fn new(instance: &crate::shared::ActionInstance) -> Self {
+	fn new(instance: &crate::shared::ActionInstance, multi_action: bool) -> Self {
 		let coordinates = match &instance.context.controller[..] {
 			"Encoder" => Coordinates {
 				row: 0,
@@ -40,6 +42,7 @@ impl GenericInstancePayload {
 			coordinates,
 			controller: instance.context.controller.clone(),
 			state: instance.current_state,
+			isInMultiAction: multi_action,
 		}
 	}
 }

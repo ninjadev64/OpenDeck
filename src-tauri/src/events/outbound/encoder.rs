@@ -40,10 +40,15 @@ struct DialPressEvent {
 
 pub async fn dial_rotate(device: &str, index: u8, ticks: i16) -> Result<(), anyhow::Error> {
 	let mut locks = lock_mutexes().await;
-	let instance = match get_instance(device, "Encoder", index, 0, &mut locks).await? {
-		Some(instance) => instance,
-		None => return Ok(()),
+	let profile = locks.device_stores.get_device_store(device, crate::APP_HANDLE.get().unwrap())?.value.selected_profile.clone();
+	let context = ActionContext {
+		device: device.to_owned(),
+		profile,
+		controller: "Keypad".to_owned(),
+		position: index,
+		index: 0,
 	};
+	let Some(instance) = get_instance(&context, &mut locks).await? else { return Ok(()) };
 
 	send_to_plugin(
 		&instance.action.plugin,
@@ -68,10 +73,15 @@ pub async fn dial_rotate(device: &str, index: u8, ticks: i16) -> Result<(), anyh
 
 pub async fn dial_press(device: &str, event: &'static str, index: u8) -> Result<(), anyhow::Error> {
 	let mut locks = lock_mutexes().await;
-	let instance = match get_instance(device, "Encoder", index, 0, &mut locks).await? {
-		Some(instance) => instance,
-		None => return Ok(()),
+	let profile = locks.device_stores.get_device_store(device, crate::APP_HANDLE.get().unwrap())?.value.selected_profile.clone();
+	let context = ActionContext {
+		device: device.to_owned(),
+		profile,
+		controller: "Keypad".to_owned(),
+		position: index,
+		index: 0,
 	};
+	let Some(instance) = get_instance(&context, &mut locks).await? else { return Ok(()) };
 
 	send_to_plugin(
 		&instance.action.plugin,

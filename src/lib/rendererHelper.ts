@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api";
 
 import type { ActionState } from "./ActionState";
+import type { Context } from "./Context";
 
 export function getImage(image: string | undefined, fallback: string | undefined): string {
 	if (!image) return fallback ? getImage(fallback, undefined) : "/alert.png";
@@ -18,7 +19,7 @@ export function getImage(image: string | undefined, fallback: string | undefined
 	return image;
 }
 
-export async function renderImage(actionContext: string, state: ActionState, fallback: string | undefined, showOk: boolean, showAlert: boolean) {
+export async function renderImage(slotContext: Context, state: ActionState, fallback: string | undefined, showOk: boolean, showAlert: boolean, processImage: boolean = true) {
 	// Create canvas
 	let canvas = document.createElement("canvas");
 	canvas.width = 144;
@@ -29,7 +30,7 @@ export async function renderImage(actionContext: string, state: ActionState, fal
 	// Load image
 	let image = document.createElement("img");
 	image.crossOrigin = "anonymous";
-	image.src = getImage(state.image, fallback);
+	image.src = processImage ? getImage(state.image, fallback) : state.image;
 	if (image.src == undefined) return;
 	await new Promise((resolve) => {
 		image.onload = resolve;
@@ -76,6 +77,6 @@ export async function renderImage(actionContext: string, state: ActionState, fal
 		context.drawImage(alertImage, 0, 0, canvas.width, canvas.height);
 	}
 
-	await invoke("update_image", { context: actionContext, image: canvas.toDataURL("image/jpeg") });
+	await invoke("update_image", { context: slotContext, image: canvas.toDataURL("image/jpeg") });
 	canvas.remove();
 }

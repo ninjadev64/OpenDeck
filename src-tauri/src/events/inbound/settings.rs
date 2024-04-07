@@ -4,7 +4,7 @@ use crate::store::profiles::{get_instance, lock_mutexes, save_profile};
 pub async fn set_settings(event: super::ContextAndPayloadEvent<serde_json::Value>, from_property_inspector: bool) -> Result<(), anyhow::Error> {
 	let mut locks = lock_mutexes().await;
 
-	if let Some(instance) = get_instance(&event.context.device, &event.context.controller, event.context.position, event.context.index, &mut locks).await? {
+	if let Some(instance) = get_instance(&event.context, &mut locks).await? {
 		instance.settings = event.payload;
 		outbound::did_receive_settings(instance, !from_property_inspector).await?;
 		save_profile(&event.context.device, &mut locks).await?;
@@ -16,8 +16,8 @@ pub async fn set_settings(event: super::ContextAndPayloadEvent<serde_json::Value
 pub async fn get_settings(event: super::ContextEvent, from_property_inspector: bool) -> Result<(), anyhow::Error> {
 	let mut locks = lock_mutexes().await;
 
-	if let Some(instance) = get_instance(&event.context.device, &event.context.controller, event.context.position, event.context.index, &mut locks).await? {
-		outbound::did_receive_settings(&instance, from_property_inspector).await?;
+	if let Some(instance) = get_instance(&event.context, &mut locks).await? {
+		outbound::did_receive_settings(instance, from_property_inspector).await?;
 	}
 
 	Ok(())
