@@ -32,6 +32,7 @@ async fn main() {
 			frontend::create_instance,
 			frontend::move_slot,
 			frontend::clear_slot,
+			frontend::remove_instance,
 			frontend::get_profiles,
 			frontend::get_selected_profile,
 			frontend::set_selected_profile,

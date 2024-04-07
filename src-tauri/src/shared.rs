@@ -94,7 +94,7 @@ pub struct Action {
 }
 
 /// Location metadata of a slot.
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Context {
 	pub device: String,
 	pub profile: String,
@@ -103,7 +103,7 @@ pub struct Context {
 }
 
 /// Information about the slot and index an instance is located in.
-#[derive(Clone, serde_with::SerializeDisplay, serde_with::DeserializeFromStr)]
+#[derive(Clone, PartialEq, Eq, serde_with::SerializeDisplay, serde_with::DeserializeFromStr)]
 pub struct ActionContext {
 	pub device: String,
 	pub profile: String,

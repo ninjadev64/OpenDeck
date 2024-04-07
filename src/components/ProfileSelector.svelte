@@ -23,6 +23,12 @@
 		if (!profiles.includes(id)) profiles = [ ...profiles, id ];
 	}
 
+	async function deleteProfile(id: string) {
+		await invoke("delete_profile", { device: device.id, profile: id });
+		profiles.splice(profiles.indexOf(id), 1);
+		profiles = profiles;
+	}
+
 	let oldValue: string;
 	let value: string;
 	$: {
@@ -69,11 +75,14 @@
 				<input type="radio" bind:group={value} value={profile} />
 				{profile}
 				{#if profile != value}
-					<button class="float-right" on:click={() => {
-						invoke("delete_profile", { device: device.id, profile });
-						profiles.splice(i, 1);
-						profiles = profiles;
-					}}> ✕ </button>
+					<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+					<img
+						src="/rubbish.png"
+						class="float-right w-6 cursor-pointer"
+						alt="Remove profile"
+						on:click={() => deleteProfile(profile)}
+						on:keyup={() => deleteProfile(profile)}
+					/>
 				{/if}
 			</div>
 		{/each}

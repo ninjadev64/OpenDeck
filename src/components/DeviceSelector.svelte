@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { DeviceInfo } from "$lib/DeviceInfo";
-    import type { Profile } from "$lib/Profile";
+	import type { Profile } from "$lib/Profile";
 
 	import { invoke } from "@tauri-apps/api";
 	import { listen } from "@tauri-apps/api/event";

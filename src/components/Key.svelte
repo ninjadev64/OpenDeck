@@ -3,7 +3,7 @@
 	import type { ActionState } from "$lib/ActionState";
 	import type { Context } from "$lib/Context";
 
-	import { inspectedInstance } from "$lib/propertyInspector";
+	import { inspectedInstance, inspectedMultiAction } from "$lib/propertyInspector";
 	import { getImage, renderImage } from "$lib/rendererHelper";
 
 	import { invoke } from "@tauri-apps/api";
@@ -11,6 +11,9 @@
 
 	export let context: Context;
 	export let slot: ActionInstance[];
+
+	export let active: boolean = true;
+	export let scale: number = 1;
 
 	let state: ActionState | undefined;
 	$: {
@@ -29,13 +32,15 @@
 	}
 
 	listen("update_state", ({ payload }: { payload: { context: Context, contents: ActionInstance[] }}) => {
-		if (JSON.stringify(payload.context) == JSON.stringify(context)) slot = payload.contents;
+		if (JSON.stringify(payload.context) == JSON.stringify(context) || payload.contents[0]?.context == slot[0]?.context) {
+			slot = payload.contents;
+		}
 	});
 
 	function select() {
 		if (!slot || slot.length == 0) return;
 		if (slot.length > 1) {
-			// TODO
+			inspectedMultiAction.set(context);
 		} else {
 			inspectedInstance.set(slot[0].context);
 		}
@@ -43,9 +48,10 @@
 
 	async function clear(event: MouseEvent) {
 		event.preventDefault();
+		if (!active) return;
 		if (event.ctrlKey) return;
 		await invoke("clear_slot", { context });
-		slot.forEach((instance) =>	{ if ($inspectedInstance == instance.context) inspectedInstance.set(null); });
+		if (slot.map((instance) => instance.context).includes($inspectedInstance!)) inspectedInstance.set(null);
 		slot = [];
 	}
 
@@ -73,18 +79,19 @@
 	$: {
 		if (slot.length > 1) {
 			image = state?.image!;
-			renderImage(context, state!, null!, false, false, false);
+			if (active) renderImage(context, state!, null!, false, false, false);
 		} else if (slot.length) {
 			let instance = slot[0];
 			let fallback = instance.action.states[instance.current_state].image ?? instance.action.icon;
 			image = getImage(state?.image, fallback);
-			if (state) renderImage(context, state, fallback, showOk > 0, showAlert > 0);
+			if (active && state) renderImage(context, state, fallback, showOk > 0, showAlert > 0);
 		}
 	}
 </script>
 
 <div
-	class="relative m-2 w-32 h-32 border-2 rounded-md select-none"
+	class="relative m-2 border-2 rounded-md select-none"
+	style="width: calc(8rem * {scale}); height: calc(8rem * {scale});"
 	on:dragover on:drop
 	draggable on:dragstart
 	role="cell" tabindex="-1"
@@ -101,10 +108,10 @@
 		{#if state.show}
 			<div class="absolute flex justify-center w-full h-full top-0 left-0 pointer-events-none">
 				<span
-					style={`
-						font-size: ${state.size}px;
-						color: ${state.colour};
-					`}
+					style="
+						font-size: calc({state.size}px * {scale});
+						color: {state.colour};
+					"
 					class:self-start={state.alignment == "top"}
 					class:self-center={state.alignment == "middle"}
 					class:self-end={state.alignment == "bottom"}

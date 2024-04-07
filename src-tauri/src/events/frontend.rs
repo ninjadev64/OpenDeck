@@ -168,6 +168,24 @@ pub async fn clear_slot(context: Context) -> Result<(), Error> {
 }
 
 #[tauri::command]
+pub async fn remove_instance(context: ActionContext) -> Result<(), Error> {
+	let mut locks = lock_mutexes().await;
+	let slot = get_slot(&(&context).into(), &mut locks).await?;
+
+	for (index, instance) in slot.iter().enumerate() {
+		if instance.context == context {
+			let _ = crate::events::outbound::will_appear::will_disappear(instance, slot.len() > 1).await;
+			slot.remove(index);
+			break;
+		}
+	}
+
+	save_profile(&context.device, &mut locks).await?;
+
+	Ok(())
+}
+
+#[tauri::command]
 pub async fn make_info(app: tauri::AppHandle, plugin: String) -> Result<crate::plugins::info_param::Info, Error> {
 	let mut path = app.path_resolver().app_config_dir().unwrap();
 	path.push("plugins");

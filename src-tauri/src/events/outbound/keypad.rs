@@ -56,6 +56,7 @@ pub async fn key_down(device: &str, key: u8) -> Result<(), anyhow::Error> {
 
 			tokio::time::sleep(Duration::from_millis(100)).await;
 
+			instance.current_state = (instance.current_state + 1) % (instance.states.len() as u16);
 			send_to_plugin(
 				&instance.action.plugin,
 				&KeyEvent {
@@ -70,6 +71,9 @@ pub async fn key_down(device: &str, key: u8) -> Result<(), anyhow::Error> {
 
 			tokio::time::sleep(Duration::from_millis(100)).await;
 		}
+
+		save_profile(device, &mut locks).await?;
+		let _ = crate::events::frontend::update_state(crate::APP_HANDLE.get().unwrap(), context, &mut locks).await;
 	}
 
 	Ok(())

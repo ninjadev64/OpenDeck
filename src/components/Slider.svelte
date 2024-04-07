@@ -25,7 +25,7 @@
 		event.preventDefault();
 		if (event.ctrlKey) return;
 		await invoke("clear_slot", { context });
-		slot.forEach((instance) =>	{ if ($inspectedInstance == instance.context) inspectedInstance.set(null); });
+		if ($inspectedInstance == slot[0]?.context) inspectedInstance.set(null);
 		slot = [];
 	}
 
@@ -75,11 +75,11 @@
 		{#if state.show}
 			<div class="absolute flex justify-center w-full aspect-square top-[50%] -translate-y-1/2 left-0 pointer-events-none">
 				<span
-					style={`
-						font-size: ${state.size}px;
-						color: ${state.colour};
+					style="
+						font-size: {state.size}px;
+						color: {state.colour};
 						scale: 0.5;
-					`}
+					"
 					class:self-start={state.alignment == "top"}
 					class:self-center={state.alignment == "middle"}
 					class:self-end={state.alignment == "bottom"}

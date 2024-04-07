@@ -147,11 +147,12 @@ pub async fn get_slot<'a>(context: &crate::shared::Context, locks: &'a mut Locks
 
 pub async fn get_instance<'a>(context: &crate::shared::ActionContext, locks: &'a mut Locks<'_>) -> Result<Option<&'a mut crate::shared::ActionInstance>, anyhow::Error> {
 	let slot = get_slot(&(context.into()), locks).await?;
-	if (context.index as usize) < slot.len() {
-		Ok(Some(&mut slot[context.index as usize]))
-	} else {
-		Ok(None)
+	for instance in slot {
+		if instance.context == *context {
+			return Ok(Some(instance));
+		}
 	}
+	Ok(None)
 }
 
 pub async fn save_profile<'a>(device: &str, locks: &'a mut Locks<'_>) -> Result<(), anyhow::Error> {

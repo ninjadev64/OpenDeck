@@ -44,7 +44,7 @@ pub async fn dial_rotate(device: &str, index: u8, ticks: i16) -> Result<(), anyh
 	let context = ActionContext {
 		device: device.to_owned(),
 		profile,
-		controller: "Keypad".to_owned(),
+		controller: "Encoder".to_owned(),
 		position: index,
 		index: 0,
 	};
@@ -77,7 +77,7 @@ pub async fn dial_press(device: &str, event: &'static str, index: u8) -> Result<
 	let context = ActionContext {
 		device: device.to_owned(),
 		profile,
-		controller: "Keypad".to_owned(),
+		controller: "Encoder".to_owned(),
 		position: index,
 		index: 0,
 	};
