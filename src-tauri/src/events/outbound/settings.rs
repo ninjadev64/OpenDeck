@@ -56,7 +56,7 @@ pub async fn did_receive_global_settings(context: &str, to_property_inspector: b
 
 	let settings_dir = app.path_resolver().app_config_dir().unwrap().join("settings/");
 	let path = settings_dir.join(format!("{}.json", context));
-	let settings: serde_json::Value = match std::fs::read(path) {
+	let settings: serde_json::Value = match tokio::fs::read(path).await {
 		Ok(contents) => serde_json::from_slice(&contents)?,
 		Err(_) => serde_json::Value::Object(serde_json::Map::new()),
 	};

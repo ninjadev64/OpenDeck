@@ -41,12 +41,16 @@
 			}
 		},
 		"security": {
-			"csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: http://localhost:57118 https://appstore.elgato.com; frame-src http://localhost:57118; connect-src https://appstore.elgato.com;"
+			"csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: http://localhost:57118 https://plugins.amansprojects.com; frame-src http://localhost:57118; connect-src https://plugins.amansprojects.com;"
 		},
 		"allowlist": {
 			"shell": {
 				"open": true,
 				"execute": true
+			},
+			"dialog": {
+				"message": true,
+				"confirm": true
 			}
 		},
 		"updater": {

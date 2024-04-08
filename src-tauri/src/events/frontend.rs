@@ -11,9 +11,16 @@ pub struct Error {
 	pub description: String,
 }
 
+impl Error {
+	fn new(description: String) -> Self {
+		log::error!("{}", description);
+		Self { description }
+	}
+}
+
 impl From<anyhow::Error> for Error {
 	fn from(error: anyhow::Error) -> Self {
-		Self { description: error.to_string() }
+		Self::new(error.to_string())
 	}
 }
 
@@ -192,7 +199,7 @@ pub async fn make_info(app: tauri::AppHandle, plugin: String) -> Result<crate::p
 	path.push(&plugin);
 	path.push("manifest.json");
 
-	let manifest = match std::fs::read(&path) {
+	let manifest = match tokio::fs::read(&path).await {
 		Ok(data) => data,
 		Err(error) => return Err(anyhow::Error::from(error).into()),
 	};
@@ -239,5 +246,86 @@ pub async fn update_state(app: &tauri::AppHandle, context: Context, locks: &mut 
 			context,
 		},
 	)?;
+	Ok(())
+}
+
+#[tauri::command]
+pub async fn install_plugin(app: tauri::AppHandle, id: String) -> Result<(), Error> {
+	let resp = match reqwest::get(format!("https://plugins.amansprojects.com/rezipped/{id}.zip")).await {
+		Ok(resp) => resp,
+		Err(error) => return Err(anyhow::Error::from(error).into()),
+	};
+	let bytes = match resp.bytes().await {
+		Ok(bytes) => bytes,
+		Err(error) => return Err(anyhow::Error::from(error).into()),
+	};
+
+	if let Err(error) = zip_extract::extract(std::io::Cursor::new(bytes), &app.path_resolver().app_config_dir().unwrap().join(format!("plugins")), false) {
+		log::error!("Failed to unzip file: {}", error.to_string());
+		return Err(anyhow::Error::from(error).into());
+	}
+
+	Ok(())
+}
+
+#[derive(serde::Serialize)]
+pub struct PluginInfo {
+	id: String,
+	name: String,
+	author: String,
+	icon: String,
+	version: String,
+}
+
+#[tauri::command]
+pub async fn list_plugins(app: tauri::AppHandle) -> Result<Vec<PluginInfo>, Error> {
+	let mut plugins = vec![];
+
+	let mut entries = match tokio::fs::read_dir(&app.path_resolver().app_config_dir().unwrap().join("plugins/")).await {
+		Ok(entries) => entries,
+		Err(error) => return Err(anyhow::Error::from(error).into()),
+	};
+
+	while let Ok(Some(entry)) = entries.next_entry().await {
+		let path = match entry.metadata().await.unwrap().is_symlink() {
+			true => tokio::fs::read_link(entry.path()).await.unwrap(),
+			false => entry.path(),
+		};
+		let metadata = tokio::fs::metadata(&path).await.unwrap();
+		if metadata.is_dir() {
+			let Ok(manifest) = tokio::fs::read(path.join("manifest.json")).await else { continue };
+			let Ok(manifest): Result<crate::plugins::manifest::PluginManifest, _> = serde_json::from_slice(&manifest) else {
+				continue;
+			};
+			plugins.push(PluginInfo {
+				id: path.file_name().unwrap().to_str().unwrap().to_owned(),
+				name: manifest.name,
+				author: manifest.author,
+				icon: crate::shared::convert_icon(path.join(manifest.icon).to_str().unwrap().to_owned()),
+				version: manifest.version,
+			});
+		}
+	}
+
+	Ok(plugins)
+}
+
+#[tauri::command]
+pub async fn remove_plugin(app: tauri::AppHandle, id: String) -> Result<(), Error> {
+	let locks = lock_mutexes().await;
+	let all = locks.profile_stores.all_from_plugin(&id);
+	drop(locks);
+
+	for context in all {
+		remove_instance(context).await?;
+	}
+
+	if let Err(error) = tokio::fs::remove_dir_all(app.path_resolver().app_config_dir().unwrap().join(format!("plugins/{id}"))).await {
+		return Err(anyhow::Error::from(error).into());
+	}
+	let _ = tokio::fs::write(app.path_resolver().app_config_dir().unwrap().join("plugins/removed.txt"), id).await;
+
+	app.restart();
+
 	Ok(())
 }

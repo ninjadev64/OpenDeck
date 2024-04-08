@@ -12,7 +12,7 @@
 	})();
 </script>
 
-<div class="mt-1 overflow-auto">
+<div class="grow mt-1 overflow-auto">
 	{#each Object.entries(categories) as [ name, actions ]}
 		<h3 class="text-xl font-semibold"> {name} </h3>
 		{#each actions as action}

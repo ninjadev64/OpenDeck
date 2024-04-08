@@ -39,7 +39,10 @@ async fn main() {
 			frontend::delete_profile,
 			frontend::make_info,
 			frontend::switch_property_inspector,
-			frontend::update_image
+			frontend::update_image,
+			frontend::install_plugin,
+			frontend::list_plugins,
+			frontend::remove_plugin
 		])
 		.plugin(
 			tauri_plugin_log::Builder::default()

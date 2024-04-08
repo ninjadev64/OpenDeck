@@ -2,7 +2,7 @@
 	import type { DeviceInfo } from "$lib/DeviceInfo";
 	import type { Profile } from "$lib/Profile";
 
-	import Popup from "../components/Popup.svelte";
+	import Popup from "./Popup.svelte";
 
 	import { invoke } from "@tauri-apps/api";
 
@@ -56,8 +56,8 @@
 </select>
 
 <Popup show={showPopup}>
-	<button class="float-right text-xl" on:click={() => showPopup = false}> ✕ </button>
-	<h2 class="text-xl font-bold"> {device.name} </h2>
+	<button class="mr-1 float-right text-xl" on:click={() => showPopup = false}> ✕ </button>
+	<h2 class="text-xl font-semibold"> {device.name} </h2>
 
 	<div class="flex flex-row mt-2 mb-1">
 		<input class="grow p-2 rounded-l-md outline-none" placeholder="Profile name" bind:value={nameInput} />

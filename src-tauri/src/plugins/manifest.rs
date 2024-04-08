@@ -13,8 +13,17 @@ pub struct OS {
 #[serde_inline_default]
 #[derive(Deserialize)]
 pub struct PluginManifest {
+	#[serde(alias = "Name")]
+	pub name: String,
+
+	#[serde(alias = "Author")]
+	pub author: String,
+
 	#[serde(alias = "Version")]
 	pub version: String,
+
+	#[serde(alias = "Icon")]
+	pub icon: String,
 
 	#[serde_inline_default(String::from("Custom"))]
 	#[serde(alias = "Category")]

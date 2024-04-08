@@ -8,6 +8,7 @@
 	import DeviceSelector from "../components/DeviceSelector.svelte";
 	import DeviceView from "../components/DeviceView.svelte";
 	import MultiActionView from "../components/MultiActionView.svelte";
+    import PluginManager from "../components/PluginManager.svelte";
 	import ProfileSelector from "../components/ProfileSelector.svelte";
 	import PropertyInspectorView from "../components/PropertyInspectorView.svelte";
 
@@ -38,4 +39,5 @@
 		{/if}
 	{/if}
 	<ActionList />
+	<PluginManager />
 </div>

@@ -1,4 +1,3 @@
-use std::fs;
 use std::path::{Path, PathBuf};
 
 use tiny_http::{Header, Response, Server};
@@ -43,7 +42,7 @@ pub async fn init_webserver(prefix: PathBuf) {
 
 		if url.ends_with("|opendeck_property_inspector") {
 			let path = &url[..url.len() - 28];
-			let mut content = fs::read_to_string(path).unwrap_or_default();
+			let mut content = tokio::fs::read_to_string(path).await.unwrap_or_default();
 			content += r#"
 				<div id="opendeck_iframe_container" style="position: absolute; z-index: 100; top: 0; left: 0; width: 100%; height: 100%; display: none;" />
 				<script>
@@ -95,13 +94,13 @@ pub async fn init_webserver(prefix: PathBuf) {
 			};
 
 			if mime_type.starts_with("text/") || mime_type == "image/svg+xml" {
-				let mut response = Response::from_string(fs::read_to_string(url).unwrap_or_default());
+				let mut response = Response::from_string(tokio::fs::read_to_string(url).await.unwrap_or_default());
 				response.add_header(access_control_allow_origin);
 				response.add_header(content_type);
 				let _ = request.respond(response);
 			} else {
-				let mut response = Response::from_file(match fs::File::open(url) {
-					Ok(file) => file,
+				let mut response = Response::from_file(match tokio::fs::File::open(url).await {
+					Ok(file) => file.into_std().await,
 					Err(_) => continue,
 				});
 				response.add_header(access_control_allow_origin);

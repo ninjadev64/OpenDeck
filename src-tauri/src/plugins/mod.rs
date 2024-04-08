@@ -189,6 +189,11 @@ pub fn initialise_plugins(app: AppHandle) {
 	let plugin_dir = app.path_resolver().app_config_dir().unwrap().join("plugins/");
 	let _ = fs::create_dir_all(&plugin_dir);
 
+	if let Ok(contents) = fs::read_to_string(plugin_dir.join("removed.txt")) {
+		let _ = fs::remove_dir_all(plugin_dir.join(contents));
+		let _ = fs::remove_file(plugin_dir.join("removed.txt"));
+	}
+
 	let entries = match fs::read_dir(&plugin_dir) {
 		Ok(p) => p,
 		Err(error) => {
