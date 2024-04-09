@@ -7,6 +7,7 @@ export type Action = {
 	tooltip: string,
 	icon: string,
 	visible_in_action_list: boolean,
+	supported_in_multi_actions: boolean,
 	property_inspector: string,
 	controllers: string[],
 	states: ActionState[]

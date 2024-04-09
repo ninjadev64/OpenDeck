@@ -26,7 +26,9 @@
 
 	async function handleDrop({ dataTransfer }: DragEvent) {
 		if (dataTransfer?.getData("action")) {
-			let response: ActionInstance[] = await invoke("create_instance", { context: $inspectedMultiAction, action: JSON.parse(dataTransfer?.getData("action")) });
+			let action = JSON.parse(dataTransfer?.getData("action"));
+			if (!action.supported_in_multi_actions) return;
+			let response: ActionInstance[] = await invoke("create_instance", { context: $inspectedMultiAction, action });
 			if (response) slot = response;
 		}
 	}

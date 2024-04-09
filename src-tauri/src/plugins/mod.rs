@@ -160,7 +160,7 @@ async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 			.with_context(|| format!("Failed to initialise plugin with ID {}", plugin_uuid))?;
 	} else {
 		// Run the plugin's executable natively.
-		Command::new(code_path)
+		Command::new(path.join(code_path))
 			.current_dir(path)
 			.args([
 				String::from("-port"),
@@ -250,7 +250,9 @@ async fn accept_connection(stream: TcpStream) {
 		}
 	};
 
-	let register_event = socket.next().await.unwrap().unwrap();
+	let Ok(register_event) = socket.next().await.unwrap() else {
+		return;
+	};
 	match serde_json::from_str(&register_event.clone().into_text().unwrap()) {
 		Ok(event) => crate::events::register_plugin(event, socket).await,
 		Err(_) => {

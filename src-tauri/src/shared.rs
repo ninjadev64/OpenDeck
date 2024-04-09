@@ -22,6 +22,7 @@ pub fn convert_icon(path: String) -> String {
 #[serde_inline_default]
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ActionState {
+	#[serde_inline_default(String::from("actionDefaultImage"))]
 	#[serde(alias = "Image")]
 	pub image: String,
 
@@ -80,6 +81,10 @@ pub struct Action {
 	#[serde_inline_default(true)]
 	#[serde(alias = "VisibleInActionsList")]
 	pub visible_in_action_list: bool,
+
+	#[serde_inline_default(true)]
+	#[serde(alias = "SupportedInMultiActions")]
+	pub supported_in_multi_actions: bool,
 
 	#[serde_inline_default(String::from(""))]
 	#[serde(alias = "PropertyInspectorPath")]

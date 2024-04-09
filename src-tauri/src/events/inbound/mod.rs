@@ -48,6 +48,7 @@ pub enum InboundEventType {
 	ShowOk(ContextEvent),
 	SendToPropertyInspector(ContextAndPayloadEvent<serde_json::Value>),
 	SendToPlugin(ContextAndPayloadEvent<serde_json::Value>),
+	SwitchProfile(misc::SwitchProfileEvent),
 }
 
 pub async fn process_incoming_message(data: tokio_tungstenite::tungstenite::Message) -> Result<(), tokio_tungstenite::tungstenite::Error> {
@@ -71,6 +72,7 @@ pub async fn process_incoming_message(data: tokio_tungstenite::tungstenite::Mess
 			InboundEventType::ShowOk(event) => misc::show_ok(event).await,
 			InboundEventType::SendToPropertyInspector(event) => misc::send_to_property_inspector(event).await,
 			InboundEventType::SendToPlugin(_) => Ok(()),
+			InboundEventType::SwitchProfile(event) => misc::switch_profile(event).await,
 		} {
 			warn!("Failed to process incoming event from plugin: {}\n\tCaused by: {}", error, error.root_cause())
 		}

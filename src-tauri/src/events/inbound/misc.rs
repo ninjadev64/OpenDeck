@@ -48,3 +48,15 @@ pub async fn show_ok(event: ContextEvent) -> Result<(), anyhow::Error> {
 	window.emit("show_ok", event.context)?;
 	Ok(())
 }
+
+#[derive(Clone, serde::Serialize, Deserialize)]
+pub struct SwitchProfileEvent {
+	device: String,
+	profile: String,
+}
+
+pub async fn switch_profile(event: SwitchProfileEvent) -> Result<(), anyhow::Error> {
+	let app_handle = crate::APP_HANDLE.get().unwrap();
+	app_handle.get_window("main").unwrap().emit("switch_profile", event)?;
+	Ok(())
+}

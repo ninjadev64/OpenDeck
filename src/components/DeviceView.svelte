@@ -20,7 +20,11 @@
 		let context = { device: device.id, profile: profile.id, controller, position };
 		let array = controller == "Encoder" ? profile.sliders : profile.keys;
 		if (dataTransfer?.getData("action")) {
-			array[position] = await invoke("create_instance", { context, action: JSON.parse(dataTransfer?.getData("action")) });
+			let action = JSON.parse(dataTransfer?.getData("action"));
+			if (array[position].length >= 1 && (!array[position][0].action.supported_in_multi_actions || !action.supported_in_multi_actions)) {
+				return;
+			}
+			array[position] = await invoke("create_instance", { context, action });
 			profile = profile;
 		} else if (dataTransfer?.getData("controller")) {
 			let oldArray = dataTransfer?.getData("controller") == "Encoder" ? profile.sliders : profile.keys;

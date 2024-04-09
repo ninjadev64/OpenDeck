@@ -6,10 +6,17 @@ use std::collections::HashMap;
 
 use tauri::Manager;
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct Error {
 	pub description: String,
 }
+
+impl std::fmt::Display for Error {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		write!(f, "{}", self.description)
+	}
+}
+impl std::error::Error for Error {}
 
 impl Error {
 	fn new(description: String) -> Self {
@@ -260,7 +267,7 @@ pub async fn install_plugin(app: tauri::AppHandle, id: String) -> Result<(), Err
 		Err(error) => return Err(anyhow::Error::from(error).into()),
 	};
 
-	if let Err(error) = zip_extract::extract(std::io::Cursor::new(bytes), &app.path_resolver().app_config_dir().unwrap().join(format!("plugins")), false) {
+	if let Err(error) = zip_extract::extract(std::io::Cursor::new(bytes), &app.path_resolver().app_config_dir().unwrap().join("plugins"), false) {
 		log::error!("Failed to unzip file: {}", error.to_string());
 		return Err(anyhow::Error::from(error).into());
 	}
