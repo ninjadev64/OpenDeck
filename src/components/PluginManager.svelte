@@ -32,6 +32,8 @@
 
 	let plugins: any[] = [];
 	(async () => plugins = await invoke("list_plugins"))();
+
+	let search: string = "";
 </script>
 
 <hr class="mt-2 border" />
@@ -68,13 +70,25 @@
 	</div>
 
 	{#await fetch("https://plugins.amansprojects.com/catalogue.json")}
-		Loading plugin list...
+		<h2 class="mx-2 mt-6 mb-2 text-md"> Loading plugin list... </h2>
 	{:then res}
 		{#await res.json() then entries}
 			<h2 class="mx-2 mt-6 mb-2 text-lg"> Plugin store </h2>
+			<div class="flex flex-row m-2">
+				<input
+					bind:value={search}
+					class="grow p-2 rounded-md outline-none"
+					placeholder="Search plugins"
+					type="search"
+					spellcheck="false"
+				/>
+			</div>
 			<div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 				{#each entries as plugin}
-					<div class="flex flex-row inline items-center m-2 p-2 bg-gray-200 rounded-md">
+					<div
+						class="flex flex-row inline items-center m-2 p-2 bg-gray-200 rounded-md"
+						class:hidden={!plugin.name.toUpperCase().includes(search.toUpperCase())}
+					>
 						<img src="https://plugins.amansprojects.com/icons/{plugin.id}.png" class="w-24 rounded-md" alt={plugin.name} />
 						<div class="ml-4 mr-2">
 							<p class="font-semibold"> {plugin.name} </p>
