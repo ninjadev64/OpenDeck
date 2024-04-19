@@ -104,7 +104,7 @@
 	>
 		✕
 	</button>
-	{#each instances as instance}
+	{#each instances as instance (instance.context)}
 		{#if instance.action.property_inspector}
 			<iframe
 				title="Property inspector"

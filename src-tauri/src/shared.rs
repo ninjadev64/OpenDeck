@@ -72,9 +72,11 @@ pub struct Action {
 	#[serde_inline_default(String::from(""))]
 	pub plugin: String,
 
+	#[serde_inline_default(String::from(""))]
 	#[serde(alias = "Tooltip")]
 	pub tooltip: String,
 
+	#[serde_inline_default(String::from(""))]
 	#[serde(alias = "Icon")]
 	pub icon: String,
 

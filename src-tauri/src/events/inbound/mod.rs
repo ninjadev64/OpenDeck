@@ -98,7 +98,9 @@ pub async fn process_incoming_message_pi(data: tokio_tungstenite::tungstenite::M
 			InboundEventType::SendToPlugin(event) => misc::send_to_plugin(event).await,
 			_ => Ok(()),
 		} {
-			warn!("Failed to process incoming event from property inspector: {}\n\tCaused by: {}", error, error.root_cause())
+			if !error.to_string().contains("closed connection") {
+				warn!("Failed to process incoming event from property inspector: {}\n\tCaused by: {}", error, error.root_cause())
+			}
 		}
 	}
 

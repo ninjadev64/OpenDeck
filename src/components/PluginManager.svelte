@@ -51,7 +51,7 @@
 	<h2 class="mx-2 mt-6 mb-2 text-lg"> Installed plugins </h2>
 	<div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 		{#each plugins as plugin}
-			<div class="flex flex-row inline items-center m-2 p-2 bg-gray-200 rounded-md">
+			<div class="flex flex-row items-center m-2 p-2 bg-gray-200 rounded-md">
 				<img src={"http://localhost:57118" + plugin.icon} class="w-24 rounded-md" alt={plugin.name} />
 				<div class="ml-4 mr-2">
 					<p><span class="font-semibold"> {plugin.name} </span>{plugin.version}</p>
@@ -86,7 +86,7 @@
 			<div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 				{#each entries as plugin}
 					<div
-						class="flex flex-row inline items-center m-2 p-2 bg-gray-200 rounded-md"
+						class="flex flex-row items-center m-2 p-2 bg-gray-200 rounded-md"
 						class:hidden={!plugin.name.toUpperCase().includes(search.toUpperCase())}
 					>
 						<img src="https://plugins.amansprojects.com/icons/{plugin.id}.png" class="w-24 rounded-md" alt={plugin.name} />

@@ -140,6 +140,10 @@ async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 			serde_json::to_string(&info).unwrap()
 		))?;
 	} else if use_wine {
+		if Command::new("wine").stdout(Stdio::null()).stderr(Stdio::null()).spawn().is_err() {
+			return Err(anyhow!("Failed to load plugin with ID {}: failed to detect an installation of Wine", plugin_uuid));
+		}
+
 		// Start Wine with the appropriate arguments.
 		Command::new("wine")
 			.current_dir(path)
