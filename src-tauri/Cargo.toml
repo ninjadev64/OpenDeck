@@ -7,35 +7,35 @@ license = "BSD-3-Clause"
 repository = "https://github.com/ninjadev64/OpenDeck"
 default-run = "opendeck"
 edition = "2021"
-rust-version = "1.60"
+rust-version = "1.77"
 
 [build-dependencies]
-tauri-build = { version = "1.5.0", features = [] }
+tauri-build = { version = "1.5.1", features = [] }
 
 [dependencies]
 # Large, fundamental libraries
-tauri = { version = "1.5.2", features = [ "dialog-confirm", "dialog-message", "shell-execute", "shell-open", "system-tray", "devtools" ] }
+tauri = { version = "1.6", features = [ "dialog-confirm", "dialog-message", "shell-execute", "shell-open", "system-tray", "devtools" ] }
 serde = { version = "1.0", features = [ "derive" ] }
 serde_json = "1.0"
-serialport = "4.2.2"
-tokio = { version = "1.34.0", features = [ "full" ] }
-tokio-tungstenite = "0.20.1"
-tiny_http = "0.12.0"
-elgato-streamdeck = { version = "0.5.0", default-features = false, features = [ "async" ] }
-hidapi = { version = "2.5.0", default-features = false, features = [ "linux-static-hidraw", "macos-shared-device", "windows-native" ] }
-image = { version = "0.24.6", default-features = false, features = [ "bmp", "jpeg" ] }
+serialport = "4.3"
+tokio = { version = "1.36", features = [ "full" ] }
+tokio-tungstenite = "0.21"
+tiny_http = "0.12"
+elgato-streamdeck = { version = "0.5", default-features = false, features = [ "async" ] }
+hidapi = { version = "2.6", default-features = false, features = [ "linux-static-hidraw", "macos-shared-device", "windows-native" ] }
+image = { version = "0.24", default-features = false, features = [ "bmp", "jpeg" ] }
 # Smaller utility libraries
 once_cell = "1.19.0"
-futures-util = "0.3.29"
-anyhow = "1.0.75"
-log = "0.4.20"
+futures-util = "0.3.30"
+anyhow = "1.0.82"
+log = "0.4.21"
 tauri-plugin-log = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
-serde-inline-default = "0.1.1"
-serde_with = "3.4.0"
-os_info = "3.7.0"
+serde-inline-default = "0.2.0"
+serde_with = "3.8.0"
+os_info = "3.8.2"
 urlencoding = "2.1.3"
-base64 = "0.21.7"
-reqwest = "0.12.3"
+base64 = "0.22.0"
+reqwest = "0.12.4"
 zip-extract = { version = "0.1.3", default-features = false, features = [ "deflate", "zstd" ] }
 
 [features]
