@@ -75,7 +75,7 @@ async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 		if os.platform == platform {
 			#[cfg(target_os = "windows")]
 			if manifest.code_path_windows.is_some() {
-				code_path = manifest.code_path_windows;
+				code_path = manifest.code_path_windows.clone();
 			}
 			#[cfg(target_os = "macos")]
 			if manifest.code_path_macos.is_some() {
