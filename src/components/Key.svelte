@@ -95,15 +95,14 @@
 	on:dragover on:drop
 	draggable on:dragstart
 	role="cell" tabindex="-1"
+	on:click={select} on:keyup={select}
+	on:contextmenu={clear}
 >
 	{#if state}
-		<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 		<img
 			src={image}
 			class="p-2 w-full rounded-xl"
 			alt={slot.length == 1 ? slot[0].action.tooltip : "Multi Action"}
-			on:click={select} on:keyup={select}
-			on:contextmenu={clear}
 		/>
 		{#if state.show}
 			<div class="absolute flex justify-center w-full h-full top-0 left-0 pointer-events-none">

@@ -18,7 +18,7 @@
 	});
 
 	function select() {
-		inspectedInstance.set(`${context.device}.${context.profile}.${context.controller}.${context.position}.0`);
+		if (slot.length) inspectedInstance.set(`${context.device}.${context.profile}.${context.controller}.${context.position}.0`);
 	}
 
 	async function clear(event: MouseEvent) {
@@ -62,15 +62,14 @@
 	on:dragover on:drop
 	draggable on:dragstart
 	role="cell" tabindex="-1"
+	on:click={select} on:keyup={select}
+	on:contextmenu={clear}
 >
 	{#if state}
-		<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 		<img
 			src={image}
 			class="p-2 w-full rounded-xl"
 			alt={slot.length == 1 ? slot[0].action.tooltip : ""}
-			on:click={select} on:keyup={select}
-			on:contextmenu={clear}
 		/>
 		{#if state.show}
 			<div class="absolute flex justify-center w-full aspect-square top-[50%] -translate-y-1/2 left-0 pointer-events-none">
@@ -95,7 +94,7 @@
 			<img
 				src="/alert.png"
 				alt="Alert"
-				class="absolute top-0 left-0 p-1 w-full h-full transition-opacity duration-1000"
+				class="absolute top-0 left-0 p-1 w-full aspect-square top-[50%] -translate-y-1/2 transition-opacity duration-1000"
 				class:opacity-0={showAlert == 2}
 			/>
 		{/if}
@@ -103,7 +102,7 @@
 			<img
 				src="/ok.png"
 				alt="OK"
-				class="absolute top-0 left-0 p-1 w-full h-full transition-opacity duration-1000"
+				class="absolute top-0 left-0 p-1 w-full aspect-square top-[50%] -translate-y-1/2 transition-opacity duration-1000"
 				class:opacity-0={showOk == 2}
 			/>
 		{/if}
