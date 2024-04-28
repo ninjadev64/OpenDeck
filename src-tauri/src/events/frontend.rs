@@ -230,6 +230,14 @@ pub async fn switch_property_inspector(old: Option<ActionContext>, new: Option<A
 }
 
 #[tauri::command]
+pub async fn open_url(app: tauri::AppHandle, url: String) -> Result<(), Error> {
+	if let Err(error) = tauri::api::shell::open(&app.shell_scope(), url, None) {
+		return Err(anyhow::Error::from(error).into());
+	}
+	Ok(())
+}
+
+#[tauri::command]
 pub async fn update_image(context: Context, image: String) {
 	if context.device.starts_with("sd-") {
 		if let Err(error) = crate::devices::elgato::update_image(&context, &image).await {

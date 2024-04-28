@@ -58,7 +58,11 @@ pub async fn init_webserver(prefix: PathBuf) {
 						}
 					});
 
-					window.open = (url) => {
+					window.open = (url, target) => {
+						if (target && !(target == "_self" || target == "_top")) {
+							top.postMessage({ event: "openUrl", payload: url.startsWith("http") ? url : new URL(url, window.location.href).href }, "*");
+							return;
+						}
 						let iframe = document.createElement("iframe");
 						iframe.src = url;
 						iframe.style.flexGrow = "1";

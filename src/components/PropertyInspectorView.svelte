@@ -90,6 +90,8 @@
 			iframeClosePopup.style.display = "block";
 		} else if (data.event == "windowClosed") {
 			closePopup(data.payload);
+		} else if (data.event == "openUrl") {
+			invoke("open_url", { url: data.payload });
 		}
 	});
 

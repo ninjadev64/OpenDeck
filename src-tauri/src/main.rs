@@ -39,6 +39,7 @@ async fn main() {
 			frontend::delete_profile,
 			frontend::make_info,
 			frontend::switch_property_inspector,
+			frontend::open_url,
 			frontend::update_image,
 			frontend::install_plugin,
 			frontend::list_plugins,
