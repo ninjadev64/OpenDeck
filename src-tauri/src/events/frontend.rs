@@ -275,10 +275,15 @@ pub async fn install_plugin(app: tauri::AppHandle, id: String) -> Result<(), Err
 		Err(error) => return Err(anyhow::Error::from(error).into()),
 	};
 
-	if let Err(error) = zip_extract::extract(std::io::Cursor::new(bytes), &app.path_resolver().app_config_dir().unwrap().join("plugins"), false) {
+	let config_dir = app.path_resolver().app_config_dir().unwrap();
+	let _ = tokio::fs::create_dir_all(config_dir.join("temp")).await;
+	let _ = tokio::fs::rename(config_dir.join(format!("plugins/{id}.sdPlugin")), config_dir.join(format!("temp/{id}.sdPlugin"))).await;
+	if let Err(error) = zip_extract::extract(std::io::Cursor::new(bytes), &config_dir.join("plugins"), false) {
 		log::error!("Failed to unzip file: {}", error.to_string());
+		let _ = tokio::fs::rename(config_dir.join(format!("temp/{id}.sdPlugin")), config_dir.join(format!("plugins/{id}.sdPlugin"))).await;
 		return Err(anyhow::Error::from(error).into());
 	}
+	let _ = tokio::fs::remove_dir_all(config_dir.join(format!("temp/{id}.sdPlugin"))).await;
 
 	Ok(())
 }
