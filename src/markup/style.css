@@ -149,3 +149,9 @@ input[type="checkbox"] {
 	left: calc(50% - 32px);
 	transition: opacity 1s;
 }
+
+#end-of-life {
+	padding: 4px;
+	color: white;
+	background-color: #ff4444;
+}
