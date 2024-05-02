@@ -108,7 +108,7 @@
 			<div class="absolute flex justify-center w-full h-full top-0 left-0 pointer-events-none">
 				<span
 					style="
-						font-size: calc({state.size}px * {scale});
+						font-size: calc({state.size}px * (112/72) * {scale});
 						color: {state.colour};
 					"
 					class:self-start={state.alignment == "top"}

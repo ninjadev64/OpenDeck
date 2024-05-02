@@ -5,6 +5,8 @@ use crate::store::profiles::{get_device_profiles, get_slot, lock_mutexes, save_p
 use std::collections::HashMap;
 
 use tauri::{command, AppHandle, Manager};
+#[cfg(not(debug_assertions))]
+use tauri_plugin_autostart::ManagerExt;
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct Error {
@@ -355,15 +357,21 @@ pub async fn get_settings(app: AppHandle) -> Result<crate::store::Settings, Erro
 	let store = crate::store::get_settings(app).await;
 	match store {
 		Ok(store) => Ok(store.value),
-		Err(error) => Err(anyhow::Error::from(error).into())
+		Err(error) => Err(error.into()),
 	}
 }
 
 #[command]
 pub async fn set_settings(app: AppHandle, settings: crate::store::Settings) -> Result<(), Error> {
+	#[cfg(not(debug_assertions))]
+	let _ = match settings.autolaunch {
+		true => app.autolaunch().enable(),
+		false => app.autolaunch().disable(),
+	};
+
 	let mut store = match crate::store::get_settings(app).await {
 		Ok(store) => store,
-		Err(error) => return Err(anyhow::Error::from(error).into())
+		Err(error) => return Err(error.into()),
 	};
 	store.value = settings;
 	store.save()?;

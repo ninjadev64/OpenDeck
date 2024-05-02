@@ -54,6 +54,7 @@ async fn main() {
 				.level(log::LevelFilter::Debug)
 				.build(),
 		)
+		.plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, Some(vec!["--hide"])))
 		.system_tray(tray)
 		.on_system_tray_event(|app, event| {
 			if let SystemTrayEvent::MenuItemClick { id, .. } = event {
@@ -80,6 +81,10 @@ async fn main() {
 		Ok(app) => app,
 		Err(error) => panic!("Failed to create Tauri application: {}", error),
 	};
+
+	if std::env::args().any(|v| v == "--hide") {
+		let _ = app.get_window("main").unwrap().hide();
+	}
 
 	APP_HANDLE.set(app.handle()).unwrap();
 

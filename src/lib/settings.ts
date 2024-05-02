@@ -1,5 +1,6 @@
 export type Settings = {
-	language: string
+	language: string,
+	autolaunch: boolean
 };
 
 import { invoke } from "@tauri-apps/api";

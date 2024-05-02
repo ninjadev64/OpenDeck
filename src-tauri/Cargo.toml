@@ -30,6 +30,7 @@ futures-util = "0.3.30"
 anyhow = "1.0.82"
 log = "0.4.21"
 tauri-plugin-log = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
+tauri-plugin-autostart = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 serde-inline-default = "0.2.0"
 serde_with = "3.8.0"
 os_info = "3.8.2"

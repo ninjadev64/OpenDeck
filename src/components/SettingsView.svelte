@@ -34,5 +34,11 @@
 				Changing this setting will translate the text from installed plugins into your language for those that support it.
 			</Tooltip>
 		</div>
+
+		<div class="flex flex-row items-center m-2 space-x-2">
+			<span> Autolaunch: </span>
+			<input type="checkbox" bind:checked={$settings.autolaunch} />
+			<Tooltip> If this option is enabled, OpenDeck will automatically start at login. </Tooltip>
+		</div>
 	{/if}
 </Popup>

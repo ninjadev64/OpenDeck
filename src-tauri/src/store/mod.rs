@@ -53,13 +53,15 @@ where
 
 #[derive(Serialize, Deserialize)]
 pub struct Settings {
-	language: String,
+	pub language: String,
+	pub autolaunch: bool,
 }
 
 impl Default for Settings {
 	fn default() -> Self {
 		Self {
-			language: "en".to_owned()
+			language: "en".to_owned(),
+			autolaunch: false,
 		}
 	}
 }
