@@ -1,7 +1,8 @@
 <script lang="ts">
 	import Popup from "./Popup.svelte";
 
-    import { invoke } from "@tauri-apps/api";
+	import { localisations } from "$lib/settings";
+	import { invoke } from "@tauri-apps/api";
 
 	let showPopup = false;
 
@@ -36,12 +37,11 @@
 	let search: string = "";
 </script>
 
-<hr class="mt-2 border" />
 <button
-	class="p-1 mt-2 w-full text-sm text-gray-700 bg-gray-100 border rounded-lg"
+	class="p-1 mt-2 w-1/2 text-sm text-gray-700 bg-gray-100 border rounded-lg"
 	on:click={() => showPopup = true}
 >
-	Get plugins
+	Plugins
 </button>
 
 <Popup show={showPopup}>
@@ -54,7 +54,12 @@
 			<div class="flex flex-row items-center m-2 p-2 bg-gray-200 rounded-md">
 				<img src={"http://localhost:57118" + plugin.icon} class="w-24 rounded-md" alt={plugin.name} />
 				<div class="ml-4 mr-2">
-					<p><span class="font-semibold"> {plugin.name} </span>{plugin.version}</p>
+					<p>
+						<span class="font-semibold">
+							{($localisations && $localisations[plugin.id] && $localisations[plugin.id].Name) ? $localisations[plugin.id].Name : plugin.name}
+						</span>
+						{plugin.version}
+					</p>
 					{plugin.author}
 				</div>
 

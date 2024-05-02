@@ -4,7 +4,7 @@ use crate::store::profiles::{get_device_profiles, get_slot, lock_mutexes, save_p
 
 use std::collections::HashMap;
 
-use tauri::Manager;
+use tauri::{command, AppHandle, Manager};
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct Error {
@@ -31,7 +31,7 @@ impl From<anyhow::Error> for Error {
 	}
 }
 
-#[tauri::command]
+#[command]
 pub async fn get_devices() -> HashMap<std::string::String, crate::devices::DeviceInfo> {
 	DEVICES.lock().await.clone()
 }
@@ -41,18 +41,18 @@ pub async fn update_devices() {
 	let _ = app.get_window("main").unwrap().emit("devices", DEVICES.lock().await.clone());
 }
 
-#[tauri::command]
+#[command]
 pub async fn get_categories() -> HashMap<std::string::String, Vec<Action>> {
 	CATEGORIES.lock().await.clone()
 }
 
-#[tauri::command]
-pub fn get_profiles(app: tauri::AppHandle, device: &str) -> Result<Vec<String>, Error> {
+#[command]
+pub fn get_profiles(app: AppHandle, device: &str) -> Result<Vec<String>, Error> {
 	Ok(get_device_profiles(device, &app)?)
 }
 
-#[tauri::command]
-pub async fn get_selected_profile(app: tauri::AppHandle, device: String) -> Result<crate::shared::Profile, Error> {
+#[command]
+pub async fn get_selected_profile(app: AppHandle, device: String) -> Result<crate::shared::Profile, Error> {
 	let mut device_stores = DEVICE_STORES.lock().await;
 	let mut profile_stores = PROFILE_STORES.lock().await;
 
@@ -63,8 +63,8 @@ pub async fn get_selected_profile(app: tauri::AppHandle, device: String) -> Resu
 }
 
 #[allow(clippy::flat_map_identity)]
-#[tauri::command]
-pub async fn set_selected_profile(app: tauri::AppHandle, device: String, id: String) -> Result<(), Error> {
+#[command]
+pub async fn set_selected_profile(app: AppHandle, device: String, id: String) -> Result<(), Error> {
 	let mut device_stores = DEVICE_STORES.lock().await;
 	let devices = DEVICES.lock().await;
 	let mut profile_stores = PROFILE_STORES.lock().await;
@@ -92,13 +92,13 @@ pub async fn set_selected_profile(app: tauri::AppHandle, device: String, id: Str
 	Ok(())
 }
 
-#[tauri::command]
-pub async fn delete_profile(app: tauri::AppHandle, device: String, profile: String) {
+#[command]
+pub async fn delete_profile(app: AppHandle, device: String, profile: String) {
 	let mut profile_stores = PROFILE_STORES.lock().await;
 	profile_stores.remove_profile(&device, &profile, &app);
 }
 
-#[tauri::command]
+#[command]
 pub async fn create_instance(action: Action, context: Context) -> Result<Option<Vec<ActionInstance>>, Error> {
 	if !action.controllers.contains(&context.controller) {
 		return Ok(None);
@@ -128,7 +128,7 @@ pub async fn create_instance(action: Action, context: Context) -> Result<Option<
 	Ok(Some(slot))
 }
 
-#[tauri::command]
+#[command]
 pub async fn move_slot(source: Context, destination: Context) -> Result<Option<Vec<ActionInstance>>, Error> {
 	if source.controller != destination.controller {
 		return Ok(None);
@@ -166,7 +166,7 @@ pub async fn move_slot(source: Context, destination: Context) -> Result<Option<V
 	Ok(Some(vec))
 }
 
-#[tauri::command]
+#[command]
 pub async fn clear_slot(context: Context) -> Result<(), Error> {
 	let mut locks = lock_mutexes().await;
 	let slot = get_slot(&context, &mut locks).await?;
@@ -181,7 +181,7 @@ pub async fn clear_slot(context: Context) -> Result<(), Error> {
 	Ok(())
 }
 
-#[tauri::command]
+#[command]
 pub async fn remove_instance(context: ActionContext) -> Result<(), Error> {
 	let mut locks = lock_mutexes().await;
 	let slot = get_slot(&(&context).into(), &mut locks).await?;
@@ -199,8 +199,8 @@ pub async fn remove_instance(context: ActionContext) -> Result<(), Error> {
 	Ok(())
 }
 
-#[tauri::command]
-pub async fn make_info(app: tauri::AppHandle, plugin: String) -> Result<crate::plugins::info_param::Info, Error> {
+#[command]
+pub async fn make_info(app: AppHandle, plugin: String) -> Result<crate::plugins::info_param::Info, Error> {
 	let mut path = app.path_resolver().app_config_dir().unwrap();
 	path.push("plugins");
 	path.push(&plugin);
@@ -219,7 +219,7 @@ pub async fn make_info(app: tauri::AppHandle, plugin: String) -> Result<crate::p
 	Ok(crate::plugins::info_param::make_info(plugin, manifest.version).await)
 }
 
-#[tauri::command]
+#[command]
 pub async fn switch_property_inspector(old: Option<ActionContext>, new: Option<ActionContext>) {
 	if let Some(context) = old {
 		let _ = crate::events::outbound::property_inspector::property_inspector_did_appear(context, "propertyInspectorDidDisappear").await;
@@ -229,15 +229,15 @@ pub async fn switch_property_inspector(old: Option<ActionContext>, new: Option<A
 	}
 }
 
-#[tauri::command]
-pub async fn open_url(app: tauri::AppHandle, url: String) -> Result<(), Error> {
+#[command]
+pub async fn open_url(app: AppHandle, url: String) -> Result<(), Error> {
 	if let Err(error) = tauri::api::shell::open(&app.shell_scope(), url, None) {
 		return Err(anyhow::Error::from(error).into());
 	}
 	Ok(())
 }
 
-#[tauri::command]
+#[command]
 pub async fn update_image(context: Context, image: String) {
 	if context.device.starts_with("sd-") {
 		if let Err(error) = crate::devices::elgato::update_image(&context, &image).await {
@@ -252,7 +252,7 @@ struct UpdateStateEvent {
 	contents: Vec<ActionInstance>,
 }
 
-pub async fn update_state(app: &tauri::AppHandle, context: Context, locks: &mut Locks<'_>) -> Result<(), anyhow::Error> {
+pub async fn update_state(app: &AppHandle, context: Context, locks: &mut Locks<'_>) -> Result<(), anyhow::Error> {
 	let window = app.get_window("main").unwrap();
 	window.emit(
 		"update_state",
@@ -264,8 +264,8 @@ pub async fn update_state(app: &tauri::AppHandle, context: Context, locks: &mut 
 	Ok(())
 }
 
-#[tauri::command]
-pub async fn install_plugin(app: tauri::AppHandle, id: String) -> Result<(), Error> {
+#[command]
+pub async fn install_plugin(app: AppHandle, id: String) -> Result<(), Error> {
 	let resp = match reqwest::get(format!("https://plugins.amansprojects.com/rezipped/{id}.zip")).await {
 		Ok(resp) => resp,
 		Err(error) => return Err(anyhow::Error::from(error).into()),
@@ -297,8 +297,8 @@ pub struct PluginInfo {
 	version: String,
 }
 
-#[tauri::command]
-pub async fn list_plugins(app: tauri::AppHandle) -> Result<Vec<PluginInfo>, Error> {
+#[command]
+pub async fn list_plugins(app: AppHandle) -> Result<Vec<PluginInfo>, Error> {
 	let mut plugins = vec![];
 
 	let mut entries = match tokio::fs::read_dir(&app.path_resolver().app_config_dir().unwrap().join("plugins/")).await {
@@ -330,8 +330,8 @@ pub async fn list_plugins(app: tauri::AppHandle) -> Result<Vec<PluginInfo>, Erro
 	Ok(plugins)
 }
 
-#[tauri::command]
-pub async fn remove_plugin(app: tauri::AppHandle, id: String) -> Result<(), Error> {
+#[command]
+pub async fn remove_plugin(app: AppHandle, id: String) -> Result<(), Error> {
 	let locks = lock_mutexes().await;
 	let all = locks.profile_stores.all_from_plugin(&id);
 	drop(locks);
@@ -348,4 +348,51 @@ pub async fn remove_plugin(app: tauri::AppHandle, id: String) -> Result<(), Erro
 	app.restart();
 
 	Ok(())
+}
+
+#[command]
+pub async fn get_settings(app: AppHandle) -> Result<crate::store::Settings, Error> {
+	let store = crate::store::get_settings(app).await;
+	match store {
+		Ok(store) => Ok(store.value),
+		Err(error) => Err(anyhow::Error::from(error).into())
+	}
+}
+
+#[command]
+pub async fn set_settings(app: AppHandle, settings: crate::store::Settings) -> Result<(), Error> {
+	let mut store = match crate::store::get_settings(app).await {
+		Ok(store) => store,
+		Err(error) => return Err(anyhow::Error::from(error).into())
+	};
+	store.value = settings;
+	store.save()?;
+	Ok(())
+}
+
+#[command]
+pub async fn get_localisations(app: AppHandle, locale: &str) -> Result<HashMap<String, serde_json::Value>, Error> {
+	let mut localisations: HashMap<String, serde_json::Value> = HashMap::new();
+
+	let mut entries = match tokio::fs::read_dir(&app.path_resolver().app_config_dir().unwrap().join("plugins/")).await {
+		Ok(entries) => entries,
+		Err(error) => return Err(anyhow::Error::from(error).into()),
+	};
+
+	while let Ok(Some(entry)) = entries.next_entry().await {
+		let path = match entry.metadata().await.unwrap().is_symlink() {
+			true => tokio::fs::read_link(entry.path()).await.unwrap(),
+			false => entry.path(),
+		};
+		let metadata = tokio::fs::metadata(&path).await.unwrap();
+		if metadata.is_dir() {
+			let Ok(locale) = tokio::fs::read(path.join(format!("{locale}.json"))).await else { continue };
+			let Ok(locale): Result<serde_json::Value, _> = serde_json::from_slice(&locale) else {
+				continue;
+			};
+			localisations.insert(path.file_name().unwrap().to_str().unwrap().to_owned(), locale);
+		}
+	}
+
+	Ok(localisations)
 }

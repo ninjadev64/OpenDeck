@@ -8,9 +8,10 @@
 	import DeviceSelector from "../components/DeviceSelector.svelte";
 	import DeviceView from "../components/DeviceView.svelte";
 	import MultiActionView from "../components/MultiActionView.svelte";
-    import PluginManager from "../components/PluginManager.svelte";
+	import PluginManager from "../components/PluginManager.svelte";
 	import ProfileSelector from "../components/ProfileSelector.svelte";
 	import PropertyInspectorView from "../components/PropertyInspectorView.svelte";
+	import SettingsView from "../components/SettingsView.svelte";
 
 	let selectedDevice: DeviceInfo;
 	$: _selectedDevice = selectedDevice;
@@ -39,5 +40,9 @@
 		{/if}
 	{/if}
 	<ActionList />
-	<PluginManager />
+	<hr class="mt-2 border" />
+	<div class="flex flex-row">
+		<PluginManager />
+		<SettingsView />
+	</div>
 </div>

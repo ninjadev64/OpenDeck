@@ -50,3 +50,20 @@ where
 		Ok(())
 	}
 }
+
+#[derive(Serialize, Deserialize)]
+pub struct Settings {
+	language: String,
+}
+
+impl Default for Settings {
+	fn default() -> Self {
+		Self {
+			language: "en".to_owned()
+		}
+	}
+}
+
+pub async fn get_settings(app_handle: tauri::AppHandle) -> Result<Store<Settings>, anyhow::Error> {
+	Store::new("settings", app_handle.path_resolver().app_config_dir().unwrap(), Settings::default())
+}

@@ -43,7 +43,10 @@ async fn main() {
 			frontend::update_image,
 			frontend::install_plugin,
 			frontend::list_plugins,
-			frontend::remove_plugin
+			frontend::remove_plugin,
+			frontend::get_settings,
+			frontend::set_settings,
+			frontend::get_localisations
 		])
 		.plugin(
 			tauri_plugin_log::Builder::default()
