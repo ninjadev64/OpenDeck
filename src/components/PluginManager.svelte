@@ -38,7 +38,7 @@
 </script>
 
 <button
-	class="p-1 mt-2 w-1/2 text-sm text-gray-700 bg-gray-100 border rounded-lg"
+	class="mt-2 p-1 w-1/2 text-sm text-gray-700 bg-gray-100 border rounded-lg"
 	on:click={() => showPopup = true}
 >
 	Plugins

@@ -28,9 +28,8 @@ impl ProfileStores {
 				sliders: repeat_with(Vec::new).take(device.sliders.into()).collect(),
 			};
 
-			let store = Store::new(&path, app.path_resolver().app_config_dir().unwrap(), default).with_context(|| format!("Failed to create store for profile {}", path))?;
-
-			store.save().with_context(|| format!("Failed to save store for profile {}", path))?;
+			let store = Store::new(&path, app.path_resolver().app_config_dir().unwrap(), default).context(format!("Failed to create store for profile {}", path))?;
+			store.save()?;
 
 			self.stores.insert(path.clone(), store);
 			Ok(self.stores.get_mut(&path).unwrap())
@@ -77,10 +76,8 @@ impl DeviceStores {
 				selected_profile: String::from("Default"),
 			};
 
-			let store =
-				Store::new(&format!("profiles/{}", device), app.path_resolver().app_config_dir().unwrap(), default).with_context(|| format!("Failed to create config store for device {}", device))?;
-
-			store.save().with_context(|| format!("Failed to save config store for device {}", device))?;
+			let store = Store::new(&format!("profiles/{}", device), app.path_resolver().app_config_dir().unwrap(), default).context(format!("Failed to create store for device config {}", device))?;
+			store.save()?;
 
 			self.stores.insert(device.to_owned(), store);
 			Ok(self.stores.get_mut(device).unwrap())
@@ -92,12 +89,11 @@ pub fn get_device_profiles(device: &str, app: &tauri::AppHandle) -> Result<Vec<S
 	let mut profiles: Vec<String> = vec![];
 
 	let device_path = app.path_resolver().app_config_dir().unwrap().join(format!("profiles/{}", device));
-	fs::create_dir_all(&device_path).with_context(|| format!("Failed to create directories for device {}", device))?;
-
-	let entries = fs::read_dir(device_path).with_context(|| format!("Failed to read directory for device {}", device))?;
+	fs::create_dir_all(&device_path)?;
+	let entries = fs::read_dir(device_path)?;
 
 	for entry in entries.flatten() {
-		if entry.metadata().unwrap().is_file() && entry.file_name() != "config.json" {
+		if entry.metadata()?.is_file() && entry.file_name() != "config.json" {
 			profiles.push(entry.file_name().to_string_lossy()[..entry.file_name().len() - 5].to_owned());
 		}
 	}

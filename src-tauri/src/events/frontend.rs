@@ -404,3 +404,14 @@ pub async fn get_localisations(app: AppHandle, locale: &str) -> Result<HashMap<S
 
 	Ok(localisations)
 }
+
+#[command]
+pub fn open_config_directory(app: AppHandle) {
+	#[cfg(target_os = "windows")]
+	let command = "explorer";
+	#[cfg(target_os = "macos")]
+	let command = "open";
+	#[cfg(target_os = "linux")]
+	let command = "xdg-open";
+	std::process::Command::new(command).arg(app.path_resolver().app_config_dir().unwrap()).spawn().unwrap();
+}

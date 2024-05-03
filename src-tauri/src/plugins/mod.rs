@@ -21,8 +21,8 @@ async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 	let plugin_uuid = path.file_name().unwrap().to_str().unwrap();
 	let manifest_path = path.join("manifest.json");
 
-	let manifest = fs::read(&manifest_path).with_context(|| format!("Failed to read manifest of plugin at {}", manifest_path.display()))?;
-	let mut manifest: manifest::PluginManifest = serde_json::from_slice(&manifest).with_context(|| format!("Failed to parse manifest of plugin at {}", manifest_path.display()))?;
+	let manifest = fs::read(&manifest_path).context("Failed to read manifest")?;
+	let mut manifest: manifest::PluginManifest = serde_json::from_slice(&manifest).context("Failed to parse manifest")?;
 
 	for action in &mut manifest.actions {
 		action.plugin = plugin_uuid.to_owned();
@@ -101,7 +101,7 @@ async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 	}
 
 	if !supported || code_path.is_none() {
-		return Err(anyhow!("Failed to load plugin with ID {}: unsupported on platform {}", plugin_uuid, platform));
+		return Err(anyhow!("Unsupported on platform {}", platform));
 	}
 
 	let mut devices: Vec<info_param::DeviceInfo> = vec![];
@@ -116,10 +116,9 @@ async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 	if code_path.ends_with(".html") {
 		// Create a webview window for the plugin and call its registration function.
 		let url = String::from("http://localhost:57118") + path.join(code_path).to_str().unwrap();
-		let window = tauri::WindowBuilder::new(APP_HANDLE.get().unwrap(), plugin_uuid.replace('.', "_"), tauri::WindowUrl::External(url.parse().unwrap()))
+		let window = tauri::WindowBuilder::new(APP_HANDLE.get().unwrap(), plugin_uuid.replace('.', "_"), tauri::WindowUrl::External(url.parse()?))
 			.visible(false)
-			.build()
-			.with_context(|| format!("Failed to initialise plugin with ID {}", plugin_uuid))?;
+			.build()?;
 
 		#[cfg(debug_assertions)]
 		window.open_devtools();
@@ -137,11 +136,11 @@ async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 			57116,
 			plugin_uuid,
 			"registerPlugin",
-			serde_json::to_string(&info).unwrap()
+			serde_json::to_string(&info)?
 		))?;
 	} else if use_wine {
 		if Command::new("wine").stdout(Stdio::null()).stderr(Stdio::null()).spawn().is_err() {
-			return Err(anyhow!("Failed to load plugin with ID {}: failed to detect an installation of Wine", plugin_uuid));
+			return Err(anyhow!("Failed to detect an installation of Wine"));
 		}
 
 		// Start Wine with the appropriate arguments.
@@ -156,12 +155,11 @@ async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 				String::from("-registerEvent"),
 				String::from("registerPlugin"),
 				String::from("-info"),
-				serde_json::to_string(&info).unwrap(),
+				serde_json::to_string(&info)?,
 			])
 			.stdout(Stdio::null())
 			.stderr(Stdio::null())
-			.spawn()
-			.with_context(|| format!("Failed to initialise plugin with ID {}", plugin_uuid))?;
+			.spawn()?;
 	} else {
 		// Run the plugin's executable natively.
 		Command::new(path.join(code_path))
@@ -174,12 +172,11 @@ async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 				String::from("-registerEvent"),
 				String::from("registerPlugin"),
 				String::from("-info"),
-				serde_json::to_string(&info).unwrap(),
+				serde_json::to_string(&info)?,
 			])
 			.stdout(Stdio::null())
 			.stderr(Stdio::null())
-			.spawn()
-			.with_context(|| format!("Failed to initialise plugin with ID {}", path.file_name().unwrap().to_str().unwrap()))?;
+			.spawn()?;
 	}
 
 	Ok(())
@@ -217,7 +214,7 @@ pub fn initialise_plugins(app: AppHandle) {
 			if metadata.is_dir() {
 				tokio::spawn(async move {
 					if let Err(error) = initialise_plugin(&path).await {
-						warn!("Failed to initialise plugin at {}: {}\n\tCaused by: {}", path.display(), error, error.root_cause());
+						warn!("Failed to initialise plugin at {}: {}", path.display(), error);
 					}
 				});
 			} else {
@@ -260,7 +257,7 @@ async fn accept_connection(stream: TcpStream) {
 	match serde_json::from_str(&register_event.clone().into_text().unwrap()) {
 		Ok(event) => crate::events::register_plugin(event, socket).await,
 		Err(_) => {
-			let _ = crate::events::inbound::process_incoming_message(register_event).await;
+			let _ = crate::events::inbound::process_incoming_message(Ok(register_event)).await;
 		}
 	}
 }

@@ -22,9 +22,7 @@ pub async fn will_appear(instance: &ActionInstance, multi_action: bool) -> Resul
 			payload: GenericInstancePayload::new(instance, multi_action),
 		},
 	)
-	.await?;
-
-	Ok(())
+	.await
 }
 
 pub async fn will_disappear(instance: &ActionInstance, multi_action: bool) -> Result<(), anyhow::Error> {

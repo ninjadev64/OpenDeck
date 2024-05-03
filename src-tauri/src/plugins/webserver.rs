@@ -2,19 +2,19 @@ use std::path::{Path, PathBuf};
 
 use tiny_http::{Header, Response, Server};
 
+fn mime(extension: &str) -> String {
+	match extension {
+		"htm" | "html" | "xhtml" => "text/html".to_owned(),
+		"js" | "cjs" | "mjs" => "text/javascript".to_owned(),
+		"css" => "text/css".to_owned(),
+		"png" | "jpg" | "jpeg" | "gif" | "webp" => format!("image/{}", extension),
+		"svg" => "image/svg+xml".to_owned(),
+		_ => "application/octet-stream".to_owned(),
+	}
+}
+
 /// Start a simple webserver to serve files of plugins that run in a browser environment.
 pub async fn init_webserver(prefix: PathBuf) {
-	fn mime(extension: &str) -> String {
-		match extension {
-			"htm" | "html" | "xhtml" => "text/html".to_owned(),
-			"js" | "cjs" | "mjs" => "text/javascript".to_owned(),
-			"css" => "text/css".to_owned(),
-			"png" | "jpg" | "jpeg" | "gif" | "webp" => format!("image/{}", extension),
-			"svg" => "image/svg+xml".to_owned(),
-			_ => "application/octet-stream".to_owned(),
-		}
-	}
-
 	let server = Server::http("0.0.0.0:57118").unwrap();
 	for request in server.incoming_requests() {
 		let url = format!("/{}", urlencoding::decode(request.url()).unwrap());

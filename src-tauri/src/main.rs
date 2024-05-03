@@ -17,6 +17,8 @@ static APP_HANDLE: OnceCell<AppHandle> = OnceCell::new();
 
 #[tokio::main]
 async fn main() {
+	log_panics::init();
+
 	let tray = {
 		let open = CustomMenuItem::new("open".to_string(), "Open");
 		let hide = CustomMenuItem::new("hide".to_string(), "Hide");
@@ -46,7 +48,8 @@ async fn main() {
 			frontend::remove_plugin,
 			frontend::get_settings,
 			frontend::set_settings,
-			frontend::get_localisations
+			frontend::get_localisations,
+			frontend::open_config_directory
 		])
 		.plugin(
 			tauri_plugin_log::Builder::default()

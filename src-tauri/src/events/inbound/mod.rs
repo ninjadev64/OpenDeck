@@ -4,6 +4,8 @@ mod states;
 
 use crate::shared::ActionContext;
 
+use tokio_tungstenite::tungstenite::{Error, Message};
+
 use log::warn;
 use serde::Deserialize;
 
@@ -51,11 +53,11 @@ pub enum InboundEventType {
 	SwitchProfile(misc::SwitchProfileEvent),
 }
 
-pub async fn process_incoming_message(data: tokio_tungstenite::tungstenite::Message) -> Result<(), tokio_tungstenite::tungstenite::Error> {
-	if let tokio_tungstenite::tungstenite::Message::Text(text) = data {
+pub async fn process_incoming_message(data: Result<Message, Error>) {
+	if let Ok(Message::Text(text)) = data {
 		let decoded: InboundEventType = match serde_json::from_str(&text) {
 			Ok(event) => event,
-			Err(_) => return Ok(()),
+			Err(_) => return,
 		};
 
 		if let Err(error) = match decoded {
@@ -74,18 +76,16 @@ pub async fn process_incoming_message(data: tokio_tungstenite::tungstenite::Mess
 			InboundEventType::SendToPlugin(_) => Ok(()),
 			InboundEventType::SwitchProfile(event) => misc::switch_profile(event).await,
 		} {
-			warn!("Failed to process incoming event from plugin: {}\n\tCaused by: {}", error, error.root_cause())
+			warn!("Failed to process incoming event from plugin: {}", error)
 		}
 	}
-
-	Ok(())
 }
 
-pub async fn process_incoming_message_pi(data: tokio_tungstenite::tungstenite::Message) -> Result<(), tokio_tungstenite::tungstenite::Error> {
-	if let tokio_tungstenite::tungstenite::Message::Text(text) = data {
+pub async fn process_incoming_message_pi(data: Result<Message, Error>) {
+	if let Ok(Message::Text(text)) = data {
 		let decoded: InboundEventType = match serde_json::from_str(&text) {
 			Ok(event) => event,
-			Err(_) => return Ok(()),
+			Err(_) => return,
 		};
 
 		if let Err(error) = match decoded {
@@ -99,10 +99,8 @@ pub async fn process_incoming_message_pi(data: tokio_tungstenite::tungstenite::M
 			_ => Ok(()),
 		} {
 			if !error.to_string().contains("closed connection") {
-				warn!("Failed to process incoming event from property inspector: {}\n\tCaused by: {}", error, error.root_cause())
+				warn!("Failed to process incoming event from property inspector: {}", error)
 			}
 		}
 	}
-
-	Ok(())
 }

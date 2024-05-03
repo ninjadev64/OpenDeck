@@ -29,6 +29,7 @@ once_cell = "1.19.0"
 futures-util = "0.3.30"
 anyhow = "1.0.82"
 log = "0.4.21"
+log-panics = "2.1.0"
 tauri-plugin-log = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 tauri-plugin-autostart = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 serde-inline-default = "0.2.0"

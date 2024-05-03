@@ -6,7 +6,7 @@ use inbound::RegisterEvent;
 
 use std::collections::HashMap;
 
-use futures_util::{stream::SplitSink, SinkExt, StreamExt, TryStreamExt};
+use futures_util::{stream::SplitSink, SinkExt, StreamExt};
 use once_cell::sync::Lazy;
 use tokio::net::TcpStream;
 use tokio::sync::Mutex;
@@ -23,6 +23,7 @@ pub async fn register_plugin(event: RegisterEvent, stream: WebSocketStream<TcpSt
 	let (mut read, write) = stream.split();
 	match event {
 		RegisterEvent::RegisterPlugin { uuid } => {
+			log::debug!("Registered plugin {}", uuid);
 			if let Some(queue) = PLUGIN_QUEUES.lock().await.get(&uuid) {
 				for message in queue {
 					let _ = read.feed(message.clone()).await;
@@ -30,7 +31,7 @@ pub async fn register_plugin(event: RegisterEvent, stream: WebSocketStream<TcpSt
 				let _ = read.flush().await;
 			}
 			PLUGIN_SOCKETS.lock().await.insert(uuid, read);
-			tokio::spawn(write.try_for_each(inbound::process_incoming_message));
+			tokio::spawn(write.for_each(inbound::process_incoming_message));
 		}
 		RegisterEvent::RegisterPropertyInspector { uuid } => {
 			if let Some(queue) = PROPERTY_INSPECTOR_QUEUES.lock().await.get(&uuid) {
@@ -40,7 +41,7 @@ pub async fn register_plugin(event: RegisterEvent, stream: WebSocketStream<TcpSt
 				let _ = read.flush().await;
 			}
 			PROPERTY_INSPECTOR_SOCKETS.lock().await.insert(uuid, read);
-			tokio::spawn(write.try_for_each(inbound::process_incoming_message_pi));
+			tokio::spawn(write.for_each(inbound::process_incoming_message_pi));
 		}
 	};
 }

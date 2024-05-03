@@ -1,5 +1,6 @@
 <script lang="ts">
     import { settings } from "$lib/settings";
+    import { invoke } from "@tauri-apps/api";
 
 	import Popup from "./Popup.svelte";
 	import Tooltip from "./Tooltip.svelte";
@@ -8,7 +9,7 @@
 </script>
 
 <button
-	class="p-1 ml-2 mt-2 w-1/2 text-sm text-gray-700 bg-gray-100 border rounded-lg"
+	class="ml-2 mt-2 p-1 w-1/2 text-sm text-gray-700 bg-gray-100 border rounded-lg"
 	on:click={() => showPopup = true}
 >
 	Settings
@@ -41,4 +42,10 @@
 			<Tooltip> If this option is enabled, OpenDeck will automatically start at login. </Tooltip>
 		</div>
 	{/if}
+	<button
+		class="ml-2 mt-2 px-2 py-1 text-sm text-gray-700 bg-gray-100 border rounded-lg"
+		on:click={() => invoke("open_config_directory")}
+	>
+		Open config directory
+	</button>
 </Popup>

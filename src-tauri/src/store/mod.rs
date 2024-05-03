@@ -5,8 +5,6 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
-use anyhow::Context;
-
 /// Allows for easy persistence of values using JSON files.
 pub struct Store<T>
 where
@@ -26,8 +24,8 @@ where
 		let path = config_dir.join(format!("{}.json", id));
 
 		if path.exists() {
-			let file_contents = fs::read(&path).with_context(|| format!("Failed to read contents of file at {}", &path.display()))?;
-			let existing_value: T = serde_json::from_slice(&file_contents).with_context(|| format!("Failed to parse config file at {}", &path.display()))?;
+			let file_contents = fs::read(&path)?;
+			let existing_value: T = serde_json::from_slice(&file_contents)?;
 
 			Ok(Self {
 				path,
@@ -45,8 +43,8 @@ where
 
 	/// Save the relevant Store as a file.
 	pub fn save(&self) -> anyhow::Result<(), anyhow::Error> {
-		fs::create_dir_all(self.path.parent().unwrap()).with_context(|| format!("Failed to create directories at {}", self.path.display()))?;
-		fs::write(&self.path, serde_json::to_string_pretty(&self.value).unwrap()).with_context(|| format!("Failed to write to file at {}", self.path.display()))?;
+		fs::create_dir_all(self.path.parent().unwrap())?;
+		fs::write(&self.path, serde_json::to_string_pretty(&self.value)?)?;
 		Ok(())
 	}
 }

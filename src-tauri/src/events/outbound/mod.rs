@@ -48,7 +48,7 @@ impl GenericInstancePayload {
 }
 
 async fn send_to_plugin(plugin: &str, data: &impl Serialize) -> Result<(), anyhow::Error> {
-	let message = tokio_tungstenite::tungstenite::Message::Text(serde_json::to_string(data).unwrap());
+	let message = tokio_tungstenite::tungstenite::Message::Text(serde_json::to_string(data)?);
 	let mut sockets = super::PLUGIN_SOCKETS.lock().await;
 
 	if let Some(socket) = sockets.get_mut(plugin) {
@@ -69,11 +69,11 @@ async fn send_to_all_plugins(data: &impl Serialize) -> Result<(), anyhow::Error>
 	let app = crate::APP_HANDLE.get().unwrap();
 	let mut entries = tokio::fs::read_dir(app.path_resolver().app_config_dir().unwrap().join("plugins/")).await?;
 	while let Ok(Some(entry)) = entries.next_entry().await {
-		let path = match entry.metadata().await.unwrap().is_symlink() {
-			true => tokio::fs::read_link(entry.path()).await.unwrap(),
+		let path = match entry.metadata().await?.is_symlink() {
+			true => tokio::fs::read_link(entry.path()).await?,
 			false => entry.path(),
 		};
-		let metadata = tokio::fs::metadata(&path).await.unwrap();
+		let metadata = tokio::fs::metadata(&path).await?;
 		if metadata.is_dir() {
 			let _ = send_to_plugin(entry.file_name().to_str().unwrap(), data).await;
 		}
@@ -83,7 +83,7 @@ async fn send_to_all_plugins(data: &impl Serialize) -> Result<(), anyhow::Error>
 
 #[allow(clippy::map_entry)]
 async fn send_to_property_inspector(context: &crate::shared::ActionContext, data: &impl Serialize) -> Result<(), anyhow::Error> {
-	let message = tokio_tungstenite::tungstenite::Message::Text(serde_json::to_string(data).unwrap());
+	let message = tokio_tungstenite::tungstenite::Message::Text(serde_json::to_string(data)?);
 	let mut sockets = super::PROPERTY_INSPECTOR_SOCKETS.lock().await;
 
 	if let Some(socket) = sockets.get_mut(&context.to_string()) {
