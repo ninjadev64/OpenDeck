@@ -14,6 +14,7 @@ enum ProntoKeyMessage {
 }
 
 /// Attempt to open a serial connection with the device and handle incoming data.
+#[allow(clippy::assigning_clones)]
 pub async fn init(port: String) {
 	let mut initialised = false;
 	let mut device_id = "".to_owned();

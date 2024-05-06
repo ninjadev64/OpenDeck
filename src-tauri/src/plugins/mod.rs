@@ -25,7 +25,7 @@ async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 	let mut manifest: manifest::PluginManifest = serde_json::from_slice(&manifest).context("Failed to parse manifest")?;
 
 	for action in &mut manifest.actions {
-		action.plugin = plugin_uuid.to_owned();
+		plugin_uuid.clone_into(&mut action.plugin);
 
 		let action_icon_path = path.join(action.icon.clone());
 		action.icon = convert_icon(action_icon_path.to_str().unwrap().to_owned());
@@ -38,7 +38,7 @@ async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 
 		for state in &mut action.states {
 			if state.image == "actionDefaultImage" {
-				state.image = action.icon.clone();
+				state.image.clone_from(&action.icon);
 			} else {
 				let state_icon = path.join(state.image.clone());
 				state.image = convert_icon(state_icon.to_str().unwrap().to_owned());

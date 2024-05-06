@@ -88,7 +88,7 @@ pub async fn set_selected_profile(app: AppHandle, device: String, id: String) ->
 		}
 	}
 
-	store.value.selected_profile = id.to_owned();
+	id.clone_into(&mut store.value.selected_profile);
 	store.save()?;
 
 	Ok(())
@@ -152,7 +152,7 @@ pub async fn move_slot(source: Context, destination: Context) -> Result<Option<V
 	if !dst.is_empty() {
 		return Ok(None);
 	}
-	*dst = vec.clone();
+	dst.clone_from(&vec);
 
 	let src = get_slot(&source, &mut locks).await?;
 	for old in &*src {
