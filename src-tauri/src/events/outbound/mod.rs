@@ -67,7 +67,7 @@ async fn send_to_plugin(plugin: &str, data: &impl Serialize) -> Result<(), anyho
 
 async fn send_to_all_plugins(data: &impl Serialize) -> Result<(), anyhow::Error> {
 	let app = crate::APP_HANDLE.get().unwrap();
-	let mut entries = tokio::fs::read_dir(app.path_resolver().app_config_dir().unwrap().join("plugins/")).await?;
+	let mut entries = tokio::fs::read_dir(app.path_resolver().app_config_dir().unwrap().join("plugins")).await?;
 	while let Ok(Some(entry)) = entries.next_entry().await {
 		let path = match entry.metadata().await?.is_symlink() {
 			true => tokio::fs::read_link(entry.path()).await?,

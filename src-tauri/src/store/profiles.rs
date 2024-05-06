@@ -4,6 +4,7 @@ use crate::shared::Profile;
 use std::collections::HashMap;
 use std::fs;
 use std::iter::repeat_with;
+use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
@@ -17,10 +18,11 @@ pub struct ProfileStores {
 
 impl ProfileStores {
 	pub fn get_profile_store(&mut self, device: &crate::devices::DeviceInfo, id: &str, app: &tauri::AppHandle) -> Result<&mut Store<Profile>, anyhow::Error> {
-		let path = format!("profiles/{}/{}", device.id, id);
+		let path = PathBuf::from("profiles").join(&device.id).join(id);
+		let path = path.to_str().unwrap();
 
-		if self.stores.contains_key(&path) {
-			Ok(self.stores.get_mut(&path).unwrap())
+		if self.stores.contains_key(path) {
+			Ok(self.stores.get_mut(path).unwrap())
 		} else {
 			let default = Profile {
 				id: id.to_owned(),
@@ -28,18 +30,18 @@ impl ProfileStores {
 				sliders: repeat_with(Vec::new).take(device.sliders.into()).collect(),
 			};
 
-			let store = Store::new(&path, app.path_resolver().app_config_dir().unwrap(), default).context(format!("Failed to create store for profile {}", path))?;
+			let store = Store::new(path, app.path_resolver().app_config_dir().unwrap(), default).context(format!("Failed to create store for profile {}", path))?;
 			store.save()?;
 
-			self.stores.insert(path.clone(), store);
-			Ok(self.stores.get_mut(&path).unwrap())
+			self.stores.insert(path.to_owned(), store);
+			Ok(self.stores.get_mut(path).unwrap())
 		}
 	}
 
 	pub fn remove_profile(&mut self, device: &str, id: &str, app: &tauri::AppHandle) {
 		self.stores.remove(id);
 		let config_dir = app.path_resolver().app_config_dir().unwrap();
-		let path = config_dir.join(format!("profiles/{}/{}.json", device, id));
+		let path = config_dir.join("profiles").join(device).join(id);
 		let _ = fs::remove_file(path);
 	}
 
@@ -76,7 +78,8 @@ impl DeviceStores {
 				selected_profile: String::from("Default"),
 			};
 
-			let store = Store::new(&format!("profiles/{}", device), app.path_resolver().app_config_dir().unwrap(), default).context(format!("Failed to create store for device config {}", device))?;
+			let path = PathBuf::from("profiles").join(device);
+			let store = Store::new(path.to_str().unwrap(), app.path_resolver().app_config_dir().unwrap(), default).context(format!("Failed to create store for device config {}", device))?;
 			store.save()?;
 
 			self.stores.insert(device.to_owned(), store);
@@ -88,7 +91,7 @@ impl DeviceStores {
 pub fn get_device_profiles(device: &str, app: &tauri::AppHandle) -> Result<Vec<String>, anyhow::Error> {
 	let mut profiles: Vec<String> = vec![];
 
-	let device_path = app.path_resolver().app_config_dir().unwrap().join(format!("profiles/{}", device));
+	let device_path = app.path_resolver().app_config_dir().unwrap().join("profiles").join(device);
 	fs::create_dir_all(&device_path)?;
 	let entries = fs::read_dir(device_path)?;
 

@@ -187,7 +187,7 @@ pub fn initialise_plugins(app: AppHandle) {
 	tokio::spawn(init_websocket_server());
 	tokio::spawn(webserver::init_webserver(app.path_resolver().app_config_dir().unwrap()));
 
-	let plugin_dir = app.path_resolver().app_config_dir().unwrap().join("plugins/");
+	let plugin_dir = app.path_resolver().app_config_dir().unwrap().join("plugins");
 	let _ = fs::create_dir_all(&plugin_dir);
 
 	if let Ok(contents) = fs::read_to_string(plugin_dir.join("removed.txt")) {

@@ -279,13 +279,13 @@ pub async fn install_plugin(app: AppHandle, id: String) -> Result<(), Error> {
 
 	let config_dir = app.path_resolver().app_config_dir().unwrap();
 	let _ = tokio::fs::create_dir_all(config_dir.join("temp")).await;
-	let _ = tokio::fs::rename(config_dir.join(format!("plugins/{id}.sdPlugin")), config_dir.join(format!("temp/{id}.sdPlugin"))).await;
+	let _ = tokio::fs::rename(config_dir.join("plugins").join(format!("{id}.sdPlugin")), config_dir.join("temp").join(format!("{id}.sdPlugin"))).await;
 	if let Err(error) = zip_extract::extract(std::io::Cursor::new(bytes), &config_dir.join("plugins"), false) {
 		log::error!("Failed to unzip file: {}", error.to_string());
-		let _ = tokio::fs::rename(config_dir.join(format!("temp/{id}.sdPlugin")), config_dir.join(format!("plugins/{id}.sdPlugin"))).await;
+		let _ = tokio::fs::rename(config_dir.join("temp").join(format!("{id}.sdPlugin")), config_dir.join("plugins").join(format!("{id}.sdPlugin"))).await;
 		return Err(anyhow::Error::from(error).into());
 	}
-	let _ = tokio::fs::remove_dir_all(config_dir.join(format!("temp/{id}.sdPlugin"))).await;
+	let _ = tokio::fs::remove_dir_all(config_dir.join("temp").join(format!("{id}.sdPlugin"))).await;
 
 	Ok(())
 }
@@ -303,7 +303,7 @@ pub struct PluginInfo {
 pub async fn list_plugins(app: AppHandle) -> Result<Vec<PluginInfo>, Error> {
 	let mut plugins = vec![];
 
-	let mut entries = match tokio::fs::read_dir(&app.path_resolver().app_config_dir().unwrap().join("plugins/")).await {
+	let mut entries = match tokio::fs::read_dir(&app.path_resolver().app_config_dir().unwrap().join("plugins")).await {
 		Ok(entries) => entries,
 		Err(error) => return Err(anyhow::Error::from(error).into()),
 	};
@@ -342,10 +342,10 @@ pub async fn remove_plugin(app: AppHandle, id: String) -> Result<(), Error> {
 		remove_instance(context).await?;
 	}
 
-	if let Err(error) = tokio::fs::remove_dir_all(app.path_resolver().app_config_dir().unwrap().join(format!("plugins/{id}"))).await {
+	if let Err(error) = tokio::fs::remove_dir_all(app.path_resolver().app_config_dir().unwrap().join("plugins").join(&id)).await {
 		return Err(anyhow::Error::from(error).into());
 	}
-	let _ = tokio::fs::write(app.path_resolver().app_config_dir().unwrap().join("plugins/removed.txt"), id).await;
+	let _ = tokio::fs::write(app.path_resolver().app_config_dir().unwrap().join("plugins").join("removed.txt"), id).await;
 
 	app.restart();
 
@@ -382,7 +382,7 @@ pub async fn set_settings(app: AppHandle, settings: crate::store::Settings) -> R
 pub async fn get_localisations(app: AppHandle, locale: &str) -> Result<HashMap<String, serde_json::Value>, Error> {
 	let mut localisations: HashMap<String, serde_json::Value> = HashMap::new();
 
-	let mut entries = match tokio::fs::read_dir(&app.path_resolver().app_config_dir().unwrap().join("plugins/")).await {
+	let mut entries = match tokio::fs::read_dir(&app.path_resolver().app_config_dir().unwrap().join("plugins")).await {
 		Ok(entries) => entries,
 		Err(error) => return Err(anyhow::Error::from(error).into()),
 	};
