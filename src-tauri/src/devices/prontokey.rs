@@ -59,7 +59,7 @@ pub async fn init(port: String) {
 						}
 						initialised = true;
 
-						device_id = format!("pk-{}", address);
+						device_id = format!("pk-{}", address.replace(':', ""));
 						super::register_device(
 							device_id.clone(),
 							DeviceInfo {

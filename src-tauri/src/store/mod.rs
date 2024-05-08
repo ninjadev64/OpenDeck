@@ -50,6 +50,7 @@ where
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(default)]
 pub struct Settings {
 	pub language: String,
 	pub autolaunch: bool,

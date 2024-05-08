@@ -80,6 +80,10 @@ pub struct Action {
 	#[serde(alias = "Icon")]
 	pub icon: String,
 
+	#[serde_inline_default(false)]
+	#[serde(alias = "DisableAutomaticStates")]
+	pub disable_automatic_states: bool,
+
 	#[serde_inline_default(true)]
 	#[serde(alias = "VisibleInActionsList")]
 	pub visible_in_action_list: bool,

@@ -56,7 +56,10 @@ pub async fn key_down(device: &str, key: u8) -> Result<(), anyhow::Error> {
 
 			tokio::time::sleep(Duration::from_millis(100)).await;
 
-			instance.current_state = (instance.current_state + 1) % (instance.states.len() as u16);
+			if instance.states.len() == 2 && !instance.action.disable_automatic_states {
+				instance.current_state = (instance.current_state + 1) % (instance.states.len() as u16);
+			}
+
 			send_to_plugin(
 				&instance.action.plugin,
 				&KeyEvent {
@@ -95,7 +98,9 @@ pub async fn key_up(device: &str, key: u8) -> Result<(), anyhow::Error> {
 	}
 	let instance = &mut slot[0];
 
-	instance.current_state = (instance.current_state + 1) % (instance.states.len() as u16);
+	if instance.states.len() == 2 && !instance.action.disable_automatic_states {
+		instance.current_state = (instance.current_state + 1) % (instance.states.len() as u16);
+	}
 
 	send_to_plugin(
 		&instance.action.plugin,

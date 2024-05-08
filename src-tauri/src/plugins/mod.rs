@@ -140,7 +140,7 @@ async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 		))?;
 	} else if use_wine {
 		if Command::new("wine").stdout(Stdio::null()).stderr(Stdio::null()).spawn().is_err() {
-			return Err(anyhow!("Failed to detect an installation of Wine"));
+			return Err(anyhow!("Failed to detect an installation of Wine to run plugin {}", plugin_uuid));
 		}
 
 		// Start Wine with the appropriate arguments.
