@@ -52,7 +52,7 @@
 	<div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 		{#each plugins as plugin}
 			<div class="flex flex-row items-center m-2 p-2 bg-gray-200 rounded-md">
-				<img src={"http://localhost:57118" + plugin.icon} class="w-24 rounded-md" alt={plugin.name} />
+				<img src={"http://localhost:57118/" + plugin.icon} class="w-24 rounded-md" alt={plugin.name} />
 				<div class="ml-4 mr-2">
 					<p>
 						<span class="font-semibold">

@@ -17,9 +17,7 @@ fn mime(extension: &str) -> String {
 pub async fn init_webserver(prefix: PathBuf) {
 	let server = Server::http("0.0.0.0:57118").unwrap();
 	for request in server.incoming_requests() {
-		let url = format!("/{}", urlencoding::decode(request.url()).unwrap());
-		#[cfg(target_os = "windows")]
-		let url = url.replace('/', "\\");
+		let url = format!("{}", urlencoding::decode(request.url()).unwrap());
 
 		// Ensure the requested path is within the OpenDeck config directory to prevent unrestricted access to the filesystem.
 		if !Path::new(&url).starts_with(&prefix) {

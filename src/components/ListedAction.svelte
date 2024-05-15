@@ -11,7 +11,7 @@
 
 <div class="flex flex-row items-center mt-2 mb-2 space-x-2">
 	<img
-		src={"http://localhost:57118" + action.icon}
+		src={"http://localhost:57118/" + action.icon}
 		alt={localisation.tooltip}
 		class="w-12 h-12 rounded-sm"
 		draggable

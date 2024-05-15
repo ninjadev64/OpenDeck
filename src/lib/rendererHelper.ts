@@ -5,7 +5,7 @@ import type { Context } from "./Context";
 
 export function getImage(image: string | undefined, fallback: string | undefined): string {
 	if (!image) return fallback ? getImage(fallback, undefined) : "/alert.png";
-	if (!image.startsWith("data:")) return "http://localhost:57118" + image;
+	if (!image.startsWith("data:")) return "http://localhost:57118/" + image;
 	const svgxmlre = /^data:image\/svg\+xml,(.+)/;
 	const base64re = /^data:image\/(apng|avif|gif|jpeg|png|svg\+xml|webp|bmp|x-icon|tiff);base64,([A-Za-z0-9+/]+={0,2})?/;
 	if (svgxmlre.test(image)) {
