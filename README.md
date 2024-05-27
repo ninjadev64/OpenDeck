@@ -27,6 +27,7 @@ OpenDeck supports ProntoKey and Elgato Stream Deck hardware on all three major d
 
 ## Showcase
 
+![Dark mode](.github/readme/darkmode.png)
 ![Main menu](.github/readme/mainmenu.png)
 ![Multi action](.github/readme/multiaction.png)
 ![Plugins](.github/readme/plugins.png)

@@ -90,7 +90,7 @@
 </script>
 
 <div
-	class="relative m-2 border-2 rounded-md select-none"
+	class="relative m-2 border-2 dark:border-neutral-700 rounded-md select-none"
 	style="width: calc(8rem * {scale}); height: calc(8rem * {scale});"
 	on:dragover on:drop
 	draggable on:dragstart

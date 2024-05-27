@@ -34,7 +34,7 @@
 	{/if}
 </div>
 
-<div class="flex flex-col p-2 grow max-w-[18rem] h-full border-l">
+<div class="flex flex-col p-2 grow max-w-[18rem] h-full border-l dark:border-neutral-700">
 	{#if !$inspectedMultiAction}
 		<DeviceSelector bind:device={selectedDevice} />
 		{#if selectedDevice}
@@ -42,7 +42,7 @@
 		{/if}
 	{/if}
 	<ActionList bind:this={actionList} />
-	<hr class="mt-2 border" />
+	<hr class="mt-2 border dark:border-neutral-700" />
 	<div class="flex flex-row">
 		<PluginManager {actionList} />
 		<SettingsView />

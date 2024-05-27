@@ -55,20 +55,22 @@
 	});
 </script>
 
-<select bind:value class="mt-1 w-full">
-	{#each profiles as profile}
-		<option value={profile}> {profile} </option>
-	{/each}
-	<option value="opendeck_edit_profiles"> Edit... </option>
-</select>
+<div class="select-wrapper">
+	<select bind:value class="mt-1 w-full">
+		{#each profiles as profile}
+			<option value={profile}> {profile} </option>
+		{/each}
+		<option value="opendeck_edit_profiles"> Edit... </option>
+	</select>
+</div>
 
 <Popup show={showPopup}>
-	<button class="mr-1 float-right text-xl" on:click={() => showPopup = false}> ✕ </button>
-	<h2 class="text-xl font-semibold"> {device.name} </h2>
+	<button class="mr-1 float-right text-xl dark:text-neutral-300" on:click={() => showPopup = false}> ✕ </button>
+	<h2 class="text-xl font-semibold dark:text-neutral-300"> {device.name} </h2>
 
 	<div class="flex flex-row mt-2 mb-1">
-		<input class="grow p-2 rounded-l-md outline-none" placeholder="Profile name" bind:value={nameInput} />
-		<button class="px-4 bg-gray-200 rounded-r-md" on:click={async () => {
+		<input class="grow p-2 dark:text-neutral-300 dark:bg-neutral-700 rounded-l-md outline-none" placeholder="Profile name" bind:value={nameInput} />
+		<button class="px-4 dark:text-neutral-300 bg-neutral-200 dark:bg-neutral-900 rounded-r-md" on:click={async () => {
 			await setProfile(nameInput);
 			value = nameInput;
 			nameInput = "";
@@ -77,10 +79,10 @@
 	</div>
 
 	<div class="space-y-2 divide-y">
-		{#each profiles as profile, i}
+		{#each profiles as profile}
 			<div class="pt-2">
 				<input type="radio" bind:group={value} value={profile} />
-				{profile}
+				<span class="dark:text-neutral-400"> {profile} </span>
 				{#if profile != value}
 					<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 					<img

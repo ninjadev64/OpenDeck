@@ -54,6 +54,7 @@ where
 pub struct Settings {
 	pub language: String,
 	pub autolaunch: bool,
+	pub darktheme: bool
 }
 
 impl Default for Settings {
@@ -61,6 +62,7 @@ impl Default for Settings {
 		Self {
 			language: "en".to_owned(),
 			autolaunch: false,
+			darktheme: false
 		}
 	}
 }

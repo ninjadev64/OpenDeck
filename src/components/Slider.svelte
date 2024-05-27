@@ -58,7 +58,7 @@
 </script>
 
 <div
-	class="relative flex items-center m-2 w-20 h-144 border-2 rounded-md select-none"
+	class="relative flex items-center m-2 w-20 h-144 border-2 dark:border-neutral-700 rounded-md select-none"
 	on:dragover on:drop
 	draggable on:dragstart
 	role="cell" tabindex="-1"
@@ -94,7 +94,7 @@
 			<img
 				src="/alert.png"
 				alt="Alert"
-				class="absolute top-0 left-0 p-1 w-full aspect-square top-[50%] -translate-y-1/2 transition-opacity duration-1000"
+				class="absolute left-0 p-1 w-full aspect-square top-[50%] -translate-y-1/2 transition-opacity duration-1000"
 				class:opacity-0={showAlert == 2}
 			/>
 		{/if}
@@ -102,7 +102,7 @@
 			<img
 				src="/ok.png"
 				alt="OK"
-				class="absolute top-0 left-0 p-1 w-full aspect-square top-[50%] -translate-y-1/2 transition-opacity duration-1000"
+				class="absolute left-0 p-1 w-full aspect-square top-[50%] -translate-y-1/2 transition-opacity duration-1000"
 				class:opacity-0={showOk == 2}
 			/>
 		{/if}

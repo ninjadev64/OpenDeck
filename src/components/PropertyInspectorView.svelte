@@ -98,11 +98,11 @@
 	$: instances = profile.keys.reduce((prev, current) => prev.concat(current), []).concat(profile.sliders.reduce((prev, current) => prev.concat(current), []));
 </script>
 
-<div class="grow overflow-scroll bg-white border-t" bind:this={iframeContainer}>
+<div class="grow overflow-scroll bg-white dark:bg-neutral-900 border-t dark:border-neutral-700 z-20" bind:this={iframeContainer}>
 	<button
 		bind:this={iframeClosePopup}
 		on:click={() => closePopup(iframePopupsOpen[iframePopupsOpen.length - 1])}
-		class="absolute top-2 right-2 text-2xl font-bold hidden"
+		class="absolute top-2 right-2 text-2xl dark:text-neutral-300 font-bold hidden"
 	>
 		✕
 	</button>

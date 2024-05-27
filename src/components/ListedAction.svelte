@@ -17,5 +17,5 @@
 		draggable
 		on:dragstart={handleDragStart}
 	/>
-	<span> {localisation.name} </span>
+	<span class="dark:text-neutral-400"> {localisation.name} </span>
 </div>

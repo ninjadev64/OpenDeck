@@ -44,16 +44,16 @@
 	context = null!;
 </script>
 
-<div class="px-6 pt-6 pb-4">
+<div class="px-6 pt-6 pb-4 dark:text-neutral-300">
 	<button class="float-right text-xl" on:click={() => $inspectedMultiAction = null}> ✕ </button>
 	<h1 class="font-semibold text-2xl"> Multi Action </h1>
 </div>
 
 <div class="flex flex-col h-80 overflow-scroll">
 	{#each slot as instance, index}
-		<div class="flex flex-row items-center mx-4 my-1 bg-gray-100 rounded-md">
+		<div class="flex flex-row items-center mx-4 my-1 bg-neutral-100 dark:bg-neutral-900 rounded-md">
 			<Key slot={[instance]} {context} active={false} scale={3/4} />
-			<p class="ml-4 text-xl"> {instance.action.name} </p>
+			<p class="ml-4 text-xl dark:text-neutral-400"> {instance.action.name} </p>
 			<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 			<img
 				src="/rubbish.png"
@@ -64,11 +64,11 @@
 		</div>
 	{/each}
 	<div
-		class="flex flex-row items-center mx-4 mt-1 mb-4 bg-gray-100 border-2 border-dashed rounded-md"
+		class="flex flex-row items-center mx-4 mt-1 mb-4 bg-neutral-100 dark:bg-neutral-900 border-2 border-dashed dark:border-neutral-700 rounded-md"
 		on:dragover={handleDragOver} on:drop={handleDrop}
 		role="cell" tabindex="-1"
 	>
 		<img src="/cube.png" class="m-2 w-24 rounded-xl" alt="Add new action" />
-		<p class="ml-4 text-xl text-gray-500"> Drop actions here </p>
+		<p class="ml-4 text-xl text-neutral-500"> Drop actions here </p>
 	</div>
 </div>
