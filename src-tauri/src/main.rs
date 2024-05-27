@@ -58,6 +58,7 @@ async fn main() {
 				.build(),
 		)
 		.plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, Some(vec!["--hide"])))
+		.plugin(tauri_plugin_single_instance::init(|app, _, _| app.get_window("main").unwrap().show().unwrap()))
 		.system_tray(tray)
 		.on_system_tray_event(|app, event| {
 			if let SystemTrayEvent::MenuItemClick { id, .. } = event {

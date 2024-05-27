@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=OpenDeck
+Comment={{comment}}
+Exec={{exec}}
+Icon={{icon}}
+Terminal=false
+Categories={{categories}}

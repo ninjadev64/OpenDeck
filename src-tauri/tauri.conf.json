@@ -38,6 +38,9 @@
 			],
 			"macOS": {
 				"exceptionDomain": "localhost"
+			},
+			"deb": {
+				"desktopTemplate": "opendeck.desktop"
 			}
 		},
 		"security": {

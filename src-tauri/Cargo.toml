@@ -32,6 +32,7 @@ log = "0.4"
 log-panics = "2.1"
 tauri-plugin-log = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 tauri-plugin-autostart = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
+tauri-plugin-single-instance = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 serde-inline-default = "0.2"
 serde_with = "3.8"
 os_info = "3.8"
