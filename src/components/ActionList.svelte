@@ -7,7 +7,10 @@
 	import { invoke } from "@tauri-apps/api";
 
 	let categories: { [name: string]: Action[] } = {};
-	(async () => categories = await invoke("get_categories"))();
+	export async function reload() {
+		categories = await invoke("get_categories");
+	}
+	reload();
 
 	function localiseAction(action: Action, localisations: { [plugin: string]: any } | null): { name: string, tooltip: string } {
 		let { name, tooltip } = { name: action.name, tooltip: action.tooltip };

@@ -5,19 +5,30 @@ mod webserver;
 use crate::shared::{convert_icon, Action, CATEGORIES};
 use crate::APP_HANDLE;
 
-use std::process::{Command, Stdio};
+use std::collections::HashMap;
+use std::process::{Child, Command, Stdio};
 use std::{fs, path};
 
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 
 use futures_util::StreamExt;
 use tokio::net::{TcpListener, TcpStream};
 
 use anyhow::{anyhow, Context};
 use log::{error, warn};
+use once_cell::sync::Lazy;
+use tokio::sync::Mutex;
+
+enum PluginInstance {
+	Webview,
+	Wine(Child),
+	Native(Child),
+}
+
+static INSTANCES: Lazy<Mutex<HashMap<String, PluginInstance>>> = Lazy::new(|| Mutex::new(HashMap::new()));
 
 /// Initialise a plugin from a given directory.
-async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
+pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 	let plugin_uuid = path.file_name().unwrap().to_str().unwrap();
 	let manifest_path = path.join("manifest.json");
 
@@ -49,6 +60,9 @@ async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 	let mut categories = CATEGORIES.lock().await;
 	if let Some(category) = categories.get_mut(&manifest.category) {
 		for action in manifest.actions {
+			if let Some(index) = category.iter().position(|v| v.uuid == action.uuid) {
+				category.remove(index);
+			}
 			category.push(action);
 		}
 	} else {
@@ -138,13 +152,15 @@ async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 			"registerPlugin",
 			serde_json::to_string(&info)?
 		))?;
+
+		INSTANCES.lock().await.insert(plugin_uuid.to_owned(), PluginInstance::Webview);
 	} else if use_wine {
 		if Command::new("wine").stdout(Stdio::null()).stderr(Stdio::null()).spawn().is_err() {
 			return Err(anyhow!("Failed to detect an installation of Wine to run plugin {}", plugin_uuid));
 		}
 
 		// Start Wine with the appropriate arguments.
-		Command::new("wine")
+		let child = Command::new("wine")
 			.current_dir(path)
 			.args([
 				code_path,
@@ -160,9 +176,11 @@ async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 			.stdout(Stdio::null())
 			.stderr(Stdio::null())
 			.spawn()?;
+
+		INSTANCES.lock().await.insert(plugin_uuid.to_owned(), PluginInstance::Wine(child));
 	} else {
 		// Run the plugin's executable natively.
-		Command::new(path.join(code_path))
+		let child = Command::new(path.join(code_path))
 			.current_dir(path)
 			.args([
 				String::from("-port"),
@@ -177,9 +195,26 @@ async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 			.stdout(Stdio::null())
 			.stderr(Stdio::null())
 			.spawn()?;
+
+		INSTANCES.lock().await.insert(plugin_uuid.to_owned(), PluginInstance::Native(child));
 	}
 
 	Ok(())
+}
+
+pub async fn deactivate_plugin(app: AppHandle, uuid: &str) -> Result<(), anyhow::Error> {
+	let mut instances = INSTANCES.lock().await;
+	if let Some(instance) = instances.get_mut(uuid) {
+		match instance {
+			PluginInstance::Webview => {
+				let window = app.get_window(&uuid.replace('.', "_")).unwrap();
+				Ok(window.close()?)
+			}
+			PluginInstance::Wine(child) | PluginInstance::Native(child) => Ok(child.kill()?),
+		}
+	} else {
+		Err(anyhow!("instance of plugin {} not found", uuid))
+	}
 }
 
 /// Initialise plugins from the plugins directory.

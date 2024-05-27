@@ -277,15 +277,23 @@ pub async fn install_plugin(app: AppHandle, id: String) -> Result<(), Error> {
 		Err(error) => return Err(anyhow::Error::from(error).into()),
 	};
 
+	let _ = crate::plugins::deactivate_plugin(app.clone(), &format!("{}.sdPlugin", id)).await;
+
 	let config_dir = app.path_resolver().app_config_dir().unwrap();
 	let _ = tokio::fs::create_dir_all(config_dir.join("temp")).await;
-	let _ = tokio::fs::rename(config_dir.join("plugins").join(format!("{id}.sdPlugin")), config_dir.join("temp").join(format!("{id}.sdPlugin"))).await;
+
+	let temp = config_dir.join("temp").join(format!("{id}.sdPlugin"));
+	let actual = config_dir.join("plugins").join(format!("{id}.sdPlugin"));
+
+	let _ = tokio::fs::rename(&actual, &temp).await;
 	if let Err(error) = zip_extract::extract(std::io::Cursor::new(bytes), &config_dir.join("plugins"), false) {
 		log::error!("Failed to unzip file: {}", error.to_string());
-		let _ = tokio::fs::rename(config_dir.join("temp").join(format!("{id}.sdPlugin")), config_dir.join("plugins").join(format!("{id}.sdPlugin"))).await;
+		let _ = tokio::fs::rename(&temp, &actual).await;
+		let _ = crate::plugins::initialise_plugin(&actual).await;
 		return Err(anyhow::Error::from(error).into());
 	}
-	let _ = tokio::fs::remove_dir_all(config_dir.join("temp").join(format!("{id}.sdPlugin"))).await;
+	let _ = crate::plugins::initialise_plugin(&actual).await;
+	let _ = tokio::fs::remove_dir_all(temp).await;
 
 	Ok(())
 }

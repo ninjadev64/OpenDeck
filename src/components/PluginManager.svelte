@@ -4,18 +4,20 @@
 	import { localisations } from "$lib/settings";
 	import { invoke } from "@tauri-apps/api";
 
+	import type ActionList from "./ActionList.svelte";
+	export let actionList: ActionList;
+
 	let showPopup = false;
 
 	async function installPlugin(plugin: any) {
-		if (!await confirm(
-			`Install ${plugin.name}? It may take a while to download the plugin.\n`+
-			"You will need to relaunch OpenDeck for the plugin to be available."
-		)) {
+		if (!await confirm(`Install ${plugin.name}? It may take a while to download the plugin.`)) {
 			return;
 		}
 		try {
 			await invoke("install_plugin", { id: plugin.id });
 			alert(`Successfully installed ${plugin.name}`);
+			actionList.reload();
+			plugins = await invoke("list_plugins");
 		} catch (error: any) {
 			alert(`Failed to install ${plugin.name}: ${error.description}`);
 		}

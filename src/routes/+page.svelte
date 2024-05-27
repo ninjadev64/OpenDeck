@@ -18,6 +18,8 @@
 
 	let selectedProfile: Profile;
 	$: _selectedProfile = selectedProfile;
+
+	let actionList: ActionList;
 </script>
 
 <div class="flex flex-col grow">
@@ -39,10 +41,10 @@
 			<ProfileSelector bind:device={_selectedDevice} bind:profile={selectedProfile} />
 		{/if}
 	{/if}
-	<ActionList />
+	<ActionList bind:this={actionList} />
 	<hr class="mt-2 border" />
 	<div class="flex flex-row">
-		<PluginManager />
+		<PluginManager {actionList} />
 		<SettingsView />
 	</div>
 </div>
