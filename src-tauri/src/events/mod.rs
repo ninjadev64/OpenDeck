@@ -9,14 +9,14 @@ use std::collections::HashMap;
 use futures_util::{stream::SplitSink, SinkExt, StreamExt};
 use once_cell::sync::Lazy;
 use tokio::net::TcpStream;
-use tokio::sync::Mutex;
+use tokio::sync::{Mutex, RwLock};
 use tokio_tungstenite::{tungstenite::Message, WebSocketStream};
 
 type Sockets = Lazy<Mutex<HashMap<String, SplitSink<WebSocketStream<TcpStream>, Message>>>>;
 static PLUGIN_SOCKETS: Sockets = Lazy::new(|| Mutex::new(HashMap::new()));
 static PROPERTY_INSPECTOR_SOCKETS: Sockets = Lazy::new(|| Mutex::new(HashMap::new()));
-static PLUGIN_QUEUES: Lazy<Mutex<HashMap<String, Vec<Message>>>> = Lazy::new(|| Mutex::new(HashMap::new()));
-static PROPERTY_INSPECTOR_QUEUES: Lazy<Mutex<HashMap<String, Vec<Message>>>> = Lazy::new(|| Mutex::new(HashMap::new()));
+static PLUGIN_QUEUES: Lazy<RwLock<HashMap<String, Vec<Message>>>> = Lazy::new(|| RwLock::new(HashMap::new()));
+static PROPERTY_INSPECTOR_QUEUES: Lazy<RwLock<HashMap<String, Vec<Message>>>> = Lazy::new(|| RwLock::new(HashMap::new()));
 
 /// Register a plugin or property inspector to send and receive events with its WebSocket.
 pub async fn register_plugin(event: RegisterEvent, stream: WebSocketStream<TcpStream>) {
@@ -24,7 +24,7 @@ pub async fn register_plugin(event: RegisterEvent, stream: WebSocketStream<TcpSt
 	match event {
 		RegisterEvent::RegisterPlugin { uuid } => {
 			log::debug!("Registered plugin {}", uuid);
-			if let Some(queue) = PLUGIN_QUEUES.lock().await.get(&uuid) {
+			if let Some(queue) = PLUGIN_QUEUES.read().await.get(&uuid) {
 				for message in queue {
 					let _ = read.feed(message.clone()).await;
 				}
@@ -34,7 +34,7 @@ pub async fn register_plugin(event: RegisterEvent, stream: WebSocketStream<TcpSt
 			tokio::spawn(write.for_each(inbound::process_incoming_message));
 		}
 		RegisterEvent::RegisterPropertyInspector { uuid } => {
-			if let Some(queue) = PROPERTY_INSPECTOR_QUEUES.lock().await.get(&uuid) {
+			if let Some(queue) = PROPERTY_INSPECTOR_QUEUES.read().await.get(&uuid) {
 				for message in queue {
 					let _ = read.feed(message.clone()).await;
 				}

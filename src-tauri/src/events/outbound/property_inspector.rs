@@ -1,5 +1,5 @@
 use crate::shared::ActionContext;
-use crate::store::profiles::lock_mutexes;
+use crate::store::profiles::acquire_locks;
 
 use serde::Serialize;
 
@@ -20,7 +20,7 @@ struct PropertyInspectorDidAppearEvent {
 }
 
 pub async fn send_to_property_inspector(context: ActionContext, message: serde_json::Value) -> Result<(), anyhow::Error> {
-	if let Some(instance) = crate::store::profiles::get_instance(&context, &mut lock_mutexes().await).await? {
+	if let Some(instance) = crate::store::profiles::get_instance(&context, &acquire_locks().await).await? {
 		super::send_to_property_inspector(
 			&context,
 			&SendToEvent {
@@ -37,7 +37,7 @@ pub async fn send_to_property_inspector(context: ActionContext, message: serde_j
 }
 
 pub async fn send_to_plugin(context: ActionContext, message: serde_json::Value) -> Result<(), anyhow::Error> {
-	if let Some(instance) = crate::store::profiles::get_instance(&context, &mut lock_mutexes().await).await? {
+	if let Some(instance) = crate::store::profiles::get_instance(&context, &acquire_locks().await).await? {
 		super::send_to_plugin(
 			&instance.action.plugin,
 			&SendToEvent {
@@ -54,7 +54,7 @@ pub async fn send_to_plugin(context: ActionContext, message: serde_json::Value) 
 }
 
 pub async fn property_inspector_did_appear(context: ActionContext, event: &'static str) -> Result<(), anyhow::Error> {
-	if let Some(instance) = crate::store::profiles::get_instance(&context, &mut lock_mutexes().await).await? {
+	if let Some(instance) = crate::store::profiles::get_instance(&context, &acquire_locks().await).await? {
 		if instance.action.property_inspector.is_empty() {
 			return Ok(());
 		}

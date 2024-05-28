@@ -1,7 +1,7 @@
 use super::ContextAndPayloadEvent;
 
 use crate::events::frontend::update_state;
-use crate::store::profiles::{get_instance, lock_mutexes, save_profile};
+use crate::store::profiles::{acquire_locks_mut, get_instance_mut, save_profile};
 
 use serde::Deserialize;
 
@@ -23,9 +23,9 @@ pub struct SetStatePayload {
 }
 
 pub async fn set_title(event: ContextAndPayloadEvent<SetTitlePayload>) -> Result<(), anyhow::Error> {
-	let mut locks = lock_mutexes().await;
+	let mut locks = acquire_locks_mut().await;
 
-	if let Some(instance) = get_instance(&event.context, &mut locks).await? {
+	if let Some(instance) = get_instance_mut(&event.context, &mut locks).await? {
 		if let Some(state) = event.payload.state {
 			instance.states[state as usize].text = event.payload.title.unwrap_or(instance.action.states[state as usize].text.clone());
 		} else {
@@ -41,9 +41,9 @@ pub async fn set_title(event: ContextAndPayloadEvent<SetTitlePayload>) -> Result
 }
 
 pub async fn set_image(event: ContextAndPayloadEvent<SetImagePayload>) -> Result<(), anyhow::Error> {
-	let mut locks = lock_mutexes().await;
+	let mut locks = acquire_locks_mut().await;
 
-	if let Some(instance) = get_instance(&event.context, &mut locks).await? {
+	if let Some(instance) = get_instance_mut(&event.context, &mut locks).await? {
 		if let Some(state) = event.payload.state {
 			instance.states[state as usize].image = event.payload.image.unwrap_or(instance.action.states[state as usize].image.clone());
 		} else {
@@ -59,9 +59,9 @@ pub async fn set_image(event: ContextAndPayloadEvent<SetImagePayload>) -> Result
 }
 
 pub async fn set_state(event: ContextAndPayloadEvent<SetStatePayload>) -> Result<(), anyhow::Error> {
-	let mut locks = lock_mutexes().await;
+	let mut locks = acquire_locks_mut().await;
 
-	if let Some(instance) = get_instance(&event.context, &mut locks).await? {
+	if let Some(instance) = get_instance_mut(&event.context, &mut locks).await? {
 		instance.current_state = event.payload.state;
 		update_state(crate::APP_HANDLE.get().unwrap(), (&instance.context).into(), &mut locks).await?;
 	}

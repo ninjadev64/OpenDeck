@@ -3,7 +3,7 @@ use std::time::Duration;
 use super::{send_to_plugin, GenericInstancePayload};
 
 use crate::shared::{ActionContext, Context};
-use crate::store::profiles::{get_slot, lock_mutexes, save_profile};
+use crate::store::profiles::{acquire_locks_mut, get_slot_mut, save_profile};
 
 use serde::Serialize;
 
@@ -17,15 +17,15 @@ struct KeyEvent {
 }
 
 pub async fn key_down(device: &str, key: u8) -> Result<(), anyhow::Error> {
-	let mut locks = lock_mutexes().await;
-	let profile = locks.device_stores.get_device_store(device, crate::APP_HANDLE.get().unwrap())?.value.selected_profile.clone();
+	let mut locks = acquire_locks_mut().await;
+	let selected_profile = locks.device_stores.get_selected_profile(device);
 	let context = Context {
 		device: device.to_owned(),
-		profile,
+		profile: selected_profile.to_owned(),
 		controller: "Keypad".to_owned(),
 		position: key,
 	};
-	let slot = get_slot(&context, &mut locks).await?;
+	let slot = get_slot_mut(&context, &mut locks).await?;
 
 	if slot.len() == 1 {
 		let instance = &slot[0];
@@ -83,16 +83,16 @@ pub async fn key_down(device: &str, key: u8) -> Result<(), anyhow::Error> {
 }
 
 pub async fn key_up(device: &str, key: u8) -> Result<(), anyhow::Error> {
-	let mut locks = lock_mutexes().await;
-	let profile = locks.device_stores.get_device_store(device, crate::APP_HANDLE.get().unwrap())?.value.selected_profile.clone();
+	let mut locks = acquire_locks_mut().await;
+	let selected_profile = locks.device_stores.get_selected_profile(device);
 	let context = Context {
 		device: device.to_owned(),
-		profile,
+		profile: selected_profile.to_owned(),
 		controller: "Keypad".to_owned(),
 		position: key,
 	};
 
-	let slot = get_slot(&context, &mut locks).await?;
+	let slot = get_slot_mut(&context, &mut locks).await?;
 	if slot.len() != 1 {
 		return Ok(());
 	}

@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use serde_inline_default::serde_inline_default;
 
 use once_cell::sync::Lazy;
-use tokio::sync::Mutex;
+use tokio::sync::RwLock;
 
 /// Convert an icon specified in a plugin manifest to its full path.
 pub fn convert_icon(path: String) -> String {
@@ -195,4 +195,4 @@ pub struct Profile {
 }
 
 /// A map of category names to a list of actions in that category.
-pub static CATEGORIES: Lazy<Mutex<HashMap<String, Vec<Action>>>> = Lazy::new(|| Mutex::new(HashMap::new()));
+pub static CATEGORIES: Lazy<RwLock<HashMap<String, Vec<Action>>>> = Lazy::new(|| RwLock::new(HashMap::new()));

@@ -1,10 +1,10 @@
 use crate::events::outbound::settings as outbound;
-use crate::store::profiles::{get_instance, lock_mutexes, save_profile};
+use crate::store::profiles::{acquire_locks, acquire_locks_mut, get_instance, get_instance_mut, save_profile};
 
 pub async fn set_settings(event: super::ContextAndPayloadEvent<serde_json::Value>, from_property_inspector: bool) -> Result<(), anyhow::Error> {
-	let mut locks = lock_mutexes().await;
+	let mut locks = acquire_locks_mut().await;
 
-	if let Some(instance) = get_instance(&event.context, &mut locks).await? {
+	if let Some(instance) = get_instance_mut(&event.context, &mut locks).await? {
 		instance.settings = event.payload;
 		outbound::did_receive_settings(instance, !from_property_inspector).await?;
 		save_profile(&event.context.device, &mut locks).await?;
@@ -14,9 +14,9 @@ pub async fn set_settings(event: super::ContextAndPayloadEvent<serde_json::Value
 }
 
 pub async fn get_settings(event: super::ContextEvent, from_property_inspector: bool) -> Result<(), anyhow::Error> {
-	let mut locks = lock_mutexes().await;
+	let locks = acquire_locks().await;
 
-	if let Some(instance) = get_instance(&event.context, &mut locks).await? {
+	if let Some(instance) = get_instance(&event.context, &locks).await? {
 		outbound::did_receive_settings(instance, from_property_inspector).await?;
 	}
 

@@ -77,7 +77,7 @@ pub async fn make_info(uuid: String, version: String) -> Info {
 	let platform = "linux";
 
 	let mut devices: Vec<DeviceInfo> = vec![];
-	for device in crate::devices::DEVICES.lock().await.values() {
+	for device in crate::devices::DEVICES.read().await.values() {
 		devices.push(device.into());
 	}
 

@@ -6,12 +6,12 @@ use elgato_streamdeck::{info, AsyncStreamDeck, DeviceStateUpdate, StreamDeckErro
 
 use base64::Engine as _;
 use once_cell::sync::Lazy;
-use tokio::sync::Mutex;
+use tokio::sync::RwLock;
 
-static ELGATO_DEVICES: Lazy<Mutex<HashMap<String, AsyncStreamDeck>>> = Lazy::new(|| Mutex::new(HashMap::new()));
+static ELGATO_DEVICES: Lazy<RwLock<HashMap<String, AsyncStreamDeck>>> = Lazy::new(|| RwLock::new(HashMap::new()));
 
 pub async fn update_image(context: &crate::shared::Context, url: &str) -> Result<(), anyhow::Error> {
-	if let Some(device) = ELGATO_DEVICES.lock().await.get(&context.device) {
+	if let Some(device) = ELGATO_DEVICES.read().await.get(&context.device) {
 		let data = url.split_once(',').unwrap().1;
 		let bytes = base64::engine::general_purpose::STANDARD.decode(data)?;
 		device.set_button_image(context.position, image::load_from_memory(&bytes)?).await?;
@@ -20,7 +20,7 @@ pub async fn update_image(context: &crate::shared::Context, url: &str) -> Result
 }
 
 pub async fn clear_image(context: &crate::shared::Context) -> Result<(), StreamDeckError> {
-	if let Some(device) = ELGATO_DEVICES.lock().await.get(&context.device) {
+	if let Some(device) = ELGATO_DEVICES.read().await.get(&context.device) {
 		device.clear_button_image(context.position).await?;
 	}
 	Ok(())
@@ -51,7 +51,7 @@ pub(super) async fn init(device: AsyncStreamDeck) {
 	.await;
 
 	let reader = device.get_reader();
-	ELGATO_DEVICES.lock().await.insert(device_id.clone(), device);
+	ELGATO_DEVICES.write().await.insert(device_id.clone(), device);
 	loop {
 		let updates = match reader.read(100.0).await {
 			Ok(updates) => updates,

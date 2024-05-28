@@ -54,7 +54,7 @@ async fn send_to_plugin(plugin: &str, data: &impl Serialize) -> Result<(), anyho
 	if let Some(socket) = sockets.get_mut(plugin) {
 		socket.send(message).await?;
 	} else {
-		let mut queues = super::PLUGIN_QUEUES.lock().await;
+		let mut queues = super::PLUGIN_QUEUES.write().await;
 		if queues.contains_key(plugin) {
 			queues.get_mut(plugin).unwrap().push(message);
 		} else {
@@ -89,7 +89,7 @@ async fn send_to_property_inspector(context: &crate::shared::ActionContext, data
 	if let Some(socket) = sockets.get_mut(&context.to_string()) {
 		socket.send(message).await?;
 	} else {
-		let mut queues = super::PROPERTY_INSPECTOR_QUEUES.lock().await;
+		let mut queues = super::PROPERTY_INSPECTOR_QUEUES.write().await;
 		if queues.contains_key(&context.to_string()) {
 			queues.get_mut(&context.to_string()).unwrap().push(message);
 		} else {

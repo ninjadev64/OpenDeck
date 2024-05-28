@@ -57,7 +57,7 @@ pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 		}
 	}
 
-	let mut categories = CATEGORIES.lock().await;
+	let mut categories = CATEGORIES.write().await;
 	if let Some(category) = categories.get_mut(&manifest.category) {
 		for action in manifest.actions {
 			if let Some(index) = category.iter().position(|v| v.uuid == action.uuid) {
@@ -119,7 +119,7 @@ pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 	}
 
 	let mut devices: Vec<info_param::DeviceInfo> = vec![];
-	for device in crate::devices::DEVICES.lock().await.values() {
+	for device in crate::devices::DEVICES.read().await.values() {
 		devices.push(device.into());
 	}
 

@@ -1,10 +1,12 @@
 pub mod elgato;
 mod prontokey;
 
+use crate::store::profiles::get_device_profiles;
+
 use std::collections::HashMap;
 
 use once_cell::sync::Lazy;
-use tokio::sync::Mutex;
+use tokio::sync::RwLock;
 
 use log::warn;
 use serde::Serialize;
@@ -20,7 +22,7 @@ pub struct DeviceInfo {
 	pub r#type: u8,
 }
 
-pub static DEVICES: Lazy<Mutex<HashMap<String, DeviceInfo>>> = Lazy::new(|| Mutex::new(HashMap::new()));
+pub static DEVICES: Lazy<RwLock<HashMap<String, DeviceInfo>>> = Lazy::new(|| RwLock::new(HashMap::new()));
 
 /// Attempt to initialise all connected devices.
 pub fn initialise_devices() {
@@ -64,13 +66,21 @@ pub fn initialise_devices() {
 }
 
 async fn register_device(id: String, device: DeviceInfo) {
+	let app = crate::APP_HANDLE.get().unwrap();
+	if let Ok(profiles) = get_device_profiles(&device.id, app) {
+		let mut profile_stores = crate::store::profiles::PROFILE_STORES.write().await;
+		for profile in profiles {
+			// This is called to initialise the store for each profile when the device is registered.
+			let _ = profile_stores.get_profile_store_mut(&device, &profile, app);
+		}
+	}
 	crate::events::outbound::devices::device_did_connect(&id, (&device).into()).await.ok();
-	DEVICES.lock().await.insert(id, device);
+	DEVICES.write().await.insert(id, device);
 	crate::events::frontend::update_devices().await;
 }
 
 async fn unregister_device(id: String) {
 	crate::events::outbound::devices::device_did_disconnect(&id).await.ok();
-	DEVICES.lock().await.remove(&id);
+	DEVICES.write().await.remove(&id);
 	crate::events::frontend::update_devices().await;
 }

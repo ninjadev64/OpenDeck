@@ -1,7 +1,7 @@
 use crate::built_info;
 use crate::devices::DEVICES;
 use crate::shared::{Action, ActionContext, ActionInstance, Context, CATEGORIES};
-use crate::store::profiles::{get_device_profiles, get_slot, lock_mutexes, save_profile, Locks, DEVICE_STORES, PROFILE_STORES};
+use crate::store::profiles::{acquire_locks, acquire_locks_mut, get_device_profiles, get_slot_mut, save_profile, LocksMut, DEVICE_STORES, PROFILE_STORES};
 
 use std::collections::HashMap;
 
@@ -36,17 +36,17 @@ impl From<anyhow::Error> for Error {
 
 #[command]
 pub async fn get_devices() -> HashMap<std::string::String, crate::devices::DeviceInfo> {
-	DEVICES.lock().await.clone()
+	DEVICES.read().await.clone()
 }
 
 pub async fn update_devices() {
 	let app = crate::APP_HANDLE.get().unwrap();
-	let _ = app.get_window("main").unwrap().emit("devices", DEVICES.lock().await.clone());
+	let _ = app.get_window("main").unwrap().emit("devices", DEVICES.read().await.clone());
 }
 
 #[command]
 pub async fn rescan_devices() {
-	let devices = DEVICES.lock().await;
+	let devices = DEVICES.read().await;
 	if devices.len() > 0 {
 		return;
 	}
@@ -55,7 +55,7 @@ pub async fn rescan_devices() {
 
 #[command]
 pub async fn get_categories() -> HashMap<std::string::String, Vec<Action>> {
-	CATEGORIES.lock().await.clone()
+	CATEGORIES.read().await.clone()
 }
 
 #[command]
@@ -64,12 +64,12 @@ pub fn get_profiles(app: AppHandle, device: &str) -> Result<Vec<String>, Error> 
 }
 
 #[command]
-pub async fn get_selected_profile(app: AppHandle, device: String) -> Result<crate::shared::Profile, Error> {
-	let mut device_stores = DEVICE_STORES.lock().await;
-	let mut profile_stores = PROFILE_STORES.lock().await;
+pub async fn get_selected_profile(device: String) -> Result<crate::shared::Profile, Error> {
+	let device_stores = DEVICE_STORES.read().await;
+	let profile_stores = PROFILE_STORES.read().await;
 
-	let device_store = device_stores.get_device_store(&device, &app)?;
-	let profile = profile_stores.get_profile_store(DEVICES.lock().await.get(&device).unwrap(), &device_store.value.selected_profile, &app)?;
+	let selected_profile = device_stores.get_selected_profile(&device);
+	let profile = profile_stores.get_profile_store(DEVICES.read().await.get(&device).unwrap(), selected_profile)?;
 
 	Ok(profile.value.clone())
 }
@@ -77,13 +77,13 @@ pub async fn get_selected_profile(app: AppHandle, device: String) -> Result<crat
 #[allow(clippy::flat_map_identity)]
 #[command]
 pub async fn set_selected_profile(app: AppHandle, device: String, id: String) -> Result<(), Error> {
-	let mut device_stores = DEVICE_STORES.lock().await;
-	let devices = DEVICES.lock().await;
-	let mut profile_stores = PROFILE_STORES.lock().await;
-	let store = device_stores.get_device_store(&device, &app)?;
+	let mut device_stores = DEVICE_STORES.write().await;
+	let devices = DEVICES.read().await;
+	let mut profile_stores = PROFILE_STORES.write().await;
+	let selected_profile = device_stores.get_selected_profile(&device);
 
-	if store.value.selected_profile != id {
-		let old_profile = &profile_stores.get_profile_store(devices.get(&device).unwrap(), &store.value.selected_profile, &app)?.value;
+	if selected_profile != id {
+		let old_profile = &profile_stores.get_profile_store(devices.get(&device).unwrap(), selected_profile)?.value;
 		for slot in old_profile.keys.iter().chain(&old_profile.sliders) {
 			for instance in slot {
 				let _ = crate::events::outbound::will_appear::will_disappear(instance, slot.len() > 1).await;
@@ -91,22 +91,22 @@ pub async fn set_selected_profile(app: AppHandle, device: String, id: String) ->
 		}
 	}
 
-	let new_profile = &profile_stores.get_profile_store(devices.get(&device).unwrap(), &id, &app)?.value;
+	// We must use the mutable version of get_profile_store in order to create the store if it does not exist.
+	let new_profile = &profile_stores.get_profile_store_mut(devices.get(&device).unwrap(), &id, &app)?.value;
 	for slot in new_profile.keys.iter().chain(&new_profile.sliders) {
 		for instance in slot {
 			let _ = crate::events::outbound::will_appear::will_appear(instance, slot.len() > 1).await;
 		}
 	}
 
-	id.clone_into(&mut store.value.selected_profile);
-	store.save()?;
+	device_stores.set_selected_profile(&device, id, &app)?;
 
 	Ok(())
 }
 
 #[command]
 pub async fn delete_profile(app: AppHandle, device: String, profile: String) {
-	let mut profile_stores = PROFILE_STORES.lock().await;
+	let mut profile_stores = PROFILE_STORES.write().await;
 	profile_stores.remove_profile(&device, &profile, &app);
 }
 
@@ -116,8 +116,8 @@ pub async fn create_instance(action: Action, context: Context) -> Result<Option<
 		return Ok(None);
 	}
 
-	let mut locks = lock_mutexes().await;
-	let slot = get_slot(&context, &mut locks).await?;
+	let mut locks = acquire_locks_mut().await;
+	let slot = get_slot_mut(&context, &mut locks).await?;
 	let index = match slot.last() {
 		None => 0,
 		Some(instance) => instance.context.index + 1,
@@ -146,8 +146,8 @@ pub async fn move_slot(source: Context, destination: Context) -> Result<Option<V
 		return Ok(None);
 	}
 
-	let mut locks = lock_mutexes().await;
-	let src = get_slot(&source, &mut locks).await?;
+	let mut locks = acquire_locks_mut().await;
+	let src = get_slot_mut(&source, &mut locks).await?;
 	let multi_action = src.len() > 1;
 
 	let mut vec: Vec<ActionInstance> = vec![];
@@ -158,13 +158,13 @@ pub async fn move_slot(source: Context, destination: Context) -> Result<Option<V
 		vec.push(new);
 	}
 
-	let dst = get_slot(&destination, &mut locks).await?;
+	let dst = get_slot_mut(&destination, &mut locks).await?;
 	if !dst.is_empty() {
 		return Ok(None);
 	}
 	dst.clone_from(&vec);
 
-	let src = get_slot(&source, &mut locks).await?;
+	let src = get_slot_mut(&source, &mut locks).await?;
 	for old in &*src {
 		let _ = crate::events::outbound::will_appear::will_disappear(old, multi_action).await;
 	}
@@ -180,8 +180,8 @@ pub async fn move_slot(source: Context, destination: Context) -> Result<Option<V
 
 #[command]
 pub async fn clear_slot(context: Context) -> Result<(), Error> {
-	let mut locks = lock_mutexes().await;
-	let slot = get_slot(&context, &mut locks).await?;
+	let mut locks = acquire_locks_mut().await;
+	let slot = get_slot_mut(&context, &mut locks).await?;
 
 	for instance in &*slot {
 		let _ = crate::events::outbound::will_appear::will_disappear(instance, slot.len() > 1).await;
@@ -195,8 +195,8 @@ pub async fn clear_slot(context: Context) -> Result<(), Error> {
 
 #[command]
 pub async fn remove_instance(context: ActionContext) -> Result<(), Error> {
-	let mut locks = lock_mutexes().await;
-	let slot = get_slot(&(&context).into(), &mut locks).await?;
+	let mut locks = acquire_locks_mut().await;
+	let slot = get_slot_mut(&(&context).into(), &mut locks).await?;
 
 	for (index, instance) in slot.iter().enumerate() {
 		if instance.context == context {
@@ -264,12 +264,12 @@ struct UpdateStateEvent {
 	contents: Vec<ActionInstance>,
 }
 
-pub async fn update_state(app: &AppHandle, context: Context, locks: &mut Locks<'_>) -> Result<(), anyhow::Error> {
+pub async fn update_state(app: &AppHandle, context: Context, locks: &mut LocksMut<'_>) -> Result<(), anyhow::Error> {
 	let window = app.get_window("main").unwrap();
 	window.emit(
 		"update_state",
 		UpdateStateEvent {
-			contents: get_slot(&context, locks).await?.clone(),
+			contents: get_slot_mut(&context, locks).await?.clone(),
 			context,
 		},
 	)?;
@@ -352,7 +352,7 @@ pub async fn list_plugins(app: AppHandle) -> Result<Vec<PluginInfo>, Error> {
 
 #[command]
 pub async fn remove_plugin(app: AppHandle, id: String) -> Result<(), Error> {
-	let locks = lock_mutexes().await;
+	let locks = acquire_locks().await;
 	let all = locks.profile_stores.all_from_plugin(&id);
 	drop(locks);
 
