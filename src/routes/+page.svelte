@@ -8,6 +8,7 @@
 	import DeviceSelector from "../components/DeviceSelector.svelte";
 	import DeviceView from "../components/DeviceView.svelte";
 	import MultiActionView from "../components/MultiActionView.svelte";
+	import NoDevicesDetected from "../components/NoDevicesDetected.svelte";
 	import PluginManager from "../components/PluginManager.svelte";
 	import ProfileSelector from "../components/ProfileSelector.svelte";
 	import PropertyInspectorView from "../components/PropertyInspectorView.svelte";
@@ -27,6 +28,8 @@
 		<MultiActionView bind:profile={_selectedProfile} />
 	{:else if selectedDevice && selectedProfile}
 		<DeviceView bind:device={_selectedDevice} bind:profile={_selectedProfile} />
+	{:else}
+		<NoDevicesDetected />
 	{/if}
 
 	{#if selectedProfile}

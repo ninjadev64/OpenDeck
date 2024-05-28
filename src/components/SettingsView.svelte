@@ -6,6 +6,8 @@
 	import Tooltip from "./Tooltip.svelte";
 
 	let showPopup = false;
+	let buildInfo: string;
+	(async () => buildInfo = await invoke("get_build_info"))();
 
 	settings.subscribe((settings) => {
 		if (settings) updateTheme(settings.darktheme);
@@ -61,10 +63,16 @@
 			<input type="checkbox" bind:checked={$settings.darktheme} />
 		</div>
 	{/if}
-	<button
-		class="ml-2 mt-2 px-2 py-1 text-sm text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 border dark:border-neutral-600 rounded-lg"
-		on:click={() => invoke("open_config_directory")}
-	>
-		Open config directory
-	</button>
+
+	<div class="ml-2">
+		<button
+			class="mt-2 mb-4 px-2 py-1 text-sm text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 border dark:border-neutral-600 rounded-lg"
+			on:click={() => invoke("open_config_directory")}
+		>
+			Open config directory
+		</button>
+		<span class="text-xs dark:text-neutral-400">
+			{@html buildInfo}
+		</span>
+	</div>
 </Popup>

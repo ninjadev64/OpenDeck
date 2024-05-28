@@ -1,3 +1,4 @@
+use crate::built_info;
 use crate::devices::DEVICES;
 use crate::shared::{Action, ActionContext, ActionInstance, Context, CATEGORIES};
 use crate::store::profiles::{get_device_profiles, get_slot, lock_mutexes, save_profile, Locks, DEVICE_STORES, PROFILE_STORES};
@@ -41,6 +42,15 @@ pub async fn get_devices() -> HashMap<std::string::String, crate::devices::Devic
 pub async fn update_devices() {
 	let app = crate::APP_HANDLE.get().unwrap();
 	let _ = app.get_window("main").unwrap().emit("devices", DEVICES.lock().await.clone());
+}
+
+#[command]
+pub async fn rescan_devices() {
+	let devices = DEVICES.lock().await;
+	if devices.len() > 0 {
+		return;
+	}
+	crate::devices::initialise_devices();
 }
 
 #[command]
@@ -422,4 +432,20 @@ pub fn open_config_directory(app: AppHandle) {
 	#[cfg(target_os = "linux")]
 	let command = "xdg-open";
 	std::process::Command::new(command).arg(app.path_resolver().app_config_dir().unwrap()).spawn().unwrap();
+}
+
+#[command]
+pub fn get_build_info() -> String {
+	format!(
+		r#"
+		<details>
+			<summary> OpenDeck v{} ({}) on {} </summary>
+			{}
+		</details>
+		"#,
+		built_info::PKG_VERSION,
+		built_info::GIT_COMMIT_HASH_SHORT.unwrap_or("commit hash unknown"),
+		built_info::TARGET,
+		built_info::DIRECT_DEPENDENCIES_STR
+	)
 }

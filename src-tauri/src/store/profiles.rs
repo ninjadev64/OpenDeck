@@ -41,7 +41,7 @@ impl ProfileStores {
 	pub fn remove_profile(&mut self, device: &str, id: &str, app: &tauri::AppHandle) {
 		self.stores.remove(id);
 		let config_dir = app.path_resolver().app_config_dir().unwrap();
-		let path = config_dir.join("profiles").join(device).join(id);
+		let path = config_dir.join("profiles").join(device).join(format!("{id}.json"));
 		let _ = fs::remove_file(path);
 	}
 

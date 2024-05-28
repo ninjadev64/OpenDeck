@@ -51,7 +51,6 @@ pub fn initialise_devices() {
 	// Create a virtual device for testing without a physical device.
 	#[cfg(debug_assertions)]
 	tokio::spawn(async move {
-		let mut devices = DEVICES.lock().await;
 		let device = DeviceInfo {
 			id: "virtual".to_owned(),
 			name: "Virtual device".to_owned(),
@@ -60,7 +59,7 @@ pub fn initialise_devices() {
 			sliders: 2,
 			r#type: 7,
 		};
-		devices.insert("virtual".to_owned(), device);
+		register_device("virtual".to_owned(), device).await;
 	});
 }
 

@@ -7,6 +7,10 @@ mod plugins;
 mod shared;
 mod store;
 
+mod built_info {
+	include!(concat!(env!("OUT_DIR"), "/built.rs"));
+}
+
 use events::frontend;
 
 use once_cell::sync::OnceCell;
@@ -30,6 +34,7 @@ async fn main() {
 	let app = match Builder::default()
 		.invoke_handler(tauri::generate_handler![
 			frontend::get_devices,
+			frontend::rescan_devices,
 			frontend::get_categories,
 			frontend::create_instance,
 			frontend::move_slot,
@@ -49,7 +54,8 @@ async fn main() {
 			frontend::get_settings,
 			frontend::set_settings,
 			frontend::get_localisations,
-			frontend::open_config_directory
+			frontend::open_config_directory,
+			frontend::get_build_info
 		])
 		.plugin(
 			tauri_plugin_log::Builder::default()
