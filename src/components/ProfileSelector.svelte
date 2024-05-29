@@ -2,6 +2,7 @@
 	import type { DeviceInfo } from "$lib/DeviceInfo";
 	import type { Profile } from "$lib/Profile";
 
+	import Trash from "phosphor-svelte/lib/Trash";
 	import Popup from "./Popup.svelte";
 
 	import { invoke } from "@tauri-apps/api";
@@ -45,7 +46,7 @@
 	export let device: DeviceInfo;
 	$: getProfiles(device);
 
-	let showPopup = false;
+	let showPopup: boolean;
 	let nameInput: string;
 
 	listen("switch_profile", async ({ payload }: { payload: { device: string, profile: string }}) => {
@@ -85,13 +86,16 @@
 				<span class="dark:text-neutral-400"> {profile} </span>
 				{#if profile != value}
 					<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-					<img
-						src="/rubbish.png"
-						class="float-right w-6 cursor-pointer"
-						alt="Remove profile"
+					<button
+						class="float-right"
 						on:click={() => deleteProfile(profile)}
 						on:keyup={() => deleteProfile(profile)}
-					/>
+					>
+						<Trash
+							size="20"
+							color={document.documentElement.classList.contains("dark") ? "#C0BFBC" : "#77767B"}
+						/>
+					</button>
 				{/if}
 			</div>
 		{/each}

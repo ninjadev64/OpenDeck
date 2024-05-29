@@ -1,0 +1,113 @@
+<script lang="ts">
+	import type { ActionInstance } from "$lib/ActionInstance";
+
+	import { getImage } from "$lib/rendererHelper";
+
+	import { invoke } from "@tauri-apps/api";
+
+	export let instance: ActionInstance;
+	export let showEditor: boolean;
+
+	let state: number = 0;
+	let bold: boolean;
+	let italic: boolean;
+
+	let fileInput: HTMLInputElement;
+
+	function update(instance: ActionInstance) {
+		bold = instance.states[state].style.includes("Bold");
+		italic = instance.states[state].style.includes("Italic");
+	}
+	$: update(instance);
+	$: invoke("set_state", { instance, state });
+</script>
+
+<div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 p-2 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 border-2 dark:border-neutral-600 rounded-lg z-10">
+	<button class="mr-2 my-1 float-right text-xl dark:text-neutral-300" on:click={() => showEditor = false}> ✕ </button>
+	<div class="flex flex-row">
+		<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+		<img
+			src={getImage(instance.states[state].image, instance.action.states[state].image ?? instance.action.icon)}
+			class="mx-1 my-auto p-2 w-32 h-min aspect-square rounded-xl cursor-pointer"
+			alt="State {state}"
+			on:click={() => fileInput.click()} on:keyup={() => fileInput.click()}
+		/>
+		<input
+			bind:this={fileInput}
+			type="file" class="hidden" accept="image/*"
+			on:change={async () => {
+				if (!fileInput.files || fileInput.files.length == 0) return;
+				const reader = new FileReader();
+				// @ts-expect-error
+				reader.onload = () => instance.states[state].image = reader.result;
+				reader.readAsDataURL(fileInput.files[0]);
+			}}
+		/>
+
+		<div class="flex flex-col p-2 space-y-2">
+			<div class="select-wrapper">
+				<select class="w-full" bind:value={state}>
+					{#each instance.states as _, i}
+						<option value={i}> State {i + 1} </option>
+					{/each}
+				</select>
+			</div>
+			<div class="flex flex-row space-x-2">
+				<span> Text </span>
+				<input
+					bind:value={instance.states[state].text}
+					disabled={!instance.action.user_title_enabled}
+					class="w-44 px-1 dark:text-neutral-300 dark:bg-neutral-600 rounded-md outline-none"
+				/>
+			</div>
+			<div class="flex flex-row space-x-2">
+				<span> Colour </span>
+				<input
+					type="color"
+					bind:value={instance.states[state].colour}
+					disabled={!instance.action.user_title_enabled}
+					class="px-0.5 dark:bg-neutral-600 rounded-md outline-none"
+				/>
+				<span> Show </span>
+				<input
+					type="checkbox"
+					bind:checked={instance.states[state].show}
+					disabled={!instance.action.user_title_enabled}
+					class="mt-1 scale-125"
+				/>
+			</div>
+			<div class="flex flex-row">
+				<span class="mr-3 font-bold"> B </span>
+				<input
+					type="checkbox"
+					bind:checked={bold}
+					on:change={() => instance.states[state].style = (bold && italic ? "Bold Italic" : bold ? "Bold" : italic ? "Italic" : "Regular")}
+					disabled={!instance.action.user_title_enabled}
+					class="mr-4 mt-1 scale-125"
+				/>
+				<span class="mr-3 italic"> I </span>
+				<input
+					type="checkbox"
+					bind:checked={italic}
+					on:change={() => instance.states[state].style = (bold && italic ? "Bold Italic" : bold ? "Bold" : italic ? "Italic" : "Regular")}
+					disabled={!instance.action.user_title_enabled}
+					class="mr-4 mt-1 scale-125"
+				/>
+				<span class="mr-3 underline"> U </span>
+				<input
+					type="checkbox"
+					bind:checked={instance.states[state].underline}
+					disabled={!instance.action.user_title_enabled}
+					class="mr-4 mt-1 scale-125"
+				/>
+				<span class="mr-2"> Size </span>
+				<!-- The type property is spread so Svelte does not convert the value to a number. -->
+				<input
+					{...{ type: "number" }}
+					bind:value={instance.states[state].size}
+					class="px-0.5 w-12 dark:text-neutral-300 dark:bg-neutral-600 rounded-md outline-none"
+				/>
+			</div>
+		</div>
+	</div>
+</div>

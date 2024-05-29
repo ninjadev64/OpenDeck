@@ -48,6 +48,7 @@ async fn main() {
 			frontend::switch_property_inspector,
 			frontend::open_url,
 			frontend::update_image,
+			frontend::set_state,
 			frontend::install_plugin,
 			frontend::list_plugins,
 			frontend::remove_plugin,

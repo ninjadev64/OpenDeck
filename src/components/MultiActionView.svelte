@@ -52,7 +52,7 @@
 <div class="flex flex-col h-80 overflow-scroll">
 	{#each slot as instance, index}
 		<div class="flex flex-row items-center mx-4 my-1 bg-neutral-100 dark:bg-neutral-900 rounded-md">
-			<Key slot={[instance]} {context} active={false} scale={3/4} />
+			<Key inslot={[instance]} {context} active={false} scale={3/4} />
 			<p class="ml-4 text-xl dark:text-neutral-400"> {instance.action.name} </p>
 			<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 			<img

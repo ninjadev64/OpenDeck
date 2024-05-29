@@ -5,7 +5,7 @@
 	import Popup from "./Popup.svelte";
 	import Tooltip from "./Tooltip.svelte";
 
-	let showPopup = false;
+	let showPopup: boolean;
 	let buildInfo: string;
 	(async () => buildInfo = await invoke("get_build_info"))();
 

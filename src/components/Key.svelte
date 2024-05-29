@@ -3,14 +3,23 @@
 	import type { ActionState } from "$lib/ActionState";
 	import type { Context } from "$lib/Context";
 
-	import { inspectedInstance, inspectedMultiAction } from "$lib/propertyInspector";
+	import Pencil from "phosphor-svelte/lib/Pencil";
+	import Trash from "phosphor-svelte/lib/Trash";
+	import InstanceEditor from "./InstanceEditor.svelte";
+
+	import { inspectedInstance, inspectedMultiAction, openContextMenu } from "$lib/propertyInspector";
 	import { getImage, renderImage } from "$lib/rendererHelper";
 
 	import { invoke } from "@tauri-apps/api";
 	import { listen } from "@tauri-apps/api/event";
 
 	export let context: Context;
-	export let slot: ActionInstance[];
+
+	// One-way binding for slot data.
+	export let inslot: ActionInstance[];
+	let slot: ActionInstance[];
+	const update = (inslot: ActionInstance[]) => slot = inslot;
+	$: update(inslot);
 
 	export let active: boolean = true;
 	export let scale: number = 1;
@@ -46,13 +55,28 @@
 		}
 	}
 
-	async function clear(event: MouseEvent) {
+	async function contextMenu(event: MouseEvent) {
+		if (!slot || slot.length == 0) return;
 		event.preventDefault();
 		if (!active) return;
 		if (event.ctrlKey) return;
+		$openContextMenu = { context, x: event.x, y: event.y };
+	}
+
+	let showEditor = false;
+	function edit() {
+		if (slot.length > 1) {
+			inspectedMultiAction.set(context);
+		} else {
+			showEditor = true;
+		}
+	}
+
+	async function clear() {
 		await invoke("clear_slot", { context });
 		if (slot.map((instance) => instance.context).includes($inspectedInstance!)) inspectedInstance.set(null);
 		slot = [];
+		inslot = slot;
 	}
 
 	let showAlert = 0;
@@ -96,7 +120,7 @@
 	draggable on:dragstart
 	role="cell" tabindex="-1"
 	on:click={select} on:keyup={select}
-	on:contextmenu={clear}
+	on:contextmenu={contextMenu}
 >
 	{#if state}
 		<img
@@ -140,3 +164,29 @@
 		{/if}
 	{/if}
 </div>
+
+{#if $openContextMenu?.context == context}
+	<div
+		class="absolute text-sm font-semibold w-32 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 border-2 dark:border-neutral-600 rounded-lg divide-y z-10"
+		style="left: {$openContextMenu.x}px; top: {$openContextMenu.y}px;"
+	>
+		<button
+			class="flex flex-row p-2 w-full cursor-pointer items-center"
+			on:click={edit}
+		>
+			<Pencil size="18" color={document.documentElement.classList.contains("dark") ? "#DEDDDA" : "#77767B"} />
+			<span class="ml-2"> Edit </span>
+		</button>
+		<button
+			class="flex flex-row p-2 w-full cursor-pointer items-center"
+			on:click={clear}
+		>
+			<Trash size="18" color="#F66151" />
+			<span class="ml-2"> Delete </span>
+		</button>
+	</div>
+{/if}
+
+{#if showEditor}
+	<InstanceEditor bind:instance={slot[0]} bind:showEditor={showEditor} />
+{/if}

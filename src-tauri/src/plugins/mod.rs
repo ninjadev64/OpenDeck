@@ -6,6 +6,8 @@ use crate::shared::{convert_icon, Action, CATEGORIES};
 use crate::APP_HANDLE;
 
 use std::collections::HashMap;
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
 use std::process::{Child, Command, Stdio};
 use std::{fs, path};
 
@@ -180,6 +182,24 @@ pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 		INSTANCES.lock().await.insert(plugin_uuid.to_owned(), PluginInstance::Wine(child));
 	} else {
 		// Run the plugin's executable natively.
+		#[cfg(target_os = "windows")]
+		let child = Command::new(path.join(code_path))
+			.current_dir(path)
+			.args([
+				String::from("-port"),
+				57116.to_string(),
+				String::from("-pluginUUID"),
+				plugin_uuid.to_owned(),
+				String::from("-registerEvent"),
+				String::from("registerPlugin"),
+				String::from("-info"),
+				serde_json::to_string(&info)?,
+			])
+			.stdout(Stdio::null())
+			.stderr(Stdio::null())
+			.creation_flags(0x08000000)
+			.spawn()?;
+		#[cfg(not(target_os = "windows"))]
 		let child = Command::new(path.join(code_path))
 			.current_dir(path)
 			.args([

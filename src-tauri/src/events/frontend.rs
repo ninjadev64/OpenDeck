@@ -1,7 +1,7 @@
 use crate::built_info;
 use crate::devices::DEVICES;
 use crate::shared::{Action, ActionContext, ActionInstance, Context, CATEGORIES};
-use crate::store::profiles::{acquire_locks, acquire_locks_mut, get_device_profiles, get_slot_mut, save_profile, LocksMut, DEVICE_STORES, PROFILE_STORES};
+use crate::store::profiles::{acquire_locks, acquire_locks_mut, get_device_profiles, get_instance_mut, get_slot_mut, save_profile, LocksMut, DEVICE_STORES, PROFILE_STORES};
 
 use std::collections::HashMap;
 
@@ -273,6 +273,16 @@ pub async fn update_state(app: &AppHandle, context: Context, locks: &mut LocksMu
 			context,
 		},
 	)?;
+	Ok(())
+}
+
+#[command]
+pub async fn set_state(instance: ActionInstance, state: u16) -> Result<(), Error> {
+	let mut locks = acquire_locks_mut().await;
+	let reference = get_instance_mut(&instance.context, &mut locks).await?.unwrap();
+	*reference = instance.clone();
+	save_profile(&instance.context.device, &mut locks).await?;
+	crate::events::outbound::states::title_parameters_did_change(&instance, state).await?;
 	Ok(())
 }
 

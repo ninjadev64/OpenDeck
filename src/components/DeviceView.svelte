@@ -64,7 +64,7 @@
 				{#each { length: device.columns } as _, c}
 					<Key
 						context={{ device: device.id, profile: profile.id, controller: "Keypad", position: (r * device.columns) + c }}
-						bind:slot={profile.keys[(r * device.columns) + c]}
+						bind:inslot={profile.keys[(r * device.columns) + c]}
 						on:dragover={handleDragOver}
 						on:drop={(event) => handleDrop(event, "Keypad", (r * device.columns) + c)}
 						on:dragstart={(event) => handleDragStart(event, "Keypad", (r * device.columns) + c)}

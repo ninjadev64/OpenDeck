@@ -1,13 +1,17 @@
 <script lang="ts">
+	import type ActionList from "./ActionList.svelte";
+
+	import CloudArrowDown from "phosphor-svelte/lib/CloudArrowDown";
+	import Trash from "phosphor-svelte/lib/Trash";
 	import Popup from "./Popup.svelte";
 
 	import { localisations } from "$lib/settings";
+
 	import { invoke } from "@tauri-apps/api";
 
-	import type ActionList from "./ActionList.svelte";
 	export let actionList: ActionList;
 
-	let showPopup = false;
+	let showPopup: boolean;
 
 	async function installPlugin(plugin: any) {
 		if (!await confirm(`Install ${plugin.name}? It may take a while to download the plugin.`)) {
@@ -65,13 +69,15 @@
 					{plugin.author}
 				</div>
 
-				<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-				<img
-					src="/rubbish.png"
-					class="ml-auto mr-4 w-6 cursor-pointer"
-					alt="Remove plugin"
+				<button
+					class="ml-auto mr-4"
 					on:click={() => removePlugin(plugin)} on:keyup={() => removePlugin(plugin)}
-				/>
+				>
+					<Trash
+						size="24"
+						color={document.documentElement.classList.contains("dark") ? "#C0BFBC" : "#77767B"}
+					/>
+				</button>
 			</div>
 		{/each}
 	</div>
@@ -103,12 +109,15 @@
 						</div>
 
 						<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-						<img
-							src="/download.png"
-							class="ml-auto mr-4 w-6 cursor-pointer"
-							alt="Install plugin"
+						<button
+							class="ml-auto mr-4"
 							on:click={() => installPlugin(plugin)} on:keyup={() => installPlugin(plugin)}
-						/>
+						>
+							<CloudArrowDown
+								size="24"
+								color={document.documentElement.classList.contains("dark") ? "#C0BFBC" : "#77767B"}
+							/>
+						</button>
 					</div>
 				{/each}
 			</div>

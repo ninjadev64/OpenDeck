@@ -12,3 +12,6 @@ inspectedInstance.subscribe(async (value) => {
 });
 
 export const inspectedMultiAction: Writable<Context | null> = writable(null);
+
+export const openContextMenu: Writable<{ context: Context, x: number, y: number } | null> = writable(null);
+document.addEventListener("click", () => openContextMenu.set(null));

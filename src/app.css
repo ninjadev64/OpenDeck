@@ -23,3 +23,7 @@ select {
 		border-r-2 border-b-2
 		pointer-events-none content-['_']
 }
+
+input:disabled {
+	@apply opacity-50
+}
