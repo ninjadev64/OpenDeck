@@ -10,7 +10,6 @@ pub struct Store<T>
 where
 	T: Serialize + for<'a> Deserialize<'a>,
 {
-	pub id: String,
 	pub value: T,
 	path: PathBuf,
 }
@@ -27,17 +26,9 @@ where
 			let file_contents = fs::read(&path)?;
 			let existing_value: T = serde_json::from_slice(&file_contents)?;
 
-			Ok(Self {
-				path,
-				id: String::from(id),
-				value: existing_value,
-			})
+			Ok(Self { path, value: existing_value })
 		} else {
-			Ok(Self {
-				path,
-				id: String::from(id),
-				value: default,
-			})
+			Ok(Self { path, value: default })
 		}
 	}
 

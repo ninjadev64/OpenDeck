@@ -50,13 +50,15 @@
 
 	const closePopup = (context: string) => {
 		const iframe = iframes[context];
-		iframe.style.position = "";
-		iframe.style.left = "";
-		iframe.style.top = "";
-		iframe.style.width = "100%";
-		iframe.style.height = "100%";
-		iframe.style.display = $inspectedInstance == context ? "block" : "none";
-		iframe.contentWindow?.postMessage({ event: "windowClosed" }, "http://localhost:57118");
+		if (iframe) {
+			iframe.style.position = "";
+			iframe.style.left = "";
+			iframe.style.top = "";
+			iframe.style.width = "100%";
+			iframe.style.height = "100%";
+			iframe.style.display = $inspectedInstance == context ? "block" : "none";
+			iframe.contentWindow?.postMessage({ event: "windowClosed" }, "http://localhost:57118");
+		}
 
 		iframePopupsOpen = iframePopupsOpen.filter((e) => e != context);
 
@@ -65,6 +67,7 @@
 			iframeContainer.style.width = "";
 			iframeContainer.style.height = "";
 			iframeContainer.style.padding = "";
+			iframeContainer.style.zIndex = "0";
 
 			iframeClosePopup.style.display = "none";
 		}
@@ -86,6 +89,7 @@
 			iframeContainer.style.width = "100%";
 			iframeContainer.style.height = "100%";
 			iframeContainer.style.padding = "36px";
+			iframeContainer.style.zIndex = "20";
 
 			iframeClosePopup.style.display = "block";
 		} else if (data.event == "windowClosed") {
@@ -98,7 +102,7 @@
 	$: instances = profile.keys.reduce((prev, current) => prev.concat(current), []).concat(profile.sliders.reduce((prev, current) => prev.concat(current), []));
 </script>
 
-<div class="grow overflow-scroll bg-white dark:bg-neutral-900 border-t dark:border-neutral-700 z-20" bind:this={iframeContainer}>
+<div class="grow overflow-scroll bg-white dark:bg-neutral-900 border-t dark:border-neutral-700" bind:this={iframeContainer}>
 	<button
 		bind:this={iframeClosePopup}
 		on:click={() => closePopup(iframePopupsOpen[iframePopupsOpen.length - 1])}

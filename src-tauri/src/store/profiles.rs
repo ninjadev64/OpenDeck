@@ -29,6 +29,9 @@ impl ProfileStores {
 	}
 
 	pub fn get_profile_store_mut(&mut self, device: &crate::devices::DeviceInfo, id: &str, app: &tauri::AppHandle) -> Result<&mut Store<Profile>, anyhow::Error> {
+		#[cfg(target_os = "windows")]
+		let path = PathBuf::from("profiles").join(&device.id).join(id.replace('/', "\\"));
+		#[cfg(not(target_os = "windows"))]
 		let path = PathBuf::from("profiles").join(&device.id).join(id);
 		let path = path.to_str().unwrap();
 
@@ -52,8 +55,12 @@ impl ProfileStores {
 	pub fn remove_profile(&mut self, device: &str, id: &str, app: &tauri::AppHandle) {
 		self.stores.remove(id);
 		let config_dir = app.path_resolver().app_config_dir().unwrap();
+		#[cfg(target_os = "windows")]
+		let id = &id.replace('/', "\\");
 		let path = config_dir.join("profiles").join(device).join(format!("{id}.json"));
-		let _ = fs::remove_file(path);
+		let _ = fs::remove_file(&path);
+		// This is safe as `remove_dir` errors if the directory is not empty.
+		let _ = fs::remove_dir(path.parent().unwrap());
 	}
 
 	pub fn all_from_plugin(&self, plugin: &str) -> Vec<crate::shared::ActionContext> {
@@ -113,8 +120,19 @@ pub fn get_device_profiles(device: &str, app: &tauri::AppHandle) -> Result<Vec<S
 	let entries = fs::read_dir(device_path)?;
 
 	for entry in entries.flatten() {
-		if entry.metadata()?.is_file() && entry.file_name() != "config.json" {
+		if entry.metadata()?.is_file() {
 			profiles.push(entry.file_name().to_string_lossy()[..entry.file_name().len() - 5].to_owned());
+		} else if entry.metadata()?.is_dir() {
+			let entries = fs::read_dir(entry.path())?;
+			for subentry in entries.flatten() {
+				if subentry.metadata()?.is_file() {
+					profiles.push(format!(
+						"{}/{}",
+						entry.file_name().to_string_lossy(),
+						subentry.file_name().to_string_lossy()[..subentry.file_name().len() - 5].to_owned()
+					));
+				}
+			}
 		}
 	}
 
