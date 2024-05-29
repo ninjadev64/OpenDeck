@@ -49,3 +49,9 @@ OpenDeck supports ProntoKey and Elgato Stream Deck hardware on all three major d
 - [Discord](https://discord.gg/26Nf8rHvaj)
 - [Matrix](https://matrix.to/#/#opendeck:amansprojects.com)
 - [GitHub Issues](https://github.com/ninjadev64/OpenDeck/issues)
+
+### Building from source / contributing
+
+You'll need to ensure that all of the [prerequisites for building a Tauri application](https://tauri.app/v1/guides/getting-started/prerequisites) are satisfied to build OpenDeck (this includes the Tauri CLI from `cargo install tauri-cli`). On GNU+Linux, you'll also need `libudev` installed for your distribution. Then, ensure that the required frontend dependencies are installed with `npm i(nstall)`. You can then use `cargo tauri dev` and `cargo tauri build` to work with OpenDeck.
+
+When submitting a pull request, ensure that all of your Rust code has been formatted using `cargo fmt`, `cargo clippy` returns no violations, and modified Svelte code sticks to the existing style used as far as possible. Feel free to reach out on the support channels above for guidance when contributing!
