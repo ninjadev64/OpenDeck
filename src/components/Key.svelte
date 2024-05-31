@@ -135,6 +135,7 @@
 				<span
 					style="
 						font-size: calc({state.size}px * (112/72) * {scale});
+						font-family: '{state.family}', sans-serif;
 						color: {state.colour};
 					"
 					class:self-start={state.alignment == "top"}

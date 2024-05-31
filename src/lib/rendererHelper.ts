@@ -42,7 +42,9 @@ export async function renderImage(slotContext: Context, state: ActionState, fall
 	// Draw text
 	if (state.show) {
 		context.textAlign = "center";
-		context.font = `${state.size}px serif`;
+		context.font =
+			(state.style.includes("Bold") ? "bold " : "") + (state.style.includes("Italic") ? "italic " : "") +
+			`${parseInt(state.size) * 2}px "${state.family}", sans-serif`;
 		context.fillStyle = state.colour;
 		let x = canvas.width / 2;
 		let y = canvas.height / 2 + (parseInt(state.size) / 4);

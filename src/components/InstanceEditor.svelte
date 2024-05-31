@@ -23,7 +23,16 @@
 </script>
 
 <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 p-2 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 border-2 dark:border-neutral-600 rounded-lg z-10">
-	<button class="mr-2 my-1 float-right text-xl dark:text-neutral-300" on:click={() => showEditor = false}> ✕ </button>
+	<div class="flex flex-row">
+		<div class="select-wrapper ml-2.5 w-full">
+			<select class="w-full" bind:value={state}>
+				{#each instance.states as _, i}
+					<option value={i}> State {i + 1} </option>
+				{/each}
+			</select>
+		</div>
+		<button class="ml-3 mr-2 float-right text-xl dark:text-neutral-300" on:click={() => showEditor = false}> ✕ </button>
+	</div>
 	<div class="flex flex-row">
 		<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 		<img
@@ -31,6 +40,10 @@
 			class="mx-1 my-auto p-2 w-32 h-min aspect-square rounded-xl cursor-pointer"
 			alt="State {state}"
 			on:click={() => fileInput.click()} on:keyup={() => fileInput.click()}
+			on:contextmenu={(event) => {
+				event.preventDefault();
+				instance.states[state].image = instance.action.states[state].image;
+			}}
 		/>
 		<input
 			bind:this={fileInput}
@@ -45,36 +58,56 @@
 		/>
 
 		<div class="flex flex-col p-2 space-y-2">
-			<div class="select-wrapper w-[calc(100%-1.25rem)]">
-				<select class="w-full" bind:value={state}>
-					{#each instance.states as _, i}
-						<option value={i}> State {i + 1} </option>
-					{/each}
-				</select>
-			</div>
 			<div class="flex flex-row space-x-2">
 				<span> Text </span>
 				<input
 					bind:value={instance.states[state].text}
 					disabled={!instance.action.user_title_enabled}
-					class="w-44 px-1 dark:text-neutral-300 dark:bg-neutral-600 rounded-md outline-none"
+					class="w-full px-1 dark:text-neutral-300 dark:bg-neutral-600 rounded-md outline-none"
 				/>
 			</div>
-			<div class="flex flex-row space-x-2">
-				<span> Colour </span>
+			<div class="flex flex-row items-center">
+				<span class="mr-2"> Colour </span>
 				<input
 					type="color"
 					bind:value={instance.states[state].colour}
 					disabled={!instance.action.user_title_enabled}
-					class="px-0.5 dark:bg-neutral-600 rounded-md outline-none"
+					class="mr-2 px-0.5 dark:bg-neutral-600 rounded-md outline-none"
 				/>
-				<span> Show </span>
+				<span class="mr-2"> Show </span>
 				<input
 					type="checkbox"
 					bind:checked={instance.states[state].show}
 					disabled={!instance.action.user_title_enabled}
-					class="mt-1 scale-125"
+					class="mr-4 mt-1 scale-125"
 				/>
+				<select
+					bind:value={instance.states[state].alignment}
+					class="!px-1 !py-0.5"
+				>
+					<option value="top"> Top </option>
+					<option value="middle"> Middle </option>
+					<option value="bottom"> Bottom </option>
+				</select>
+			</div>
+			<div>
+				<input
+					list="families"
+					bind:value={instance.states[state].family}
+					placeholder="Font family"
+					class="w-full px-1 dark:text-neutral-300 dark:bg-neutral-600 rounded-md outline-none"
+				>
+				<datalist id="families">
+					<option value="Liberation Sans"> Liberation Sans </option>
+					<option value="Archivo Black"> Archivo Black </option>
+					<option value="Comic Neue"> Comic Neue </option>
+					<option value="Courier Prime"> Courier Prime </option>
+					<option value="Tinos"> Tinos </option>
+					<option value="Anton"> Anton </option>
+					<option value="Liberation Serif"> Liberation Serif </option>
+					<option value="Open Sans"> Open Sans </option>
+					<option value="Fira Sans"> Fira Sans </option>
+				</datalist>
 			</div>
 			<div class="flex flex-row">
 				<span class="mr-3 font-bold"> B </span>
@@ -105,7 +138,7 @@
 				<input
 					{...{ type: "number" }}
 					bind:value={instance.states[state].size}
-					class="px-0.5 w-12 dark:text-neutral-300 dark:bg-neutral-600 rounded-md outline-none"
+					class="px-0.5 w-14 dark:text-neutral-300 dark:bg-neutral-600 rounded-md outline-none"
 				/>
 			</div>
 		</div>

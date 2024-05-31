@@ -56,6 +56,20 @@ pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 				let state_icon = path.join(state.image.clone());
 				state.image = convert_icon(state_icon.to_str().unwrap().to_owned());
 			}
+
+			match state.family.clone().to_lowercase().trim() {
+				"arial" => "Liberation Sans",
+				"arial black" => "Archivo Black",
+				"comic sans ms" => "Comic Neue",
+				"courier" | "Courier New" => "Courier Prime",
+				"georgia" => "Tinos",
+				"impact" => "Anton",
+				"microsoft sans serif" | "Times New Roman" => "Liberation Serif",
+				"tahoma" | "Verdana" => "Open Sans",
+				"trebuchet ms" => "Fira Sans",
+				v => v,
+			}
+			.clone_into(&mut state.family);
 		}
 	}
 

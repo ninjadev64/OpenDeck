@@ -46,6 +46,10 @@ pub struct ActionState {
 	#[serde(alias = "TitleAlignment")]
 	pub alignment: String,
 
+	#[serde_inline_default(String::from("Liberation Sans"))]
+	#[serde(alias = "FontFamily")]
+	pub family: String,
+
 	#[serde_inline_default(String::from("Regular"))]
 	#[serde(alias = "FontStyle")]
 	pub style: String,
