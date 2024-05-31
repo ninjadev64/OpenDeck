@@ -101,72 +101,35 @@
 		timeouts.push(setTimeout(() => showOk = 0, 2e3));
 	});
 
+	let canvas: HTMLCanvasElement;
 	let image: string;
 	$: {
 		if (slot.length > 1) {
 			image = state?.image!;
-			if (active) renderImage(context, state!, null!, false, false, false);
+			renderImage(canvas, context, state!, null!, false, false, false, active);
 		} else if (slot.length) {
 			let instance = slot[0];
 			let fallback = instance.action.states[instance.current_state].image ?? instance.action.icon;
 			image = getImage(state?.image, fallback);
-			if (active && state) renderImage(context, state, fallback, showOk > 0, showAlert > 0);
+			if (state) renderImage(canvas, context, state, fallback, showOk > 0, showAlert > 0, true, active);
+		} else if (canvas) {
+			let context = canvas.getContext("2d");
+			if (context) context.clearRect(0, 0, canvas.width, canvas.height);
 		}
 	}
 </script>
 
-<div
-	class="relative m-2 border-2 dark:border-neutral-700 rounded-md select-none"
-	style="width: calc(8rem * {scale}); height: calc(8rem * {scale});"
+<canvas
+	bind:this={canvas}
+	class="relative -m-2 border-2 dark:border-neutral-700 rounded-md select-none"
+	width="144" height="144"
+	style="scale: {(112 / 144) * scale};"
 	on:dragover on:drop
-	draggable on:dragstart
+	draggable="true" on:dragstart
 	role="cell" tabindex="-1"
 	on:click={select} on:keyup={select}
 	on:contextmenu={contextMenu}
->
-	{#if state}
-		<img
-			src={image}
-			class="p-2 w-full rounded-xl"
-			alt={slot.length == 1 ? slot[0].action.tooltip : "Multi Action"}
-		/>
-		{#if state.show}
-			<div class="absolute flex justify-center w-full h-full top-0 left-0 pointer-events-none">
-				<span
-					style="
-						font-size: calc({state.size}px * (112/72) * {scale});
-						font-family: '{state.family}', sans-serif;
-						color: {state.colour};
-					"
-					class:self-start={state.alignment == "top"}
-					class:self-center={state.alignment == "middle"}
-					class:self-end={state.alignment == "bottom"}
-					class:font-bold={state.style.includes("Bold")}
-					class:italic={state.style.includes("Italic")}
-					class:underline={state.underline}
-				>
-					{state.text}
-				</span>
-			</div>
-		{/if}
-		{#if showAlert > 0}
-			<img
-				src="/alert.png"
-				alt="Alert"
-				class="absolute top-0 left-0 p-2 w-full h-full transition-opacity duration-1000"
-				class:opacity-0={showAlert == 2}
-			/>
-		{/if}
-		{#if showOk}
-			<img
-				src="/ok.png"
-				alt="OK"
-				class="absolute top-0 left-0 p-2 w-full h-full transition-opacity duration-1000"
-				class:opacity-0={showOk == 2}
-			/>
-		{/if}
-	{/if}
-</div>
+/>
 
 {#if $openContextMenu && $openContextMenu?.context == context}
 	<div

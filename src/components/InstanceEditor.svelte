@@ -24,7 +24,7 @@
 
 <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 p-2 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 border-2 dark:border-neutral-600 rounded-lg z-10">
 	<div class="flex flex-row">
-		<div class="select-wrapper ml-2.5 w-full">
+		<div class="select-wrapper ml-2 mt-2 mb-1 w-full">
 			<select class="w-full" bind:value={state}>
 				{#each instance.states as _, i}
 					<option value={i}> State {i + 1} </option>
@@ -37,7 +37,7 @@
 		<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 		<img
 			src={getImage(instance.states[state].image, instance.action.states[state].image ?? instance.action.icon)}
-			class="mx-1 my-auto p-2 w-32 h-min aspect-square rounded-xl cursor-pointer"
+			class="mx-1 my-auto p-1 w-32 h-min aspect-square rounded-xl cursor-pointer"
 			alt="State {state}"
 			on:click={() => fileInput.click()} on:keyup={() => fileInput.click()}
 			on:contextmenu={(event) => {
@@ -57,13 +57,14 @@
 			}}
 		/>
 
-		<div class="flex flex-col p-2 space-y-2">
+		<div class="flex flex-col pl-1 pr-2 py-2 space-y-2">
 			<div class="flex flex-row space-x-2">
 				<span> Text </span>
-				<input
+				<textarea
 					bind:value={instance.states[state].text}
 					disabled={!instance.action.user_title_enabled}
-					class="w-full px-1 dark:text-neutral-300 dark:bg-neutral-600 rounded-md outline-none"
+					rows=1
+					class="w-full px-1 dark:text-neutral-300 dark:bg-neutral-600 rounded-md outline-none resize-none"
 				/>
 			</div>
 			<div class="flex flex-row items-center">

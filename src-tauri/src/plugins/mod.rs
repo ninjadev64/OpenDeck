@@ -67,7 +67,7 @@ pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 				"microsoft sans serif" | "Times New Roman" => "Liberation Serif",
 				"tahoma" | "Verdana" => "Open Sans",
 				"trebuchet ms" => "Fira Sans",
-				v => v,
+				_ => continue,
 			}
 			.clone_into(&mut state.family);
 		}

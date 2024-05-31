@@ -52,7 +52,7 @@
 
 <div class="flex flex-col h-80 overflow-scroll">
 	{#each slot as instance, index}
-		<div class="flex flex-row items-center mx-4 my-1 bg-neutral-100 dark:bg-neutral-900 rounded-md">
+		<div class="flex flex-row items-center mx-4 my-1 bg-neutral-100 dark:bg-neutral-800 rounded-md">
 			<Key inslot={[instance]} {context} active={false} scale={3/4} />
 			<p class="ml-4 text-xl dark:text-neutral-400"> {instance.action.name} </p>
 			<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
@@ -65,7 +65,7 @@
 		</div>
 	{/each}
 	<div
-		class="flex flex-row items-center mx-4 mt-1 mb-4 bg-neutral-100 dark:bg-neutral-900 border-2 border-dashed dark:border-neutral-700 rounded-md"
+		class="flex flex-row items-center mx-4 mt-1 mb-4 p-3 bg-neutral-100 dark:bg-neutral-800 border-2 border-dashed dark:border-neutral-700 rounded-md"
 		on:dragover={handleDragOver} on:drop={handleDrop}
 		role="cell" tabindex="-1"
 	>

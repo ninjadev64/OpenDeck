@@ -14,7 +14,7 @@
 		src={"http://localhost:57118/" + action.icon}
 		alt={localisation.tooltip}
 		class="w-12 h-12 rounded-sm"
-		draggable
+		draggable="true"
 		on:dragstart={handleDragStart}
 	/>
 	<span class="dark:text-neutral-400"> {localisation.name} </span>

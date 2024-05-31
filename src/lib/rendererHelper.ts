@@ -19,11 +19,16 @@ export function getImage(image: string | undefined, fallback: string | undefined
 	return image;
 }
 
-export async function renderImage(slotContext: Context, state: ActionState, fallback: string | undefined, showOk: boolean, showAlert: boolean, processImage: boolean = true) {
+export async function renderImage(canvas: HTMLCanvasElement, slotContext: Context, state: ActionState, fallback: string | undefined, showOk: boolean, showAlert: boolean, processImage: boolean, active: boolean) {
 	// Create canvas
-	let canvas = document.createElement("canvas");
-	canvas.width = 144;
-	canvas.height = 144;
+	let scale = 1;
+	if (!canvas) {
+		canvas = document.createElement("canvas");
+		canvas.width = 144;
+		canvas.height = 144;
+	} else {
+		scale = canvas.width / 144;
+	}
 	let context = canvas.getContext("2d");
 	if (!context) return;
 
@@ -41,21 +46,25 @@ export async function renderImage(slotContext: Context, state: ActionState, fall
 
 	// Draw text
 	if (state.show) {
+		const size = parseInt(state.size) * 2 * scale;
 		context.textAlign = "center";
 		context.font =
 			(state.style.includes("Bold") ? "bold " : "") + (state.style.includes("Italic") ? "italic " : "") +
-			`${parseInt(state.size) * 2}px "${state.family}", sans-serif`;
+			`${size}px "${state.family}", sans-serif`;
 		context.fillStyle = state.colour;
+		context.textBaseline = "top";
 		let x = canvas.width / 2;
-		let y = canvas.height / 2 + (parseInt(state.size) / 4);
+		let y = canvas.height / 2 - (size * state.text.split("\n").length * 0.5);
 		switch (state.alignment) {
-			case "top": y = parseInt(state.size); break;
-			case "bottom": y = canvas.height - 5; break;
+			case "top": y = -(size * 0.2); break;
+			case "bottom": y = canvas.height - (size * state.text.split("\n").length) - 5; break;
 		}
-		context.fillText(state.text, x, y);
-		if (state.underline) {
-			let width = context.measureText(state.text).width;
-			context.fillRect(x - (width / 2), y + 2, width, 3);
+		for (const [ index, line ] of Object.entries(state.text.split("\n"))) {
+			context.fillText(line, x, y + (size * parseInt(index)));
+			if (state.underline) {
+				let width = context.measureText(line).width;
+				context.fillRect(x - (width / 2), y + (size * parseInt(index)) + size, width, 3);
+			}
 		}
 	}
 
@@ -79,6 +88,5 @@ export async function renderImage(slotContext: Context, state: ActionState, fall
 		context.drawImage(alertImage, 0, 0, canvas.width, canvas.height);
 	}
 
-	await invoke("update_image", { context: slotContext, image: canvas.toDataURL("image/jpeg") });
-	canvas.remove();
+	if (active) await invoke("update_image", { context: slotContext, image: canvas.toDataURL("image/jpeg") });
 }
