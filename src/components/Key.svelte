@@ -41,8 +41,10 @@
 	}
 
 	listen("update_state", ({ payload }: { payload: { context: Context, contents: ActionInstance[] }}) => {
-		if (JSON.stringify(payload.context) == JSON.stringify(context) || payload.contents[0]?.context == slot[0]?.context) {
+		if (JSON.stringify(payload.context) == JSON.stringify(context)) {
 			slot = payload.contents;
+		} else if (payload.contents[0]?.context == slot[0]?.context) {
+			slot[0] = payload.contents[0];
 		}
 	});
 
@@ -165,7 +167,7 @@
 	{/if}
 </div>
 
-{#if $openContextMenu?.context == context}
+{#if $openContextMenu && $openContextMenu?.context == context}
 	<div
 		class="absolute text-sm font-semibold w-32 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 border-2 dark:border-neutral-600 rounded-lg divide-y z-10"
 		style="left: {$openContextMenu.x}px; top: {$openContextMenu.y}px;"

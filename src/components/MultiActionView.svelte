@@ -1,12 +1,13 @@
 <script lang="ts">
-    import type { ActionInstance } from "$lib/ActionInstance";
-    import type { Context } from "$lib/Context";
-    import type { Profile } from "$lib/Profile";
+	import type { ActionInstance } from "$lib/ActionInstance";
+	import type { Context } from "$lib/Context";
+	import type { Profile } from "$lib/Profile";
+
+	import Trash from "phosphor-svelte/lib/Trash";
+	import Key from "./Key.svelte";
 
 	import { inspectedMultiAction } from "$lib/propertyInspector";
 	import { invoke } from "@tauri-apps/api";
-
-    import Key from "./Key.svelte";
 
 	export let profile: Profile;
 
@@ -55,12 +56,12 @@
 			<Key inslot={[instance]} {context} active={false} scale={3/4} />
 			<p class="ml-4 text-xl dark:text-neutral-400"> {instance.action.name} </p>
 			<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-			<img
-				src="/rubbish.png"
-				class="ml-auto mr-10 w-8 cursor-pointer"
-				alt="Remove action"
+			<button
+				class="ml-auto mr-10"
 				on:click={() => removeInstance(index)} on:keyup={() => removeInstance(index)}
-			/>
+			>
+				<Trash size="32" color={document.documentElement.classList.contains("dark") ? "#C0BFBC" : "#77767B"} />
+			</button>
 		</div>
 	{/each}
 	<div

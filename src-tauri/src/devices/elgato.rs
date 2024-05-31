@@ -36,6 +36,7 @@ pub(super) async fn init(device: AsyncStreamDeck) {
 		info::PID_STREAMDECK_PLUS => 7,
 		_ => 7,
 	};
+	let _ = device.clear_all_button_images().await;
 	let device_id = format!("sd-{}", device.serial_number().await.unwrap());
 	super::register_device(
 		device_id.clone(),

@@ -36,11 +36,14 @@
 		if (id.includes("/")) {
 			let folder = id.split("/")[0];
 			let name = id.split("/")[1];
-			if (folders[folder] && !folders[folder].includes(name)) folders[folder].push(name);
+			if (folders[folder]) {
+				if (!folders[folder].includes(name)) folders[folder].push(name);
+			}
 			else folders[folder] = [ name ];
 		} else {
 			if (!folders[""].includes(id)) folders[""].push(id);
 		}
+		folders = folders;
 	}
 
 	async function deleteProfile(id: string) {

@@ -45,7 +45,7 @@
 		/>
 
 		<div class="flex flex-col p-2 space-y-2">
-			<div class="select-wrapper">
+			<div class="select-wrapper w-[calc(100%-1.25rem)]">
 				<select class="w-full" bind:value={state}>
 					{#each instance.states as _, i}
 						<option value={i}> State {i + 1} </option>
