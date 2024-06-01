@@ -31,6 +31,7 @@ export async function renderImage(canvas: HTMLCanvasElement, slotContext: Contex
 	}
 	let context = canvas.getContext("2d");
 	if (!context) return;
+	context.clearRect(0, 0, canvas.width, canvas.height);
 
 	// Load image
 	let image = document.createElement("img");

@@ -33,7 +33,7 @@ where
 	}
 
 	/// Save the relevant Store as a file.
-	pub fn save(&self) -> anyhow::Result<(), anyhow::Error> {
+	pub fn save(&self) -> Result<(), anyhow::Error> {
 		fs::create_dir_all(self.path.parent().unwrap())?;
 		fs::write(&self.path, serde_json::to_string_pretty(&self.value)?)?;
 		Ok(())
@@ -53,7 +53,7 @@ impl Default for Settings {
 		Self {
 			language: "en".to_owned(),
 			autolaunch: false,
-			darktheme: false,
+			darktheme: true,
 		}
 	}
 }

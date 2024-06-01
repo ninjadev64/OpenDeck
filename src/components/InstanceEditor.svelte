@@ -42,7 +42,11 @@
 			on:click={() => fileInput.click()} on:keyup={() => fileInput.click()}
 			on:contextmenu={(event) => {
 				event.preventDefault();
-				instance.states[state].image = instance.action.states[state].image;
+				if (event.ctrlKey) {
+					instance.states[state].image = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIW2NgYGD4DwABBAEAwS2OUAAAAABJRU5ErkJggg==";
+				} else {
+					instance.states[state].image = instance.action.states[state].image;
+				}
 			}}
 		/>
 		<input

@@ -26,7 +26,7 @@
 
 	let state: ActionState | undefined;
 	$: {
-		if (!slot.length) {
+		if (!slot || !slot.length) {
 			state = undefined;
 		} else if (slot.length > 1) {
 			// @ts-expect-error
@@ -81,40 +81,40 @@
 		inslot = slot;
 	}
 
-	let showAlert = 0;
-	let showOk = 0;
+	let showAlert: boolean = false;
+	let showOk: boolean = false;
 	let timeouts: number[] = [];
 	listen("show_alert", ({ payload }: { payload: string }) => {
 		if (slot.length != 1 || payload != slot[0].context) return;
 		timeouts.forEach(clearTimeout);
-		showOk = 0;
-		showAlert = 1;
-		timeouts.push(setTimeout(() => showAlert = 2, 1e3));
-		timeouts.push(setTimeout(() => showAlert = 0, 2e3));
+		showOk = false;
+		showAlert = true;
+		timeouts.push(setTimeout(() => showAlert = false, 1.5e3));
 	});
 	listen("show_ok", ({ payload }: { payload: string }) => {
 		if (slot.length != 1 || payload != slot[0].context) return;
 		timeouts.forEach(clearTimeout);
-		showAlert = 0;
-		showOk = 1;
-		timeouts.push(setTimeout(() => showOk = 2, 1e3));
-		timeouts.push(setTimeout(() => showOk = 0, 2e3));
+		showAlert = false;
+		showOk = true;
+		timeouts.push(setTimeout(() => showOk = false, 1.5e3));
 	});
 
 	let canvas: HTMLCanvasElement;
 	let image: string;
 	$: {
-		if (slot.length > 1) {
+		if (!slot || slot.length == 0) {
+			if (canvas) {
+				let context = canvas.getContext("2d");
+				if (context) context.clearRect(0, 0, canvas.width, canvas.height);
+			}
+		} else if (slot.length > 1) {
 			image = state?.image!;
 			renderImage(canvas, context, state!, null!, false, false, false, active);
 		} else if (slot.length) {
 			let instance = slot[0];
 			let fallback = instance.action.states[instance.current_state].image ?? instance.action.icon;
 			image = getImage(state?.image, fallback);
-			if (state) renderImage(canvas, context, state, fallback, showOk > 0, showAlert > 0, true, active);
-		} else if (canvas) {
-			let context = canvas.getContext("2d");
-			if (context) context.clearRect(0, 0, canvas.width, canvas.height);
+			if (state) renderImage(canvas, context, state, fallback, showOk, showAlert, true, active);
 		}
 	}
 </script>

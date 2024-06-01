@@ -57,9 +57,9 @@ pub fn initialise_devices() {
 			id: "virtual".to_owned(),
 			name: "Virtual device".to_owned(),
 			rows: 3,
-			columns: 3,
-			sliders: 2,
-			r#type: 7,
+			columns: 5,
+			sliders: 0,
+			r#type: 0,
 		};
 		register_device("virtual".to_owned(), device).await;
 	});

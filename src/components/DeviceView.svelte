@@ -47,30 +47,32 @@
 	}
 </script>
 
-<div class="flex flex-row">
-	{#each { length: device.sliders } as _, i}
-		<Slider
-			context={{ device: device.id, profile: profile.id, controller: "Encoder", position: i }}
-			bind:slot={profile.sliders[i]}
-			on:dragover={handleDragOver}
-			on:drop={(event) => handleDrop(event, "Encoder", i)}
-			on:dragstart={(event) => handleDragStart(event, "Encoder", i)}
-		/>
-	{/each}
-
-	<div class="flex flex-col">
-		{#each { length: device.rows } as _, r}
-			<div class="flex flex-row">
-				{#each { length: device.columns } as _, c}
-					<Key
-						context={{ device: device.id, profile: profile.id, controller: "Keypad", position: (r * device.columns) + c }}
-						bind:inslot={profile.keys[(r * device.columns) + c]}
-						on:dragover={handleDragOver}
-						on:drop={(event) => handleDrop(event, "Keypad", (r * device.columns) + c)}
-						on:dragstart={(event) => handleDragStart(event, "Keypad", (r * device.columns) + c)}
-					/>
-				{/each}
-			</div>
+{#key device}
+	<div class="flex flex-row">
+		{#each { length: device.sliders } as _, i}
+			<Slider
+				context={{ device: device.id, profile: profile.id, controller: "Encoder", position: i }}
+				bind:slot={profile.sliders[i]}
+				on:dragover={handleDragOver}
+				on:drop={(event) => handleDrop(event, "Encoder", i)}
+				on:dragstart={(event) => handleDragStart(event, "Encoder", i)}
+			/>
 		{/each}
+
+		<div class="flex flex-col">
+			{#each { length: device.rows } as _, r}
+				<div class="flex flex-row">
+					{#each { length: device.columns } as _, c}
+						<Key
+							context={{ device: device.id, profile: profile.id, controller: "Keypad", position: (r * device.columns) + c }}
+							bind:inslot={profile.keys[(r * device.columns) + c]}
+							on:dragover={handleDragOver}
+							on:drop={(event) => handleDrop(event, "Keypad", (r * device.columns) + c)}
+							on:dragstart={(event) => handleDragStart(event, "Keypad", (r * device.columns) + c)}
+						/>
+					{/each}
+				</div>
+			{/each}
+		</div>
 	</div>
-</div>
+{/key}

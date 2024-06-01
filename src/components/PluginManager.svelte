@@ -19,7 +19,7 @@
 		}
 		try {
 			await invoke("install_plugin", { id: plugin.id });
-			alert(`Successfully installed ${plugin.name}`);
+			alert(`Successfully installed "${plugin.name}".`);
 			actionList.reload();
 			plugins = await invoke("list_plugins");
 		} catch (error: any) {
@@ -31,7 +31,7 @@
 		if (!await confirm(`Are you sure you want to remove ${plugin.name}? This action will relaunch OpenDeck.`)) return;
 		try {
 			await invoke("remove_plugin", { id: plugin.id });
-			alert(`Successfully removed ${plugin.name}`);
+			alert(`Successfully removed "${plugin.name}".`);
 		} catch (error: any) {
 			alert(`Failed to remove ${plugin.name}: ${error.description}`);
 		}

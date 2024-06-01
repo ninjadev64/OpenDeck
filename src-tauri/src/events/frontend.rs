@@ -76,7 +76,7 @@ pub async fn get_selected_profile(device: String) -> Result<crate::shared::Profi
 
 #[allow(clippy::flat_map_identity)]
 #[command]
-pub async fn set_selected_profile(app: AppHandle, device: String, id: String) -> Result<(), Error> {
+pub async fn set_selected_profile(app: AppHandle, device: String, id: String, profile: Option<crate::shared::Profile>) -> Result<(), Error> {
 	let mut device_stores = DEVICE_STORES.write().await;
 	let devices = DEVICES.read().await;
 	let mut profile_stores = PROFILE_STORES.write().await;
@@ -92,12 +92,17 @@ pub async fn set_selected_profile(app: AppHandle, device: String, id: String) ->
 	}
 
 	// We must use the mutable version of get_profile_store in order to create the store if it does not exist.
-	let new_profile = &profile_stores.get_profile_store_mut(devices.get(&device).unwrap(), &id, &app)?.value;
+	let store = profile_stores.get_profile_store_mut(devices.get(&device).unwrap(), &id, &app)?;
+	let new_profile = &mut store.value;
+	if let Some(profile) = profile {
+		*new_profile = profile;
+	}
 	for slot in new_profile.keys.iter().chain(&new_profile.sliders) {
 		for instance in slot {
 			let _ = crate::events::outbound::will_appear::will_appear(instance, slot.len() > 1).await;
 		}
 	}
+	store.save()?;
 
 	device_stores.set_selected_profile(&device, id, &app)?;
 

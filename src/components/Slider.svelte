@@ -11,7 +11,7 @@
 	export let context: Context;
 	export let slot: ActionInstance[];
 
-	$: state = slot[0]?.states[slot[0]?.current_state];
+	$: state = slot ? slot[0]?.states[slot[0]?.current_state] : undefined;
 
 	listen("update_state", ({ payload }: { payload: { context: Context, contents: ActionInstance[] }}) => {
 		if (JSON.stringify(payload.context) == JSON.stringify(context)) slot = payload.contents;
@@ -51,7 +51,7 @@
 
 	let image: string;
 	$: {
-		if (slot.length) {
+		if (slot && slot.length) {
 			image = getImage(state?.image, slot[0].action.states[slot[0].current_state].image ?? slot[0].action.icon);
 		}
 	}
