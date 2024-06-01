@@ -40,7 +40,7 @@ os_info = "3.8"
 urlencoding = "2.1"
 base64 = "0.22"
 reqwest = "0.12"
-zip-extract = { version = "0.1", default-features = false, features = [ "deflate", "zstd" ] }
+zip = { version = "0.6.6", default-features = false, features = [ "deflate", "zstd" ] }
 
 [features]
 custom-protocol = [ "tauri/custom-protocol" ]

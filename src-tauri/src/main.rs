@@ -6,6 +6,7 @@ mod events;
 mod plugins;
 mod shared;
 mod store;
+mod zip_extract;
 
 mod built_info {
 	include!(concat!(env!("OUT_DIR"), "/built.rs"));

@@ -44,7 +44,7 @@
 			}
 		},
 		"security": {
-			"csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: http://localhost:57118 https://plugins.amansprojects.com; frame-src http://localhost:57118; connect-src https://plugins.amansprojects.com;"
+			"csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: http://localhost:57118 https://ninjadev64.github.io https://plugins.amansprojects.com; frame-src http://localhost:57118; connect-src https://ninjadev64.github.io https://api.github.com https://plugins.amansprojects.com;"
 		},
 		"allowlist": {
 			"shell": {

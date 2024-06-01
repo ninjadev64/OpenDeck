@@ -2620,7 +2620,7 @@ dependencies = [
  "tokio",
  "tokio-tungstenite",
  "urlencoding",
- "zip-extract",
+ "zip",
 ]
 
 [[package]]
@@ -5616,17 +5616,6 @@ dependencies = [
  "crossbeam-utils",
  "flate2",
  "zstd",
-]
-
-[[package]]
-name = "zip-extract"
-version = "0.1.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e109e5a291403b4c1e514d39f8a22d3f98d257e691a52bb1f16051bb1ffed63e"
-dependencies = [
- "log",
- "thiserror",
- "zip",
 ]
 
 [[package]]

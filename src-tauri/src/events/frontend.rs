@@ -292,8 +292,8 @@ pub async fn set_state(instance: ActionInstance, state: u16) -> Result<(), Error
 }
 
 #[command]
-pub async fn install_plugin(app: AppHandle, id: String) -> Result<(), Error> {
-	let resp = match reqwest::get(format!("https://plugins.amansprojects.com/rezipped/{id}.zip")).await {
+pub async fn install_plugin(app: AppHandle, id: String, url: Option<String>) -> Result<(), Error> {
+	let resp = match reqwest::get(url.unwrap_or(format!("https://plugins.amansprojects.com/rezipped/{id}.zip"))).await {
 		Ok(resp) => resp,
 		Err(error) => return Err(anyhow::Error::from(error).into()),
 	};
@@ -311,7 +311,7 @@ pub async fn install_plugin(app: AppHandle, id: String) -> Result<(), Error> {
 	let actual = config_dir.join("plugins").join(format!("{id}.sdPlugin"));
 
 	let _ = tokio::fs::rename(&actual, &temp).await;
-	if let Err(error) = zip_extract::extract(std::io::Cursor::new(bytes), &config_dir.join("plugins"), false) {
+	if let Err(error) = crate::zip_extract::extract(std::io::Cursor::new(bytes), &config_dir.join("plugins")) {
 		log::error!("Failed to unzip file: {}", error.to_string());
 		let _ = tokio::fs::rename(&temp, &actual).await;
 		let _ = crate::plugins::initialise_plugin(&actual).await;
