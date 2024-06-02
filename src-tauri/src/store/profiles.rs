@@ -3,7 +3,6 @@ use crate::shared::Profile;
 
 use std::collections::HashMap;
 use std::fs;
-use std::iter::repeat_with;
 use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
@@ -40,8 +39,8 @@ impl ProfileStores {
 		} else {
 			let default = Profile {
 				id: id.to_owned(),
-				keys: repeat_with(Vec::new).take((device.rows * device.columns).into()).collect(),
-				sliders: repeat_with(Vec::new).take(device.sliders.into()).collect(),
+				keys: vec![vec![]; (device.rows * device.columns) as usize],
+				sliders: vec![vec![]; device.sliders as usize],
 			};
 
 			let store = Store::new(path, app.path_resolver().app_config_dir().unwrap(), default).context(format!("Failed to create store for profile {}", path))?;

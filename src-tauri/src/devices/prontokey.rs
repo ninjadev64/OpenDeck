@@ -17,7 +17,7 @@ enum ProntoKeyMessage {
 #[allow(clippy::assigning_clones)]
 pub async fn init(port: String) {
 	let mut initialised = false;
-	let mut device_id = "".to_owned();
+	let mut device_id = String::new();
 
 	let mut last_keys: [u8; 9] = [0; 9];
 	let mut last_sliders: [u16; 2] = [0; 2];
@@ -32,7 +32,7 @@ pub async fn init(port: String) {
 	let _ = port.write("#".as_bytes());
 
 	let serial_buf: &mut [u8] = &mut [0; 64];
-	let mut holding_string = String::from("");
+	let mut holding_string = String::new();
 
 	loop {
 		match port.read(serial_buf) {
