@@ -302,7 +302,7 @@ pub async fn install_plugin(app: AppHandle, id: String, url: Option<String>) -> 
 		Err(error) => return Err(anyhow::Error::from(error).into()),
 	};
 
-	let _ = crate::plugins::deactivate_plugin(app.clone(), &format!("{}.sdPlugin", id)).await;
+	let _ = crate::plugins::deactivate_plugin(&app, &format!("{}.sdPlugin", id)).await;
 
 	let config_dir = app.path_resolver().app_config_dir().unwrap();
 	let _ = tokio::fs::create_dir_all(config_dir.join("temp")).await;
@@ -375,12 +375,16 @@ pub async fn remove_plugin(app: AppHandle, id: String) -> Result<(), Error> {
 		remove_instance(context).await?;
 	}
 
+	crate::plugins::deactivate_plugin(&app, &id).await?;
 	if let Err(error) = tokio::fs::remove_dir_all(app.path_resolver().app_config_dir().unwrap().join("plugins").join(&id)).await {
 		return Err(anyhow::Error::from(error).into());
 	}
-	let _ = tokio::fs::write(app.path_resolver().app_config_dir().unwrap().join("plugins").join("removed.txt"), id).await;
 
-	app.restart();
+	let mut categories = CATEGORIES.write().await;
+	for category in categories.values_mut() {
+		category.retain(|v| v.plugin != id);
+	}
+	categories.retain(|_, v| !v.is_empty());
 
 	Ok(())
 }

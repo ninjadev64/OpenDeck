@@ -25,11 +25,13 @@
 
 <div class="grow mt-1 overflow-auto">
 	{#each Object.entries(categories) as [ name, actions ]}
-		<h3 class="text-xl font-semibold dark:text-neutral-300"> {name} </h3>
-		{#each actions as action}
-			{#if action.visible_in_action_list}
-				<ListedAction {action} localisation={localiseAction(action, $localisations)} />
-			{/if}
-		{/each}
+		<details open class="mb-2">
+			<summary class="text-xl font-semibold dark:text-neutral-300"> {name} </summary>
+			{#each actions as action}
+				{#if action.visible_in_action_list}
+					<ListedAction {action} localisation={localiseAction(action, $localisations)} />
+				{/if}
+			{/each}
+		</details>
 	{/each}
 </div>

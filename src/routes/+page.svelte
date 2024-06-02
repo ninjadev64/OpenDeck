@@ -21,6 +21,7 @@
 	$: _selectedProfile = selectedProfile;
 
 	let actionList: ActionList;
+	let profileSelector: ProfileSelector;
 </script>
 
 <div class="flex flex-col grow">
@@ -41,13 +42,17 @@
 	{#if !$inspectedMultiAction}
 		<DeviceSelector bind:device={selectedDevice} />
 		{#if selectedDevice}
-			<ProfileSelector bind:device={_selectedDevice} bind:profile={selectedProfile} />
+			<ProfileSelector
+				bind:device={_selectedDevice}
+				bind:profile={selectedProfile}
+				bind:this={profileSelector}
+			/>
 		{/if}
 	{/if}
 	<ActionList bind:this={actionList} />
 	<hr class="mt-2 border dark:border-neutral-700" />
 	<div class="flex flex-row">
-		<PluginManager {actionList} />
+		<PluginManager bind:actionList bind:profileSelector />
 		<SettingsView />
 	</div>
 </div>

@@ -38,6 +38,9 @@
 		else folders[folder] = [ id ];
 		folders = folders;
 	}
+	export async function reload() {
+		await setProfile(value);
+	}
 
 	async function deleteProfile(id: string) {
 		await invoke("delete_profile", { device: device.id, profile: id });

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type ActionList from "./ActionList.svelte";
+	import type ProfileSelector from "./ProfileSelector.svelte";
 
 	import CloudArrowDown from "phosphor-svelte/lib/CloudArrowDown";
 	import Trash from "phosphor-svelte/lib/Trash";
@@ -12,20 +13,19 @@
 	import { invoke } from "@tauri-apps/api";
 
 	export let actionList: ActionList;
+	export let profileSelector: ProfileSelector;
 
 	let showPopup: boolean;
 
 	async function installPlugin(id: string, name: string, url: string | undefined = undefined) {
-		if (!await confirm(`Install ${name}? It may take a while to download the plugin.`)) {
-			return;
-		}
+		if (!await confirm(`Install "${name}"? It may take a while to download the plugin.`)) return;
 		try {
 			await invoke("install_plugin", { id, url });
 			alert(`Successfully installed "${name}".`);
 			actionList.reload();
 			installed = await invoke("list_plugins");
 		} catch (error: any) {
-			alert(`Failed to install ${name}: ${error.description}`);
+			alert(`Failed to install ${name}: ${error}`);
 		}
 	}
 
@@ -74,12 +74,15 @@
 	}
 
 	async function removePlugin(plugin: any) {
-		if (!await confirm(`Are you sure you want to remove ${plugin.name}? This action will relaunch OpenDeck.`)) return;
+		if (!await confirm(`Are you sure you want to remove "${plugin.name}"?`)) return;
 		try {
 			await invoke("remove_plugin", { id: plugin.id });
 			alert(`Successfully removed "${plugin.name}".`);
+			actionList.reload();
+			profileSelector.reload();
+			installed = await invoke("list_plugins");
 		} catch (error: any) {
-			alert(`Failed to remove ${plugin.name}: ${error.description}`);
+			alert(`Failed to remove ${plugin.name}: ${error}`);
 		}
 	}
 
