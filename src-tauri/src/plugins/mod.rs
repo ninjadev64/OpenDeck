@@ -150,8 +150,8 @@ pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 			.visible(false)
 			.build()?;
 
-		// #[cfg(debug_assertions)]
-		// window.open_devtools();
+		#[cfg(debug_assertions)]
+		window.open_devtools();
 
 		window.eval(&format!(
 			"const opendeckInit = () => {{
