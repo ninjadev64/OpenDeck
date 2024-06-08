@@ -11,6 +11,8 @@
 	export let device: DeviceInfo;
 	export let profile: Profile;
 
+	export let selectedDevice: string;
+
 	function handleDragOver(event: DragEvent) {
 		event.preventDefault();
 		return true;
@@ -48,7 +50,7 @@
 </script>
 
 {#key device}
-	<div class="flex flex-row">
+	<div class="flex flex-row" class:hidden={selectedDevice !== device.id}>
 		{#each { length: device.sliders } as _, i}
 			<Slider
 				context={{ device: device.id, profile: profile.id, controller: "Encoder", position: i }}

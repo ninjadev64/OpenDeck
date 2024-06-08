@@ -29,6 +29,13 @@
 
 	(async () => devices = await invoke("get_devices"))();
 	listen("devices", ({ payload }: { payload: { [id: string]: DeviceInfo }}) => devices = payload);
+	listen("switch_profile", async ({ payload }: { payload: { device: string, profile: string }}) => {
+		let p: Profile | undefined = undefined;
+		await invoke("set_selected_profile", { device: payload.device, id: payload.profile, profile: p });
+		if (p === undefined)
+			return;
+		selectedProfile[payload.device] = p
+	});
 </script>
 
 <div class="select-wrapper">

@@ -31,10 +31,7 @@
 	{:else if Object.keys(devices).length > 0 && selectedProfile}
 		{#each Object.entries(devices).sort() as [ id, device ]}
 			{#if device && selectedProfile[id]}
-				<div class:hidden={id !== selectedDevice}>
-					<DeviceView bind:device={device} bind:profile={selectedProfile[id]}  />
-				</div>
-
+					<DeviceView bind:device={device} bind:profile={selectedProfile[id]} bind:selectedDevice={selectedDevice}  />
 			{/if}
 		{/each}
 	{:else}
