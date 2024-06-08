@@ -21,7 +21,7 @@ pub async fn open_url(event: PayloadEvent<OpenUrlEvent>) -> Result<(), anyhow::E
 }
 
 pub async fn log_message(event: PayloadEvent<LogMessageEvent>) -> Result<(), anyhow::Error> {
-	log::info!("{}", event.payload.message);
+	log::info!("{}", event.payload.message.trim());
 	Ok(())
 }
 

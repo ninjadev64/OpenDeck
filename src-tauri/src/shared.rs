@@ -19,48 +19,46 @@ pub fn convert_icon(path: String) -> String {
 }
 
 /// A state of an action.
-#[serde_inline_default]
 #[derive(Clone, Serialize, Deserialize)]
+#[serde(default)]
 pub struct ActionState {
-	#[serde_inline_default(String::from("actionDefaultImage"))]
 	#[serde(alias = "Image")]
 	pub image: String,
-
-	#[serde_inline_default(String::from(""))]
 	#[serde(alias = "Name")]
 	pub name: String,
-
-	#[serde_inline_default(String::from(""))]
 	#[serde(alias = "Title")]
 	pub text: String,
-
-	#[serde_inline_default(true)]
 	#[serde(alias = "ShowTitle")]
 	pub show: bool,
-
-	#[serde_inline_default(String::from("#f2f2f2"))]
 	#[serde(alias = "TitleColor")]
 	pub colour: String,
-
-	#[serde_inline_default(String::from("middle"))]
 	#[serde(alias = "TitleAlignment")]
 	pub alignment: String,
-
-	#[serde_inline_default(String::from("Liberation Sans"))]
 	#[serde(alias = "FontFamily")]
 	pub family: String,
-
-	#[serde_inline_default(String::from("Regular"))]
 	#[serde(alias = "FontStyle")]
 	pub style: String,
-
-	#[serde_inline_default(String::from("16"))]
 	#[serde(alias = "FontSize")]
 	pub size: String,
-
-	#[serde_inline_default(false)]
 	#[serde(alias = "FontUnderline")]
 	pub underline: bool,
+}
+
+impl Default for ActionState {
+	fn default() -> Self {
+		Self {
+			image: "actionDefaultImage".to_owned(),
+			name: String::new(),
+			text: String::new(),
+			show: true,
+			colour: "#FFFFFF".to_owned(),
+			alignment: "middle".to_owned(),
+			family: "Liberation Sans".to_owned(),
+			style: "Regular".to_owned(),
+			size: "16".to_owned(),
+			underline: false,
+		}
+	}
 }
 
 /// An action, deserialised from the plugin manifest.
@@ -73,14 +71,14 @@ pub struct Action {
 	#[serde(alias = "UUID")]
 	pub uuid: String,
 
-	#[serde_inline_default(String::from(""))]
+	#[serde_inline_default(String::new())]
 	pub plugin: String,
 
-	#[serde_inline_default(String::from(""))]
+	#[serde_inline_default(String::new())]
 	#[serde(alias = "Tooltip")]
 	pub tooltip: String,
 
-	#[serde_inline_default(String::from(""))]
+	#[serde_inline_default(String::new())]
 	#[serde(alias = "Icon")]
 	pub icon: String,
 
@@ -100,11 +98,11 @@ pub struct Action {
 	#[serde(alias = "UserTitleEnabled")]
 	pub user_title_enabled: bool,
 
-	#[serde_inline_default(String::from(""))]
+	#[serde_inline_default(String::new())]
 	#[serde(alias = "PropertyInspectorPath")]
 	pub property_inspector: String,
 
-	#[serde_inline_default(vec![String::from("Keypad")])]
+	#[serde_inline_default(vec!["Keypad".to_owned()])]
 	#[serde(alias = "Controllers")]
 	pub controllers: Vec<String>,
 

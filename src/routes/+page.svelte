@@ -60,7 +60,7 @@
 	<ActionList bind:this={actionList} />
 	<hr class="mt-2 border dark:border-neutral-700" />
 	<div class="flex flex-row">
-		<PluginManager bind:actionList bind:profileSelector />
+		<PluginManager actionList={() => actionList} profileSelector={() => profileSelector} />
 		<SettingsView />
 	</div>
 </div>

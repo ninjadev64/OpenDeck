@@ -25,7 +25,7 @@ pub struct PluginManifest {
 	#[serde(alias = "Icon")]
 	pub icon: String,
 
-	#[serde_inline_default(String::from("Custom"))]
+	#[serde_inline_default("Custom".to_owned())]
 	#[serde(alias = "Category")]
 	pub category: String,
 

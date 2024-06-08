@@ -55,7 +55,7 @@ pub async fn title_parameters_did_change(instance: &ActionInstance, state: u16) 
 				state: instance.current_state,
 				title: state.text,
 				titleParameters: TitleParameters {
-					fontFamily: "".to_owned(),
+					fontFamily: String::new(),
 					fontSize: state.size.parse().unwrap(),
 					fontStyle: state.style,
 					fontUnderline: state.underline,

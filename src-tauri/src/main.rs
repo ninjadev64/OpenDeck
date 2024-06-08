@@ -63,6 +63,12 @@ async fn main() {
 			tauri_plugin_log::Builder::default()
 				.targets([LogTarget::LogDir, LogTarget::Stdout])
 				.level(log::LevelFilter::Debug)
+				.filter(|v| {
+					!matches!(
+						v.target(),
+						"tungstenite::handshake::server" | "tungstenite::protocol" | "tracing::span" | "zbus::handshake" | "zbus::connection"
+					)
+				})
 				.build(),
 		)
 		.plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, Some(vec!["--hide"])))
@@ -91,7 +97,7 @@ async fn main() {
 		.build(tauri::generate_context!())
 	{
 		Ok(app) => app,
-		Err(error) => panic!("Failed to create Tauri application: {}", error),
+		Err(error) => panic!("failed to create Tauri application: {}", error),
 	};
 
 	if std::env::args().any(|v| v == "--hide") {

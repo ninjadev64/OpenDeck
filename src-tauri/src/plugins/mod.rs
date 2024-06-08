@@ -34,8 +34,8 @@ pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 	let plugin_uuid = path.file_name().unwrap().to_str().unwrap();
 	let manifest_path = path.join("manifest.json");
 
-	let manifest = fs::read(&manifest_path).context("Failed to read manifest")?;
-	let mut manifest: manifest::PluginManifest = serde_json::from_slice(&manifest).context("Failed to parse manifest")?;
+	let manifest = fs::read(&manifest_path).context("failed to read manifest")?;
+	let mut manifest: manifest::PluginManifest = serde_json::from_slice(&manifest).context("failed to parse manifest")?;
 
 	for action in &mut manifest.actions {
 		plugin_uuid.clone_into(&mut action.plugin);
@@ -145,7 +145,7 @@ pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 
 	if code_path.ends_with(".html") {
 		// Create a webview window for the plugin and call its registration function.
-		let url = String::from("http://localhost:57118/") + path.join(code_path).to_str().unwrap();
+		let url = "http://localhost:57118/".to_owned() + path.join(code_path).to_str().unwrap();
 		let window = tauri::WindowBuilder::new(APP_HANDLE.get().unwrap(), plugin_uuid.replace('.', "_"), tauri::WindowUrl::External(url.parse()?))
 			.visible(false)
 			.build()?;
@@ -172,7 +172,7 @@ pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 		INSTANCES.lock().await.insert(plugin_uuid.to_owned(), PluginInstance::Webview);
 	} else if use_wine {
 		if Command::new("wine").stdout(Stdio::null()).stderr(Stdio::null()).spawn().is_err() {
-			return Err(anyhow!("Failed to detect an installation of Wine to run plugin {}", plugin_uuid));
+			return Err(anyhow!("failed to detect an installation of Wine"));
 		}
 
 		// Start Wine with the appropriate arguments.
@@ -180,13 +180,13 @@ pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 			.current_dir(path)
 			.args([
 				code_path,
-				String::from("-port"),
-				57116.to_string(),
-				String::from("-pluginUUID"),
+				"-port".to_owned(),
+				"57116".to_owned(),
+				"-pluginUUID".to_owned(),
 				plugin_uuid.to_owned(),
-				String::from("-registerEvent"),
-				String::from("registerPlugin"),
-				String::from("-info"),
+				"-registerEvent".to_owned(),
+				"registerPlugin".to_owned(),
+				"-info".to_owned(),
 				serde_json::to_string(&info)?,
 			])
 			.stdout(Stdio::null())
@@ -200,13 +200,13 @@ pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 		let child = Command::new(path.join(code_path))
 			.current_dir(path)
 			.args([
-				String::from("-port"),
-				57116.to_string(),
-				String::from("-pluginUUID"),
+				"-port".to_owned(),
+				"57116".to_owned(),
+				"-pluginUUID".to_owned(),
 				plugin_uuid.to_owned(),
-				String::from("-registerEvent"),
-				String::from("registerPlugin"),
-				String::from("-info"),
+				"-registerEvent".to_owned(),
+				"registerPlugin".to_owned(),
+				"-info".to_owned(),
 				serde_json::to_string(&info)?,
 			])
 			.stdout(Stdio::null())
@@ -217,13 +217,13 @@ pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 		let child = Command::new(path.join(code_path))
 			.current_dir(path)
 			.args([
-				String::from("-port"),
-				57116.to_string(),
-				String::from("-pluginUUID"),
+				"-port".to_owned(),
+				"57116".to_owned(),
+				"-pluginUUID".to_owned(),
 				plugin_uuid.to_owned(),
-				String::from("-registerEvent"),
-				String::from("registerPlugin"),
-				String::from("-info"),
+				"-registerEvent".to_owned(),
+				"registerPlugin".to_owned(),
+				"-info".to_owned(),
 				serde_json::to_string(&info)?,
 			])
 			.stdout(Stdio::null())

@@ -12,8 +12,8 @@
 
 	import { invoke } from "@tauri-apps/api";
 
-	export let actionList: ActionList;
-	export let profileSelector: ProfileSelector;
+	export let actionList: () => ActionList;
+	export let profileSelector: () => ProfileSelector;
 
 	let showPopup: boolean;
 
@@ -22,10 +22,10 @@
 		try {
 			await invoke("install_plugin", { id, url });
 			alert(`Successfully installed "${name}".`);
-			actionList.reload();
+			actionList().reload();
 			installed = await invoke("list_plugins");
 		} catch (error: any) {
-			alert(`Failed to install ${name}: ${error}`);
+			alert(`Failed to install ${name}: ${error.description ?? error}`);
 		}
 	}
 
@@ -78,11 +78,11 @@
 		try {
 			await invoke("remove_plugin", { id: plugin.id });
 			alert(`Successfully removed "${plugin.name}".`);
-			actionList.reload();
-			profileSelector.reload();
+			actionList().reload();
+			profileSelector().reload();
 			installed = await invoke("list_plugins");
 		} catch (error: any) {
-			alert(`Failed to remove ${plugin.name}: ${error}`);
+			alert(`Failed to remove ${plugin.name}: ${error.description ?? error}`);
 		}
 	}
 
