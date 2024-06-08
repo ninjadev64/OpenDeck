@@ -13,38 +13,46 @@
 	import ProfileSelector from "../components/ProfileSelector.svelte";
 	import PropertyInspectorView from "../components/PropertyInspectorView.svelte";
 	import SettingsView from "../components/SettingsView.svelte";
+	import {invoke} from "@tauri-apps/api";
+	import {listen} from "@tauri-apps/api/event";
+	import {dev} from "$app/environment";
 
-	let selectedDevice: DeviceInfo;
-	$: _selectedDevice = selectedDevice;
-
-	let selectedProfile: Profile;
-	$: _selectedProfile = selectedProfile;
-
+	let selectedDevice: string;
+	let devices: { [id: string]: DeviceInfo } = {};
+	let selectedProfile: { [id: string]: Profile } = {};
 	let actionList: ActionList;
 	let profileSelector: ProfileSelector;
+
 </script>
 
 <div class="flex flex-col grow">
 	{#if $inspectedMultiAction}
-		<MultiActionView bind:profile={_selectedProfile} />
-	{:else if selectedDevice && selectedProfile}
-		<DeviceView bind:device={_selectedDevice} bind:profile={_selectedProfile} />
+		<MultiActionView bind:profile={selectedProfile[selectedDevice]} />
+	{:else if Object.keys(devices).length > 0 && selectedProfile}
+		{#each Object.entries(devices).sort() as [ id, device ]}
+			{#if device && selectedProfile[id]}
+				<div class:hidden={id !== selectedDevice}>
+					<DeviceView bind:device={device} bind:profile={selectedProfile[id]}  />
+				</div>
+
+			{/if}
+		{/each}
 	{:else}
 		<NoDevicesDetected />
 	{/if}
 
-	{#if selectedProfile}
-		<PropertyInspectorView bind:device={_selectedDevice} bind:profile={_selectedProfile} />
+	{#if selectedProfile[selectedDevice]}
+		<PropertyInspectorView bind:device={devices[selectedDevice]} bind:profile={selectedProfile[selectedDevice]} />
 	{/if}
 </div>
 
 <div class="flex flex-col p-2 grow max-w-[18rem] h-full border-l dark:border-neutral-700">
 	{#if !$inspectedMultiAction}
-		<DeviceSelector bind:device={selectedDevice} />
-		{#if selectedDevice}
+		<DeviceSelector bind:value={selectedDevice} bind:devices={devices} bind:selectedProfile={selectedProfile}/>
+		{#if selectedDevice && devices[selectedDevice]}
 			<ProfileSelector
-				bind:device={_selectedDevice}
-				bind:profile={selectedProfile}
+				bind:device={devices[selectedDevice]}
+				bind:profile={selectedProfile[selectedDevice]}
 				bind:this={profileSelector}
 			/>
 		{/if}

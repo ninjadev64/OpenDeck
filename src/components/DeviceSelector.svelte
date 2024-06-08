@@ -5,10 +5,12 @@
 	import { invoke } from "@tauri-apps/api";
 	import { listen } from "@tauri-apps/api/event";
 
-	let devices: { [id: string]: DeviceInfo } = {};
+	export let devices: { [id: string]: DeviceInfo } = {};
 	let registered: string[] = [];
-	let value: string;
-	export let device: DeviceInfo | null = null;
+	export let value: string;
+	let device: DeviceInfo | null = null;
+
+	export let selectedProfile: { [id: string]: Profile } = {};
 
 	$: {
 		if (!value || !devices[value]) value = Object.keys(devices).sort()[0];
@@ -17,6 +19,7 @@
 			if (!registered.includes(id)) {
 				(async () => {
 					let profile: Profile = await invoke("get_selected_profile", { device: device.id });
+					selectedProfile[id] = profile;
 					await invoke("set_selected_profile", { device: id, id: profile.id });
 				})();
 				registered.push(id);
