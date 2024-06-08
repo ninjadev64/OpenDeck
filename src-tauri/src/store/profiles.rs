@@ -87,17 +87,28 @@ pub struct DeviceStores {
 }
 
 impl DeviceStores {
-	pub fn get_selected_profile(&self, device: &str) -> &str {
-		if self.stores.contains_key(device) {
-			&self.stores.get(device).unwrap().value.selected_profile
-		} else {
-			"Default"
+	pub fn get_selected_profile(&mut self, device: &str) -> Result<&str, anyhow::Error> {
+		if !self.stores.contains_key(device) {
+			let default = DeviceConfig {
+				selected_profile: "Default".to_owned(),
+			};
+
+			let path = PathBuf::from("profiles").join(device);
+			let store = Store::new(path.to_str().unwrap(), crate::APP_HANDLE.get().unwrap().path_resolver().app_config_dir().unwrap(), default)
+				.context(format!("Failed to create store for device config {}", device))?;
+			store.save()?;
+
+			self.stores.insert(device.to_owned(), store);
 		}
+
+		Ok(&self.stores.get(device).unwrap().value.selected_profile)
 	}
 
 	pub fn set_selected_profile(&mut self, device: &str, id: String, app: &tauri::AppHandle) -> Result<(), anyhow::Error> {
 		if self.stores.contains_key(device) {
-			self.stores.get_mut(device).unwrap().value.selected_profile = id;
+			let store = self.stores.get_mut(device).unwrap();
+			store.value.selected_profile = id;
+			store.save()?;
 		} else {
 			let default = DeviceConfig { selected_profile: id };
 
@@ -227,7 +238,7 @@ pub async fn get_instance_mut<'a>(context: &crate::shared::ActionContext, locks:
 }
 
 pub async fn save_profile<'a>(device: &str, locks: &'a mut LocksMut<'_>) -> Result<(), anyhow::Error> {
-	let selected_profile = locks.device_stores.get_selected_profile(device);
+	let selected_profile = locks.device_stores.get_selected_profile(device)?;
 	let device = locks.devices.get(device).unwrap();
 	let store = locks.profile_stores.get_profile_store(device, selected_profile)?;
 	store.save()

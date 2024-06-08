@@ -139,8 +139,6 @@ pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 		devices.push(device.into());
 	}
 
-	let info = info_param::make_info(plugin_uuid.to_owned(), manifest.version).await;
-
 	let code_path = code_path.unwrap();
 
 	if code_path.ends_with(".html") {
@@ -153,6 +151,7 @@ pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 		#[cfg(debug_assertions)]
 		window.open_devtools();
 
+		let info = info_param::make_info(plugin_uuid.to_owned(), manifest.version, false).await;
 		window.eval(&format!(
 			"const opendeckInit = () => {{
 				try {{
@@ -175,59 +174,63 @@ pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 			return Err(anyhow!("failed to detect an installation of Wine"));
 		}
 
+		let info = info_param::make_info(plugin_uuid.to_owned(), manifest.version, true).await;
+		let log_file = fs::File::create(path.parent().unwrap().parent().unwrap().join("logs").join("plugins").join(format!("{plugin_uuid}.log")))?;
 		// Start Wine with the appropriate arguments.
 		let child = Command::new("wine")
 			.current_dir(path)
 			.args([
-				code_path,
-				"-port".to_owned(),
-				"57116".to_owned(),
-				"-pluginUUID".to_owned(),
-				plugin_uuid.to_owned(),
-				"-registerEvent".to_owned(),
-				"registerPlugin".to_owned(),
-				"-info".to_owned(),
-				serde_json::to_string(&info)?,
+				&code_path,
+				"-port",
+				"57116",
+				"-pluginUUID",
+				plugin_uuid,
+				"-registerEvent",
+				"registerPlugin",
+				"-info",
+				&serde_json::to_string(&info)?,
 			])
-			.stdout(Stdio::null())
-			.stderr(Stdio::null())
+			.stdout(Stdio::from(log_file.try_clone()?))
+			.stderr(Stdio::from(log_file))
 			.spawn()?;
 
 		INSTANCES.lock().await.insert(plugin_uuid.to_owned(), PluginInstance::Wine(child));
 	} else {
+		let info = info_param::make_info(plugin_uuid.to_owned(), manifest.version, false).await;
+		let log_file = fs::File::create(path.parent().unwrap().parent().unwrap().join("logs").join("plugins").join(format!("{plugin_uuid}.log")))?;
 		// Run the plugin's executable natively.
 		#[cfg(target_os = "windows")]
 		let child = Command::new(path.join(code_path))
 			.current_dir(path)
 			.args([
-				"-port".to_owned(),
-				"57116".to_owned(),
-				"-pluginUUID".to_owned(),
-				plugin_uuid.to_owned(),
-				"-registerEvent".to_owned(),
-				"registerPlugin".to_owned(),
-				"-info".to_owned(),
-				serde_json::to_string(&info)?,
+				"-port",
+				"57116",
+				"-pluginUUID",
+				plugin_uuid,
+				"-registerEvent",
+				"registerPlugin",
+				"-info",
+				&serde_json::to_string(&info)?,
 			])
-			.stdout(Stdio::null())
-			.stderr(Stdio::null())
+			.stdout(Stdio::from(log_file.try_clone()?))
+			.stderr(Stdio::from(log_file))
 			.creation_flags(0x08000000)
 			.spawn()?;
 		#[cfg(not(target_os = "windows"))]
 		let child = Command::new(path.join(code_path))
 			.current_dir(path)
 			.args([
-				"-port".to_owned(),
-				"57116".to_owned(),
-				"-pluginUUID".to_owned(),
-				plugin_uuid.to_owned(),
-				"-registerEvent".to_owned(),
-				"registerPlugin".to_owned(),
-				"-info".to_owned(),
-				serde_json::to_string(&info)?,
+				"-port",
+				"57116",
+				"-pluginUUID",
+				plugin_uuid,
+				"-registerEvent",
+				"registerPlugin",
+				"-info",
+				&serde_json::to_string(&info)?,
 			])
-			.stdout(Stdio::null())
-			.stderr(Stdio::null())
+			.stdout(Stdio::from(log_file.try_clone()?))
+			.stderr(Stdio::from(log_file))
 			.spawn()?;
 
 		INSTANCES.lock().await.insert(plugin_uuid.to_owned(), PluginInstance::Native(child));
@@ -258,6 +261,7 @@ pub fn initialise_plugins(app: AppHandle) {
 
 	let plugin_dir = app.path_resolver().app_config_dir().unwrap().join("plugins");
 	let _ = fs::create_dir_all(&plugin_dir);
+	let _ = fs::create_dir_all(app.path_resolver().app_config_dir().unwrap().join("logs").join("plugins"));
 
 	let entries = match fs::read_dir(&plugin_dir) {
 		Ok(p) => p,

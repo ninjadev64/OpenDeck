@@ -65,10 +65,10 @@ pub fn get_profiles(app: AppHandle, device: &str) -> Result<Vec<String>, Error> 
 
 #[command]
 pub async fn get_selected_profile(device: String) -> Result<crate::shared::Profile, Error> {
-	let device_stores = DEVICE_STORES.read().await;
+	let mut device_stores = DEVICE_STORES.write().await;
 	let profile_stores = PROFILE_STORES.read().await;
 
-	let selected_profile = device_stores.get_selected_profile(&device);
+	let selected_profile = device_stores.get_selected_profile(&device)?;
 	let profile = profile_stores.get_profile_store(DEVICES.read().await.get(&device).unwrap(), selected_profile)?;
 
 	Ok(profile.value.clone())
@@ -80,7 +80,7 @@ pub async fn set_selected_profile(app: AppHandle, device: String, id: String, pr
 	let mut device_stores = DEVICE_STORES.write().await;
 	let devices = DEVICES.read().await;
 	let mut profile_stores = PROFILE_STORES.write().await;
-	let selected_profile = device_stores.get_selected_profile(&device);
+	let selected_profile = device_stores.get_selected_profile(&device)?;
 
 	if selected_profile != id {
 		let old_profile = &profile_stores.get_profile_store(devices.get(&device).unwrap(), selected_profile)?.value;
@@ -233,7 +233,7 @@ pub async fn make_info(app: AppHandle, plugin: String) -> Result<crate::plugins:
 		Err(error) => return Err(anyhow::Error::from(error).into()),
 	};
 
-	Ok(crate::plugins::info_param::make_info(plugin, manifest.version).await)
+	Ok(crate::plugins::info_param::make_info(plugin, manifest.version, false).await)
 }
 
 #[command]

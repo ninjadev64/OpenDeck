@@ -1,7 +1,7 @@
 use super::{send_to_plugin, Coordinates};
 
 use crate::shared::ActionContext;
-use crate::store::profiles::{acquire_locks, get_instance};
+use crate::store::profiles::{acquire_locks_mut, get_instance_mut};
 
 use serde::Serialize;
 
@@ -39,8 +39,8 @@ struct DialPressEvent {
 }
 
 pub async fn dial_rotate(device: &str, index: u8, ticks: i16) -> Result<(), anyhow::Error> {
-	let locks = acquire_locks().await;
-	let selected_profile = locks.device_stores.get_selected_profile(device);
+	let mut locks = acquire_locks_mut().await;
+	let selected_profile = locks.device_stores.get_selected_profile(device)?;
 	let context = ActionContext {
 		device: device.to_owned(),
 		profile: selected_profile.to_owned(),
@@ -48,7 +48,7 @@ pub async fn dial_rotate(device: &str, index: u8, ticks: i16) -> Result<(), anyh
 		position: index,
 		index: 0,
 	};
-	let Some(instance) = get_instance(&context, &locks).await? else { return Ok(()) };
+	let Some(instance) = get_instance_mut(&context, &mut locks).await? else { return Ok(()) };
 
 	send_to_plugin(
 		&instance.action.plugin,
@@ -72,8 +72,8 @@ pub async fn dial_rotate(device: &str, index: u8, ticks: i16) -> Result<(), anyh
 }
 
 pub async fn dial_press(device: &str, event: &'static str, index: u8) -> Result<(), anyhow::Error> {
-	let locks = acquire_locks().await;
-	let selected_profile = locks.device_stores.get_selected_profile(device);
+	let mut locks = acquire_locks_mut().await;
+	let selected_profile = locks.device_stores.get_selected_profile(device)?;
 	let context = ActionContext {
 		device: device.to_owned(),
 		profile: selected_profile.to_owned(),
@@ -81,7 +81,7 @@ pub async fn dial_press(device: &str, event: &'static str, index: u8) -> Result<
 		position: index,
 		index: 0,
 	};
-	let Some(instance) = get_instance(&context, &locks).await? else { return Ok(()) };
+	let Some(instance) = get_instance_mut(&context, &mut locks).await? else { return Ok(()) };
 
 	send_to_plugin(
 		&instance.action.plugin,

@@ -77,6 +77,7 @@
 	async function clear() {
 		await invoke("clear_slot", { context });
 		if (slot.map((instance) => instance.context).includes($inspectedInstance!)) inspectedInstance.set(null);
+		showEditor = false;
 		slot = [];
 		inslot = slot;
 	}
@@ -100,7 +101,6 @@
 	});
 
 	let canvas: HTMLCanvasElement;
-	let image: string;
 	$: {
 		if (!slot || slot.length == 0) {
 			if (canvas) {
@@ -108,12 +108,10 @@
 				if (context) context.clearRect(0, 0, canvas.width, canvas.height);
 			}
 		} else if (slot.length > 1) {
-			image = state?.image!;
 			renderImage(canvas, context, state!, null!, false, false, false, active);
 		} else if (slot.length) {
 			let instance = slot[0];
 			let fallback = instance.action.states[instance.current_state].image ?? instance.action.icon;
-			image = getImage(state?.image, fallback);
 			if (state) renderImage(canvas, context, state, fallback, showOk, showAlert, true, active);
 		}
 	}

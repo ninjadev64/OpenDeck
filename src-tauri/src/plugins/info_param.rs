@@ -68,7 +68,7 @@ pub struct Info {
 }
 
 /// Construct the info parameter for a given plugin's UUID and version.
-pub async fn make_info(uuid: String, version: String) -> Info {
+pub async fn make_info(uuid: String, version: String, wine: bool) -> Info {
 	#[cfg(target_os = "windows")]
 	let platform = "windows";
 	#[cfg(target_os = "macos")]
@@ -85,8 +85,8 @@ pub async fn make_info(uuid: String, version: String) -> Info {
 		application: ApplicationInfo {
 			font: "ui-sans-serif".to_owned(),
 			language: "en".to_owned(),
-			platform: platform.to_owned(),
-			platformVersion: os_info::get().version().to_string(),
+			platform: if !wine { platform.to_owned() } else { "windows".to_owned() },
+			platformVersion: if !wine { os_info::get().version().to_string() } else { "10.0.19045.4474".to_owned() },
 			version: env!("CARGO_PKG_VERSION").to_owned(),
 		},
 		plugin: PluginInfo { uuid, version },

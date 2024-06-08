@@ -66,7 +66,7 @@ async fn main() {
 				.filter(|v| {
 					!matches!(
 						v.target(),
-						"tungstenite::handshake::server" | "tungstenite::protocol" | "tracing::span" | "zbus::handshake" | "zbus::connection"
+						"tungstenite::handshake::server" | "tungstenite::protocol" | "tracing::span" | "zbus::object_server" | "zbus::handshake" | "zbus::connection"
 					)
 				})
 				.build(),
