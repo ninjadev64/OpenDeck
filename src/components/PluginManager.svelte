@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type ActionList from "./ActionList.svelte";
-	import type ProfileSelector from "./ProfileSelector.svelte";
+	import type DeviceSelector from "./DeviceSelector.svelte";
 
 	import CloudArrowDown from "phosphor-svelte/lib/CloudArrowDown";
 	import Trash from "phosphor-svelte/lib/Trash";
@@ -13,7 +13,7 @@
 	import { invoke } from "@tauri-apps/api";
 
 	export let actionList: () => ActionList;
-	export let profileSelector: () => ProfileSelector;
+	export let deviceSelector: () => DeviceSelector;
 
 	let showPopup: boolean;
 
@@ -79,7 +79,7 @@
 			await invoke("remove_plugin", { id: plugin.id });
 			alert(`Successfully removed "${plugin.name}".`);
 			actionList().reload();
-			profileSelector().reload();
+			deviceSelector().reloadProfiles();
 			installed = await invoke("list_plugins");
 		} catch (error: any) {
 			alert(`Failed to remove ${plugin.name}: ${error.description ?? error}`);

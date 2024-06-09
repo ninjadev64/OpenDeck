@@ -8,9 +8,9 @@
 	import Popup from "./Popup.svelte";
 
 	import { invoke } from "@tauri-apps/api";
-	import { listen } from "@tauri-apps/api/event";
 
 	let folders: { [name: string]: string[] } = {};
+	let value: string;
 	async function getProfiles(device: DeviceInfo) {
 		let profiles: string[] = await invoke("get_profiles", { device: device.id });
 		folders = {};
@@ -20,14 +20,20 @@
 			else folders[folder] = [ id ];
 		}
 		profile = await invoke("get_selected_profile", { device: device.id });
-		if (value == profile.id) return;
 		value = profile.id;
 		oldValue = value;
 	}
 
+	export let device: DeviceInfo;
+	getProfiles(device);
+
 	export let profile: Profile;
-	async function setProfile(id: string, toSet: Profile | undefined = undefined) {
+	export async function setProfile(id: string, toSet: Profile | undefined = undefined) {
 		if (!device || !id) return;
+		if (value != id) {
+			value = id;
+			return;
+		}
 		await invoke("set_selected_profile", { device: device.id, id, profile: toSet });
 		profile = await invoke("get_selected_profile", { device: device.id });
 
@@ -37,9 +43,6 @@
 		}
 		else folders[folder] = [ id ];
 		folders = folders;
-	}
-	export async function reload() {
-		await setProfile(value);
 	}
 
 	async function deleteProfile(id: string) {
@@ -87,7 +90,6 @@
 	}
 
 	let oldValue: string;
-	let value: string;
 	$: {
 		if (value == "opendeck_edit_profiles") {
 			if (oldValue) showPopup = true;
@@ -98,17 +100,8 @@
 		}
 	}
 
-	export let device: DeviceInfo;
-	$: getProfiles(device);
-
 	let showPopup: boolean;
 	let nameInput: HTMLInputElement;
-
-	listen("switch_profile", async ({ payload }: { payload: { device: string, profile: string }}) => {
-		if (payload.device == device.id) {
-			value = payload.profile;
-		}
-	});
 </script>
 
 <div class="select-wrapper">

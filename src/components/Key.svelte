@@ -43,7 +43,7 @@
 	listen("update_state", ({ payload }: { payload: { context: Context, contents: ActionInstance[] }}) => {
 		if (JSON.stringify(payload.context) == JSON.stringify(context)) {
 			slot = payload.contents;
-		} else if (payload.contents[0]?.context == slot[0]?.context) {
+		} else if (payload.contents[0]?.context == slot?.[0]?.context) {
 			slot[0] = payload.contents[0];
 		}
 	});
