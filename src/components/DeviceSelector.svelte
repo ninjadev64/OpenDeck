@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { DeviceInfo } from "$lib/DeviceInfo";
 	import type { Profile } from "$lib/Profile";
+	import type ProfileSelector from "./ProfileSelector.svelte";
 
 	import { invoke } from "@tauri-apps/api";
 	import { listen } from "@tauri-apps/api/event";
@@ -28,9 +29,14 @@
 		registered = [];
 	}
 
+	export let profileSelector: () => ProfileSelector;
 	listen("switch_profile", async ({ payload }: { payload: { device: string, profile: string }}) => {
-		await invoke("set_selected_profile", { device: payload.device, id: payload.profile });
-		selectedProfiles[payload.device] = await invoke("get_selected_profile", { device: payload.device });
+		if (payload.device == value) {
+			profileSelector().setProfile(payload.profile);
+		} else {
+			await invoke("set_selected_profile", { device: payload.device, id: payload.profile });
+			selectedProfiles[payload.device] = await invoke("get_selected_profile", { device: payload.device });
+		}
 	});
 
 	(async () => devices = await invoke("get_devices"))();

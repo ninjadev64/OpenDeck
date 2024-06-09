@@ -28,8 +28,12 @@
 	getProfiles(device);
 
 	export let profile: Profile;
-	async function setProfile(id: string, toSet: Profile | undefined = undefined) {
+	export async function setProfile(id: string, toSet: Profile | undefined = undefined) {
 		if (!device || !id) return;
+		if (value != id) {
+			value = id;
+			return;
+		}
 		await invoke("set_selected_profile", { device: device.id, id, profile: toSet });
 		profile = await invoke("get_selected_profile", { device: device.id });
 

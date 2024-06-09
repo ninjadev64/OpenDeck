@@ -20,6 +20,7 @@
 
 	let actionList: ActionList;
 	let deviceSelector: DeviceSelector;
+	let profileSelector: ProfileSelector;
 </script>
 
 <div class="flex flex-col grow">
@@ -47,12 +48,14 @@
 			bind:value={selectedDevice}
 			bind:selectedProfiles={selectedProfiles}
 			bind:this={deviceSelector}
+			profileSelector={() => profileSelector}
 		/>
 		{#key selectedDevice}
 			{#if selectedDevice && devices[selectedDevice]}
 				<ProfileSelector
 					bind:device={devices[selectedDevice]}
 					bind:profile={selectedProfiles[selectedDevice]}
+					bind:this={profileSelector}
 				/>
 			{/if}
 		{/key}
