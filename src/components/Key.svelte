@@ -125,7 +125,7 @@
 	width="144" height="144"
 	style="scale: {(112 / 144) * scale};"
 	on:dragover on:drop
-	draggable={slot && slot.length !== 0} on:dragstart
+	draggable={slot && slot.length != 0} on:dragstart
 	role="cell" tabindex="-1"
 	on:click={select} on:keyup={select}
 	on:contextmenu={contextMenu}

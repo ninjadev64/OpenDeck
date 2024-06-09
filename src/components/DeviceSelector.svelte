@@ -24,12 +24,17 @@
 		}
 	}
 
-	(async () => devices = await invoke("get_devices"))();
-	listen("devices", ({ payload }: { payload: { [id: string]: DeviceInfo }}) => devices = payload);
+	export function reloadProfiles() {
+		registered = [];
+	}
+
 	listen("switch_profile", async ({ payload }: { payload: { device: string, profile: string }}) => {
 		await invoke("set_selected_profile", { device: payload.device, id: payload.profile });
 		selectedProfiles[payload.device] = await invoke("get_selected_profile", { device: payload.device });
 	});
+
+	(async () => devices = await invoke("get_devices"))();
+	listen("devices", ({ payload }: { payload: { [id: string]: DeviceInfo }}) => devices = payload);
 </script>
 
 <div class="select-wrapper">
