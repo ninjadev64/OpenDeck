@@ -18,7 +18,7 @@ struct KeyEvent {
 
 pub async fn key_down(device: &str, key: u8) -> Result<(), anyhow::Error> {
 	let mut locks = acquire_locks_mut().await;
-	let selected_profile = locks.device_stores.get_selected_profile(device);
+	let selected_profile = locks.device_stores.get_selected_profile(device)?;
 	let context = Context {
 		device: device.to_owned(),
 		profile: selected_profile.to_owned(),
@@ -84,7 +84,7 @@ pub async fn key_down(device: &str, key: u8) -> Result<(), anyhow::Error> {
 
 pub async fn key_up(device: &str, key: u8) -> Result<(), anyhow::Error> {
 	let mut locks = acquire_locks_mut().await;
-	let selected_profile = locks.device_stores.get_selected_profile(device);
+	let selected_profile = locks.device_stores.get_selected_profile(device)?;
 	let context = Context {
 		device: device.to_owned(),
 		profile: selected_profile.to_owned(),
