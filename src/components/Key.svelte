@@ -120,18 +120,18 @@
 </script>
 
 <canvas
-		bind:this={canvas}
-		class="relative -m-2 border-2 dark:border-neutral-700 rounded-md select-none"
-		width="144" height="144"
-		style="scale: {(112 / 144) * scale};"
-		on:dragover on:drop
-		draggable={slot && slot.length !== 0} on:dragstart
-		role="cell" tabindex="-1"
-		on:click={select} on:keyup={select}
-		on:contextmenu={contextMenu}
+	bind:this={canvas}
+	class="relative -m-2 border-2 dark:border-neutral-700 rounded-md select-none"
+	width="144" height="144"
+	style="scale: {(112 / 144) * scale};"
+	on:dragover on:drop
+	draggable={slot && slot.length !== 0} on:dragstart
+	role="cell" tabindex="-1"
+	on:click={select} on:keyup={select}
+	on:contextmenu={contextMenu}
 />
 
-{#if $openContextMenu && $openContextMenu?.context === context}
+{#if $openContextMenu && $openContextMenu?.context == context}
 	<div
 		class="absolute text-sm font-semibold w-32 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 border-2 dark:border-neutral-600 rounded-lg divide-y z-10"
 		style="left: {$openContextMenu.x}px; top: {$openContextMenu.y}px;"

@@ -8,7 +8,6 @@
 	import Popup from "./Popup.svelte";
 
 	import { invoke } from "@tauri-apps/api";
-	import { listen } from "@tauri-apps/api/event";
 
 	let folders: { [name: string]: string[] } = {};
 	async function getProfiles(device: DeviceInfo) {
@@ -103,12 +102,6 @@
 
 	let showPopup: boolean;
 	let nameInput: HTMLInputElement;
-
-	listen("switch_profile", async ({ payload }: { payload: { device: string, profile: string }}) => {
-		if (payload.device == device.id) {
-			value = payload.profile;
-		}
-	});
 </script>
 
 <div class="select-wrapper">

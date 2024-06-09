@@ -89,5 +89,5 @@ export async function renderImage(canvas: HTMLCanvasElement, slotContext: Contex
 		context.drawImage(alertImage, 0, 0, canvas.width, canvas.height);
 	}
 
-	if (active) setTimeout(async ()=>await invoke("update_image", { context: slotContext, image: canvas.toDataURL("image/jpeg") }), 10);
+	if (active) setTimeout(async () => await invoke("update_image", { context: slotContext, image: canvas.toDataURL("image/jpeg") }), 10);
 }
