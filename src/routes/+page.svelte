@@ -43,13 +43,15 @@
 <div class="flex flex-col p-2 grow max-w-[18rem] h-full border-l dark:border-neutral-700">
 	{#if !$inspectedMultiAction}
 		<DeviceSelector bind:devices={devices} bind:value={selectedDevice} bind:selectedProfiles={selectedProfiles} />
-		{#if selectedDevice && devices[selectedDevice]}
-			<ProfileSelector
-				bind:device={devices[selectedDevice]}
-				bind:profile={selectedProfiles[selectedDevice]}
-				bind:this={profileSelector}
-			/>
-		{/if}
+		{#key selectedDevice}
+			{#if selectedDevice && devices[selectedDevice]}
+				<ProfileSelector
+					bind:device={devices[selectedDevice]}
+					bind:profile={selectedProfiles[selectedDevice]}
+					bind:this={profileSelector}
+				/>
+			{/if}
+		{/key}
 	{/if}
 	<ActionList bind:this={actionList} />
 	<hr class="mt-2 border dark:border-neutral-700" />
