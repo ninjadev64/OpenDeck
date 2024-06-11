@@ -25,6 +25,7 @@ enum PluginInstance {
 	Webview,
 	Wine(Child),
 	Native(Child),
+	Node(Child),
 }
 
 static INSTANCES: Lazy<Mutex<HashMap<String, PluginInstance>>> = Lazy::new(|| Mutex::new(HashMap::new()));
@@ -169,6 +170,36 @@ pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 		))?;
 
 		INSTANCES.lock().await.insert(plugin_uuid.to_owned(), PluginInstance::Webview);
+	} else if code_path.ends_with(".js") {
+		if Command::new("node").stdout(Stdio::null()).stderr(Stdio::null()).spawn().is_err() {
+			return Err(anyhow!("failed to detect an installation of Node"));
+		}
+		if Command::new("node").arg("--version").output().unwrap().stdout.as_slice() < "v20.0.0".as_bytes() {
+			return Err(anyhow!("Node version 20.0.0 or higher is required"));
+		}
+
+		let info = info_param::make_info(plugin_uuid.to_owned(), manifest.version, true).await;
+		let log_file = fs::File::create(path.parent().unwrap().parent().unwrap().join("logs").join("plugins").join(format!("{plugin_uuid}.log")))?;
+		// Start Node with the appropriate arguments.
+		let child = Command::new("node")
+				.current_dir(path)
+				.args([
+						code_path,
+						String::from("-port"),
+						57116.to_string(),
+						String::from("-pluginUUID"),
+						plugin_uuid.to_owned(),
+						String::from("-registerEvent"),
+						String::from("registerPlugin"),
+						String::from("-info"),
+						serde_json::to_string(&info)?,
+				])
+				.stdout(Stdio::from(log_file.try_clone()?))
+				.stderr(Stdio::from(log_file))
+				.spawn()?;
+
+
+		INSTANCES.lock().await.insert(plugin_uuid.to_owned(), PluginInstance::Node(child));
 	} else if use_wine {
 		if Command::new("wine").stdout(Stdio::null()).stderr(Stdio::null()).spawn().is_err() {
 			return Err(anyhow!("failed to detect an installation of Wine"));
@@ -247,7 +278,7 @@ pub async fn deactivate_plugin(app: &AppHandle, uuid: &str) -> Result<(), anyhow
 				let window = app.get_window(&uuid.replace('.', "_")).unwrap();
 				Ok(window.close()?)
 			}
-			PluginInstance::Wine(child) | PluginInstance::Native(child) => Ok(child.kill()?),
+			PluginInstance::Node(child) |PluginInstance::Wine(child) | PluginInstance::Native(child) => Ok(child.kill()?),
 		}
 	} else {
 		Err(anyhow!("instance of plugin {} not found", uuid))
