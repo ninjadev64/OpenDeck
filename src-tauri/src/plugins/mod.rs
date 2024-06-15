@@ -140,9 +140,9 @@ pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 		devices.push(device.into());
 	}
 
-	let code_path = code_path.unwrap();
+	let code_path = code_path.unwrap().to_lowercase();
 
-	if code_path.ends_with(".html") {
+	if code_path.ends_with(".html") || code_path.ends_with(".htm") || code_path.ends_with(".xhtml") {
 		// Create a webview window for the plugin and call its registration function.
 		let url = "http://localhost:57118/".to_owned() + path.join(code_path).to_str().unwrap();
 		let window = tauri::WindowBuilder::new(APP_HANDLE.get().unwrap(), plugin_uuid.replace('.', "_"), tauri::WindowUrl::External(url.parse()?))
@@ -170,7 +170,7 @@ pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 		))?;
 
 		INSTANCES.lock().await.insert(plugin_uuid.to_owned(), PluginInstance::Webview);
-	} else if code_path.ends_with(".js") {
+	} else if code_path.ends_with(".js") || code_path.ends_with(".mjs") || code_path.ends_with(".cjs") {
 		if Command::new("node").stdout(Stdio::null()).stderr(Stdio::null()).spawn().is_err() {
 			return Err(anyhow!("failed to detect an installation of Node"));
 		}
