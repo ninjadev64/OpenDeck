@@ -171,11 +171,10 @@ pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 
 		INSTANCES.lock().await.insert(plugin_uuid.to_owned(), PluginInstance::Webview);
 	} else if code_path.ends_with(".js") || code_path.ends_with(".mjs") || code_path.ends_with(".cjs") {
-		if Command::new("node").stdout(Stdio::null()).stderr(Stdio::null()).spawn().is_err() {
-			return Err(anyhow!("failed to detect an installation of Node"));
-		}
-		if Command::new("node").arg("--version").output().unwrap().stdout.as_slice() < "v20.0.0".as_bytes() {
-			return Err(anyhow!("Node version 20.0.0 or higher is required"));
+		// Check for Node.js installation and version in one go.
+		let version_output = Command::new("node").arg("--version").output();
+		if version_output.is_err() || String::from_utf8(version_output.unwrap().stdout).unwrap().trim() < "v20.0.0" {
+			return Err(anyhow!("Node version 20.0.0 or higher is required, or Node is not installed"));
 		}
 
 		let info = info_param::make_info(plugin_uuid.to_owned(), manifest.version, true).await;
