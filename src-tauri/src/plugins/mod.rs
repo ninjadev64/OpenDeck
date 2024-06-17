@@ -25,6 +25,7 @@ enum PluginInstance {
 	Webview,
 	Wine(Child),
 	Native(Child),
+	Node(Child),
 }
 
 static INSTANCES: Lazy<Mutex<HashMap<String, PluginInstance>>> = Lazy::new(|| Mutex::new(HashMap::new()));
@@ -141,7 +142,7 @@ pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 
 	let code_path = code_path.unwrap();
 
-	if code_path.ends_with(".html") {
+	if code_path.to_lowercase().ends_with(".html") || code_path.to_lowercase().ends_with(".htm") || code_path.to_lowercase().ends_with(".xhtml") {
 		// Create a webview window for the plugin and call its registration function.
 		let url = "http://localhost:57118/".to_owned() + path.join(code_path).to_str().unwrap();
 		let window = tauri::WindowBuilder::new(APP_HANDLE.get().unwrap(), plugin_uuid.replace('.', "_"), tauri::WindowUrl::External(url.parse()?))
@@ -169,6 +170,34 @@ pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 		))?;
 
 		INSTANCES.lock().await.insert(plugin_uuid.to_owned(), PluginInstance::Webview);
+	} else if code_path.to_lowercase().ends_with(".js") || code_path.to_lowercase().ends_with(".mjs") || code_path.to_lowercase().ends_with(".cjs") {
+		// Check for Node.js installation and version in one go.
+		let version_output = Command::new("node").arg("--version").output();
+		if version_output.is_err() || String::from_utf8(version_output.unwrap().stdout).unwrap().trim() < "v20.0.0" {
+			return Err(anyhow!("Node version 20.0.0 or higher is required, or Node is not installed"));
+		}
+
+		let info = info_param::make_info(plugin_uuid.to_owned(), manifest.version, true).await;
+		let log_file = fs::File::create(path.parent().unwrap().parent().unwrap().join("logs").join("plugins").join(format!("{plugin_uuid}.log")))?;
+		// Start Node with the appropriate arguments.
+		let child = Command::new("node")
+			.current_dir(path)
+			.args([
+				code_path,
+				String::from("-port"),
+				57116.to_string(),
+				String::from("-pluginUUID"),
+				plugin_uuid.to_owned(),
+				String::from("-registerEvent"),
+				String::from("registerPlugin"),
+				String::from("-info"),
+				serde_json::to_string(&info)?,
+			])
+			.stdout(Stdio::from(log_file.try_clone()?))
+			.stderr(Stdio::from(log_file))
+			.spawn()?;
+
+		INSTANCES.lock().await.insert(plugin_uuid.to_owned(), PluginInstance::Node(child));
 	} else if use_wine {
 		if Command::new("wine").stdout(Stdio::null()).stderr(Stdio::null()).spawn().is_err() {
 			return Err(anyhow!("failed to detect an installation of Wine"));
@@ -247,7 +276,7 @@ pub async fn deactivate_plugin(app: &AppHandle, uuid: &str) -> Result<(), anyhow
 				let window = app.get_window(&uuid.replace('.', "_")).unwrap();
 				Ok(window.close()?)
 			}
-			PluginInstance::Wine(child) | PluginInstance::Native(child) => Ok(child.kill()?),
+			PluginInstance::Node(child) | PluginInstance::Wine(child) | PluginInstance::Native(child) => Ok(child.kill()?),
 		}
 	} else {
 		Err(anyhow!("instance of plugin {} not found", uuid))
