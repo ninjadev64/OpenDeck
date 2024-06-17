@@ -42,7 +42,10 @@ pub fn extract<S: Read + Seek>(source: S, target_dir: &Path) -> Result<(), ZipEx
 
 	// OpenAction plugins should always contain multiple files, so if there is only one, assume it's a nested archive.
 	if archive.len() == 1 {
-		return extract(std::io::Cursor::new(archive.by_index(0)?.bytes().flatten().collect::<Vec<u8>>()), target_dir);
+		let file = archive.by_index(0)?;
+		if file.name().to_lowercase().ends_with(".streamdeckplugin") || file.name().to_lowercase().ends_with(".zip") {
+			return extract(std::io::Cursor::new(file.bytes().flatten().collect::<Vec<u8>>()), target_dir);
+		}
 	}
 
 	debug!("Extracting to {}", target_dir.to_string_lossy());

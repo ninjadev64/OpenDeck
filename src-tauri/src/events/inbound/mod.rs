@@ -76,7 +76,9 @@ pub async fn process_incoming_message(data: Result<Message, Error>) {
 			InboundEventType::SendToPlugin(_) => Ok(()),
 			InboundEventType::SwitchProfile(event) => misc::switch_profile(event).await,
 		} {
-			warn!("Failed to process incoming event from plugin: {}", error)
+			if !error.to_string().contains("closed connection") {
+				warn!("Failed to process incoming event from plugin: {}", error);
+			}
 		}
 	}
 }
@@ -99,7 +101,7 @@ pub async fn process_incoming_message_pi(data: Result<Message, Error>) {
 			_ => Ok(()),
 		} {
 			if !error.to_string().contains("closed connection") {
-				warn!("Failed to process incoming event from property inspector: {}", error)
+				warn!("Failed to process incoming event from property inspector: {}", error);
 			}
 		}
 	}

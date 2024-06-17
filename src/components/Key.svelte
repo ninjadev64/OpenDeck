@@ -8,7 +8,7 @@
 	import InstanceEditor from "./InstanceEditor.svelte";
 
 	import { inspectedInstance, inspectedMultiAction, openContextMenu } from "$lib/propertyInspector";
-	import { getImage, renderImage } from "$lib/rendererHelper";
+	import { renderImage } from "$lib/rendererHelper";
 
 	import { invoke } from "@tauri-apps/api";
 	import { listen } from "@tauri-apps/api/event";

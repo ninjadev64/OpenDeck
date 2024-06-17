@@ -58,7 +58,7 @@
 		let res = await (await fetch(endpoint)).json();
 		let assets = [];
 		for (const asset of res[0].assets) {
-			if (asset.name.endsWith(".streamDeckPlugin") || asset.name.endsWith(".zip")) {
+			if (asset.name.toLowerCase().endsWith(".streamdeckplugin") || asset.name.toLowerCase().endsWith(".zip")) {
 				assets.push(asset);
 			}
 		}

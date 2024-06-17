@@ -149,8 +149,7 @@ pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 			.visible(false)
 			.build()?;
 
-		#[cfg(debug_assertions)]
-		window.open_devtools();
+		// window.open_devtools();
 
 		let info = info_param::make_info(plugin_uuid.to_owned(), manifest.version, false).await;
 		window.eval(&format!(
@@ -270,13 +269,13 @@ pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 
 pub async fn deactivate_plugin(app: &AppHandle, uuid: &str) -> Result<(), anyhow::Error> {
 	let mut instances = INSTANCES.lock().await;
-	if let Some(instance) = instances.get_mut(uuid) {
+	if let Some(instance) = instances.remove(uuid) {
 		match instance {
 			PluginInstance::Webview => {
 				let window = app.get_window(&uuid.replace('.', "_")).unwrap();
 				Ok(window.close()?)
 			}
-			PluginInstance::Node(child) | PluginInstance::Wine(child) | PluginInstance::Native(child) => Ok(child.kill()?),
+			PluginInstance::Node(mut child) | PluginInstance::Wine(mut child) | PluginInstance::Native(mut child) => Ok(child.kill()?),
 		}
 	} else {
 		Err(anyhow!("instance of plugin {} not found", uuid))
