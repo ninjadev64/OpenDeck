@@ -41,6 +41,9 @@
 			},
 			"deb": {
 				"desktopTemplate": "opendeck.desktop"
+			},
+			"rpm": {
+				"desktopTemplate": "opendeck.desktop"
 			}
 		},
 		"security": {
