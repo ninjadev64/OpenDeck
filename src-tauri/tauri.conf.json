@@ -40,10 +40,16 @@
 				"exceptionDomain": "localhost"
 			},
 			"deb": {
-				"desktopTemplate": "opendeck.desktop"
+				"desktopTemplate": "opendeck.desktop",
+				"files": {
+					"/etc/udev/rules.d/40-streamdeck.rules": "40-streamdeck.rules"
+				}
 			},
 			"rpm": {
-				"desktopTemplate": "opendeck.desktop"
+				"desktopTemplate": "opendeck.desktop",
+				"files": {
+					"/etc/udev/rules.d/40-streamdeck.rules": "40-streamdeck.rules"
+				}
 			}
 		},
 		"security": {

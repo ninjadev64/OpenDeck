@@ -11,8 +11,9 @@ OpenDeck supports ProntoKey and Elgato Stream Deck hardware on all three major d
 - Download the latest release from GitHub Releases.
 - Install OpenDeck using your package manager of choice.
 - If using Elgato hardware, install the appropriate udev subsystem rules from [here](https://raw.githubusercontent.com/streamduck-org/elgato-streamdeck/main/40-streamdeck.rules):
-	- `cp 40-streamdeck.rules /etc/udev/rules.d/`
-	- `sudo udevadm control --reload-rules`
+	- If you're using a `.deb` or `.rpm` release artifact, this file should be installed automatically.
+	- Otherwise, download and copy it to the correct location with `sudo cp 40-streamdeck.rules /etc/udev/rules.d/`.
+	- In both cases, you will need to reload your udev subsystem rules with `sudo udevadm control --reload-rules`.
 
 ### Windows
 
