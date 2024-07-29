@@ -19,15 +19,16 @@ export function getImage(image: string | undefined, fallback: string | undefined
 	return image;
 }
 
-export async function renderImage(canvas: HTMLCanvasElement, slotContext: Context, state: ActionState, fallback: string | undefined, showOk: boolean, showAlert: boolean, processImage: boolean, active: boolean) {
+export async function renderImage(canvas: HTMLCanvasElement, slotContext: Context, state: ActionState, fallback: string | undefined, showOk: boolean, showAlert: boolean, processImage: boolean, active: boolean, pressed: boolean) {
 	// Create canvas
+	let dimension = 144;
 	let scale = 1;
 	if (!canvas) {
 		canvas = document.createElement("canvas");
-		canvas.width = 144;
-		canvas.height = 144;
+		canvas.width = dimension;
+		canvas.height = dimension;
 	} else {
-		scale = canvas.width / 144;
+		scale = canvas.width / dimension;
 	}
 	let context = canvas.getContext("2d");
 	if (!context) return;
@@ -48,23 +49,32 @@ export async function renderImage(canvas: HTMLCanvasElement, slotContext: Contex
 	// Draw text
 	if (state.show) {
 		const size = parseInt(state.size) * 2 * scale;
+		const lineThickness = .07
 		context.textAlign = "center";
 		context.font =
 			(state.style.includes("Bold") ? "bold " : "") + (state.style.includes("Italic") ? "italic " : "") +
 			`${size}px "${state.family}", sans-serif`;
 		context.fillStyle = state.colour;
+		context.strokeStyle = 'black';
+		context.lineWidth = dimension*lineThickness;
 		context.textBaseline = "top";
 		let x = canvas.width / 2;
 		let y = canvas.height / 2 - (size * state.text.split("\n").length * 0.5);
 		switch (state.alignment) {
 			case "top": y = -(size * 0.2); break;
-			case "bottom": y = canvas.height - (size * state.text.split("\n").length) - 5; break;
+			case "bottom": y = canvas.height - (size * state.text.split("\n").length) - context.lineWidth; break;
 		}
 		for (const [ index, line ] of Object.entries(state.text.split("\n"))) {
+			context.strokeText(line, x, y + (size * parseInt(index)));
 			context.fillText(line, x, y + (size * parseInt(index)));
 			if (state.underline) {
 				let width = context.measureText(line).width;
-				context.fillRect(x - (width / 2), y + (size * parseInt(index)) + size, width, 3);
+				//Set to black for the outline, since it uses the same fill style info as the text color.
+				context.fillStyle = 'black';
+				context.fillRect(x - (width / 2)-4, y + (size * parseInt(index)) + size , width+8, 11);
+				//reset to the users choice.
+				context.fillStyle = state.colour;
+				context.fillRect(x - (width / 2), y + (size * parseInt(index)) + size + 4, width, 3);
 			}
 		}
 	}
