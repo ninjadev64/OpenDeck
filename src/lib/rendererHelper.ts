@@ -19,7 +19,7 @@ export function getImage(image: string | undefined, fallback: string | undefined
 	return image;
 }
 
-export async function renderImage(canvas: HTMLCanvasElement, slotContext: Context, state: ActionState, fallback: string | undefined, showOk: boolean, showAlert: boolean, processImage: boolean, active: boolean, pressed: boolean) {
+export async function renderImage(canvas: HTMLCanvasElement, slotContext: Context, state: ActionState, fallback: string | undefined, showOk: boolean, showAlert: boolean, processImage: boolean, active: boolean) {
 	// Create canvas
 	let dimension = 144;
 	let scale = 1;
