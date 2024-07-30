@@ -21,15 +21,15 @@ export function getImage(image: string | undefined, fallback: string | undefined
 
 export async function renderImage(canvas: HTMLCanvasElement, slotContext: Context, state: ActionState, fallback: string | undefined, showOk: boolean, showAlert: boolean, processImage: boolean, active: boolean, pressed: boolean) {
 	// Create canvas
-	let dimension = 144;
 	let scale = 1;
 	if (!canvas) {
 		canvas = document.createElement("canvas");
-		canvas.width = dimension;
-		canvas.height = dimension;
+		canvas.width = 144;
+		canvas.height = 144;
 	} else {
-		scale = canvas.width / dimension;
+		scale = canvas.width / 144;
 	}
+	
 	let context = canvas.getContext("2d");
 	if (!context) return;
 	context.clearRect(0, 0, canvas.width, canvas.height);
@@ -44,19 +44,19 @@ export async function renderImage(canvas: HTMLCanvasElement, slotContext: Contex
 	});
 
 	// Draw image
+	context.imageSmoothingQuality = "high"
 	context.drawImage(image, 0, 0, canvas.width, canvas.height);
 
 	// Draw text
 	if (state.show) {
 		const size = parseInt(state.size) * 2 * scale;
-		const lineThickness = .07
 		context.textAlign = "center";
 		context.font =
 			(state.style.includes("Bold") ? "bold " : "") + (state.style.includes("Italic") ? "italic " : "") +
 			`${size}px "${state.family}", sans-serif`;
 		context.fillStyle = state.colour;
 		context.strokeStyle = 'black';
-		context.lineWidth = dimension*lineThickness;
+		context.lineWidth = 3*scale;
 		context.textBaseline = "top";
 		let x = canvas.width / 2;
 		let y = canvas.height / 2 - (size * state.text.split("\n").length * 0.5);
@@ -71,7 +71,7 @@ export async function renderImage(canvas: HTMLCanvasElement, slotContext: Contex
 				let width = context.measureText(line).width;
 				//Set to black for the outline, since it uses the same fill style info as the text color.
 				context.fillStyle = 'black';
-				context.fillRect(x - (width / 2)-4, y + (size * parseInt(index)) + size , width+8, 11);
+				context.fillRect(x - (width / 2)-3, y + (size * parseInt(index)) + size , width+6, 9);
 				//reset to the users choice.
 				context.fillStyle = state.colour;
 				context.fillRect(x - (width / 2), y + (size * parseInt(index)) + size + 4, width, 3);

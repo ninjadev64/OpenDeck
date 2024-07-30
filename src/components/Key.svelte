@@ -115,12 +115,14 @@
 			if (state) renderImage(canvas, context, state, fallback, showOk, showAlert, true, active);
 		}
 	}
+	export let size = 144;
 </script>
+
 
 <canvas
 	bind:this={canvas}
 	class="relative -m-2 border-2 dark:border-neutral-700 rounded-md select-none"
-	width="144" height="144"
+	width={size} height={size}
 	style="scale: {(112 / 144) * scale};"
 	on:dragover on:drop
 	draggable={slot && slot.length != 0} on:dragstart
