@@ -101,6 +101,7 @@
 	});
 
 	let canvas: HTMLCanvasElement;
+	export let size = 144;
 	$: {
 		if (!slot || slot.length == 0) {
 			if (canvas) {
@@ -115,9 +116,7 @@
 			if (state) renderImage(canvas, context, state, fallback, showOk, showAlert, true, active);
 		}
 	}
-	export let size = 144;
 </script>
-
 
 <canvas
 	bind:this={canvas}

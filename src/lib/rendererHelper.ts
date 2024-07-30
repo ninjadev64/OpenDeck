@@ -29,7 +29,7 @@ export async function renderImage(canvas: HTMLCanvasElement, slotContext: Contex
 	} else {
 		scale = canvas.width / 144;
 	}
-	
+
 	let context = canvas.getContext("2d");
 	if (!context) return;
 	context.clearRect(0, 0, canvas.width, canvas.height);
@@ -44,7 +44,7 @@ export async function renderImage(canvas: HTMLCanvasElement, slotContext: Contex
 	});
 
 	// Draw image
-	context.imageSmoothingQuality = "high"
+	context.imageSmoothingQuality = "high";
 	context.drawImage(image, 0, 0, canvas.width, canvas.height);
 
 	// Draw text
@@ -55,8 +55,8 @@ export async function renderImage(canvas: HTMLCanvasElement, slotContext: Contex
 			(state.style.includes("Bold") ? "bold " : "") + (state.style.includes("Italic") ? "italic " : "") +
 			`${size}px "${state.family}", sans-serif`;
 		context.fillStyle = state.colour;
-		context.strokeStyle = 'black';
-		context.lineWidth = 3*scale;
+		context.strokeStyle = "black";
+		context.lineWidth = 3 * scale;
 		context.textBaseline = "top";
 		let x = canvas.width / 2;
 		let y = canvas.height / 2 - (size * state.text.split("\n").length * 0.5);
@@ -69,10 +69,10 @@ export async function renderImage(canvas: HTMLCanvasElement, slotContext: Contex
 			context.fillText(line, x, y + (size * parseInt(index)));
 			if (state.underline) {
 				let width = context.measureText(line).width;
-				//Set to black for the outline, since it uses the same fill style info as the text color.
-				context.fillStyle = 'black';
-				context.fillRect(x - (width / 2)-3, y + (size * parseInt(index)) + size , width+6, 9);
-				//reset to the users choice.
+				// Set to black for the outline, since it uses the same fill style info as the text colour.
+				context.fillStyle = "black";
+				context.fillRect(x - (width / 2) - 3, y + (size * parseInt(index)) + size, width + 6, 9);
+				// Reset to the user's choice of text colour.
 				context.fillStyle = state.colour;
 				context.fillRect(x - (width / 2), y + (size * parseInt(index)) + size + 4, width, 3);
 			}
