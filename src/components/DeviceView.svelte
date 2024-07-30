@@ -71,6 +71,7 @@
 							on:dragover={handleDragOver}
 							on:drop={(event) => handleDrop(event, "Keypad", (r * device.columns) + c)}
 							on:dragstart={(event) => handleDragStart(event, "Keypad", (r * device.columns) + c)}
+							size={device.id.startsWith("sd-") && device.rows == 4 && device.columns == 8 ? 192 : 144}
 						/>
 					{/each}
 				</div>
