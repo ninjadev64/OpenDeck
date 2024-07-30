@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { ActionInstance } from "$lib/ActionInstance";
+	import type { Context } from "$lib/Context";
 	import type { DeviceInfo } from "$lib/DeviceInfo";
 	import type { Profile } from "$lib/Profile";
 
@@ -33,7 +34,8 @@
 			let oldPosition = parseInt(dataTransfer?.getData("position"));
 			let response: ActionInstance[] = await invoke("move_slot", {
 				source: { device: device.id, profile: profile.id, controller: dataTransfer?.getData("controller"), position: oldPosition },
-				destination: context
+				destination: context,
+				retain: false
 			});
 			if (response) {
 				array[position] = response;
@@ -46,6 +48,14 @@
 	function handleDragStart({ dataTransfer }: DragEvent, controller: string, position: number) {
 		dataTransfer?.setData("controller", controller);
 		dataTransfer?.setData("position", position.toString());
+	}
+
+	async function handlePaste(source: Context, destination: Context) {
+		let response: ActionInstance[] = await invoke("move_slot", { source, destination, retain: true });
+		if (response) {
+			profile.keys[destination.position] = response;
+			profile = profile;
+		}
 	}
 </script>
 
@@ -71,6 +81,7 @@
 							on:dragover={handleDragOver}
 							on:drop={(event) => handleDrop(event, "Keypad", (r * device.columns) + c)}
 							on:dragstart={(event) => handleDragStart(event, "Keypad", (r * device.columns) + c)}
+							{handlePaste}
 							size={device.id.startsWith("sd-") && device.rows == 4 && device.columns == 8 ? 192 : 144}
 						/>
 					{/each}

@@ -3,11 +3,13 @@
 	import type { ActionState } from "$lib/ActionState";
 	import type { Context } from "$lib/Context";
 
+	import Clipboard from "phosphor-svelte/lib/Clipboard";
+	import Copy from "phosphor-svelte/lib/Copy";
 	import Pencil from "phosphor-svelte/lib/Pencil";
 	import Trash from "phosphor-svelte/lib/Trash";
 	import InstanceEditor from "./InstanceEditor.svelte";
 
-	import { inspectedInstance, inspectedMultiAction, openContextMenu } from "$lib/propertyInspector";
+	import { copiedContext, inspectedInstance, inspectedMultiAction, openContextMenu } from "$lib/propertyInspector";
 	import { renderImage } from "$lib/rendererHelper";
 
 	import { invoke } from "@tauri-apps/api";
@@ -58,7 +60,6 @@
 	}
 
 	async function contextMenu(event: MouseEvent) {
-		if (!slot || slot.length == 0) return;
 		event.preventDefault();
 		if (!active) return;
 		if (event.ctrlKey) return;
@@ -72,6 +73,12 @@
 		} else {
 			showEditor = true;
 		}
+	}
+
+	export let handlePaste: (source: Context, destination: Context) => void;
+	async function paste() {
+		if (!$copiedContext) return;
+		handlePaste($copiedContext, context);
 	}
 
 	async function clear() {
@@ -135,20 +142,37 @@
 		class="absolute text-sm font-semibold w-32 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 border-2 dark:border-neutral-600 rounded-lg divide-y z-10"
 		style="left: {$openContextMenu.x}px; top: {$openContextMenu.y}px;"
 	>
-		<button
-			class="flex flex-row p-2 w-full cursor-pointer items-center"
-			on:click={edit}
-		>
-			<Pencil size="18" color={document.documentElement.classList.contains("dark") ? "#DEDDDA" : "#77767B"} />
-			<span class="ml-2"> Edit </span>
-		</button>
-		<button
-			class="flex flex-row p-2 w-full cursor-pointer items-center"
-			on:click={clear}
-		>
-			<Trash size="18" color="#F66151" />
-			<span class="ml-2"> Delete </span>
-		</button>
+		{#if !slot || slot.length == 0}
+			<button
+				class="flex flex-row p-2 w-full cursor-pointer items-center"
+				on:click={paste}
+			>
+				<Clipboard size="18" color={document.documentElement.classList.contains("dark") ? "#DEDDDA" : "#77767B"} />
+				<span class="ml-2"> Paste </span>
+			</button>
+		{:else}
+			<button
+				class="flex flex-row p-2 w-full cursor-pointer items-center"
+				on:click={edit}
+			>
+				<Pencil size="18" color={document.documentElement.classList.contains("dark") ? "#DEDDDA" : "#77767B"} />
+				<span class="ml-2"> Edit </span>
+			</button>
+			<button
+				class="flex flex-row p-2 w-full cursor-pointer items-center"
+				on:click={() => copiedContext.set(context)}
+			>
+				<Copy size="18" color={document.documentElement.classList.contains("dark") ? "#DEDDDA" : "#77767B"} />
+				<span class="ml-2"> Copy </span>
+			</button>
+			<button
+				class="flex flex-row p-2 w-full cursor-pointer items-center"
+				on:click={clear}
+			>
+				<Trash size="18" color="#F66151" />
+				<span class="ml-2"> Delete </span>
+			</button>
+		{/if}
 	</div>
 {/if}
 

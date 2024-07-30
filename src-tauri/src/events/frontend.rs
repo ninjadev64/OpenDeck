@@ -146,7 +146,7 @@ pub async fn create_instance(action: Action, context: Context) -> Result<Option<
 }
 
 #[command]
-pub async fn move_slot(source: Context, destination: Context) -> Result<Option<Vec<ActionInstance>>, Error> {
+pub async fn move_slot(source: Context, destination: Context, retain: bool) -> Result<Option<Vec<ActionInstance>>, Error> {
 	if source.controller != destination.controller {
 		return Ok(None);
 	}
@@ -169,11 +169,14 @@ pub async fn move_slot(source: Context, destination: Context) -> Result<Option<V
 	}
 	dst.clone_from(&vec);
 
-	let src = get_slot_mut(&source, &mut locks).await?;
-	for old in &*src {
-		let _ = crate::events::outbound::will_appear::will_disappear(old, multi_action).await;
+	if !retain {
+		let src = get_slot_mut(&source, &mut locks).await?;
+		for old in &*src {
+			let _ = crate::events::outbound::will_appear::will_disappear(old, multi_action).await;
+		}
+		*src = vec![];
 	}
-	*src = vec![];
+
 	for new in &vec {
 		let _ = crate::events::outbound::will_appear::will_appear(new, multi_action).await;
 	}

@@ -8,7 +8,7 @@ use std::collections::HashMap;
 use once_cell::sync::Lazy;
 use tokio::sync::RwLock;
 
-use log::warn;
+use log::{error, warn};
 use serde::Serialize;
 
 /// Metadata of a device.
@@ -71,7 +71,9 @@ async fn register_device(id: String, device: DeviceInfo) {
 		let mut profile_stores = crate::store::profiles::PROFILE_STORES.write().await;
 		for profile in profiles {
 			// This is called to initialise the store for each profile when the device is registered.
-			let _ = profile_stores.get_profile_store_mut(&device, &profile, app);
+			if let Err(e) = profile_stores.get_profile_store_mut(&device, &profile, app) {
+				error!("{}", e);
+			}
 		}
 	}
 	crate::events::outbound::devices::device_did_connect(&id, (&device).into()).await.ok();
