@@ -7,6 +7,7 @@ SUBSYSTEM=="usb", ATTR{idVendor}=="0fd9", ATTR{idProduct}=="0080", MODE="0660", 
 SUBSYSTEM=="usb", ATTR{idVendor}=="0fd9", ATTR{idProduct}=="0090", MODE="0660", GROUP="plugdev"
 SUBSYSTEM=="usb", ATTR{idVendor}=="0fd9", ATTR{idProduct}=="0086", MODE="0660", GROUP="plugdev"
 SUBSYSTEM=="usb", ATTR{idVendor}=="0fd9", ATTR{idProduct}=="0084", MODE="0660", GROUP="plugdev"
+SUBSYSTEM=="usb", ATTR{idVendor}=="0fd9", ATTR{idProduct}=="009a", MODE="0660", GROUP="plugdev"
 SUBSYSTEM=="usb", ATTR{idVendor}=="5548", ATTR{idProduct}=="6674", MODE="0660", GROUP="plugdev"
 
 SUBSYSTEM=="usb", ATTRS{idVendor}=="0fd9", ATTRS{idProduct}=="0060", MODE="0660", GROUP="plugdev"
@@ -18,6 +19,7 @@ SUBSYSTEM=="usb", ATTRS{idVendor}=="0fd9", ATTRS{idProduct}=="0080", MODE="0660"
 SUBSYSTEM=="usb", ATTRS{idVendor}=="0fd9", ATTRS{idProduct}=="0090", MODE="0660", GROUP="plugdev"
 SUBSYSTEM=="usb", ATTRS{idVendor}=="0fd9", ATTRS{idProduct}=="0086", MODE="0660", GROUP="plugdev"
 SUBSYSTEM=="usb", ATTRS{idVendor}=="0fd9", ATTRS{idProduct}=="0084", MODE="0660", GROUP="plugdev"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0fd9", ATTRS{idProduct}=="009a", MODE="0660", GROUP="plugdev"
 SUBSYSTEM=="usb", ATTRS{idVendor}=="5548", ATTRS{idProduct}=="6674", MODE="0660", GROUP="plugdev"
 
 KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTR{idVendor}=="0fd9", ATTR{idProduct}=="0060", MODE="0660", GROUP="plugdev"
@@ -29,6 +31,7 @@ KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTR{idVendor}=="0fd9", ATTR{idProduct}=
 KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTR{idVendor}=="0fd9", ATTR{idProduct}=="0090", MODE="0660", GROUP="plugdev"
 KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTR{idVendor}=="0fd9", ATTR{idProduct}=="0086", MODE="0660", GROUP="plugdev"
 KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTR{idVendor}=="0fd9", ATTR{idProduct}=="0084", MODE="0660", GROUP="plugdev"
+KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTR{idVendor}=="0fd9", ATTR{idProduct}=="009a", MODE="0660", GROUP="plugdev"
 KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTR{idVendor}=="5548", ATTR{idProduct}=="6674", MODE="0660", GROUP="plugdev"
 
 KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="0fd9", ATTRS{idProduct}=="0060", MODE="0660", GROUP="plugdev"
@@ -40,4 +43,5 @@ KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="0fd9", ATTRS{idProduct
 KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="0fd9", ATTRS{idProduct}=="0090", MODE="0660", GROUP="plugdev"
 KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="0fd9", ATTRS{idProduct}=="0086", MODE="0660", GROUP="plugdev"
 KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="0fd9", ATTRS{idProduct}=="0084", MODE="0660", GROUP="plugdev"
+KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="0fd9", ATTRS{idProduct}=="009a", MODE="0660", GROUP="plugdev"
 KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="5548", ATTRS{idProduct}=="6674", MODE="0660", GROUP="plugdev"
