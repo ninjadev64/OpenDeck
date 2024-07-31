@@ -19,6 +19,12 @@ pub async fn update_image(context: &crate::shared::Context, url: &str) -> Result
 	Ok(())
 }
 
+pub async fn set_brightness(brightness: u8) {
+	for (id, device) in ELGATO_DEVICES.read().await.iter() {
+		let _ = device.set_brightness(brightness).await;
+	}
+}
+
 pub async fn clear_image(context: &crate::shared::Context) -> Result<(), StreamDeckError> {
 	if let Some(device) = ELGATO_DEVICES.read().await.get(&context.device) {
 		device.clear_button_image(context.position).await?;

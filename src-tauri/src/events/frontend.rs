@@ -413,6 +413,9 @@ pub async fn set_settings(app: AppHandle, settings: crate::store::Settings) -> R
 		Ok(store) => store,
 		Err(error) => return Err(error.into()),
 	};
+
+	crate::devices::elgato::set_brightness(settings.brightness).await;
+
 	store.value = settings;
 	store.save()?;
 	Ok(())

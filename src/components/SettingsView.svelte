@@ -62,6 +62,11 @@
 			<span class="dark:text-neutral-400"> Dark theme: </span>
 			<input type="checkbox" bind:checked={$settings.darktheme} />
 		</div>
+
+		<div class="flex flex-row items-center m-2 space-x-2">
+			<span class="dark:text-neutral-400"> Default Device brightness: </span>
+			<input type="range" id="brightness" name="points" min="0" max="100" bind:value={$settings.brightness} />
+		</div>
 	{/if}
 
 	<div class="ml-2">
