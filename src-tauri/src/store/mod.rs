@@ -46,7 +46,7 @@ pub struct Settings {
 	pub language: String,
 	pub autolaunch: bool,
 	pub darktheme: bool,
-	pub brightness: u8
+	pub brightness: u8,
 }
 
 impl Default for Settings {
@@ -55,7 +55,7 @@ impl Default for Settings {
 			language: "en".to_owned(),
 			autolaunch: false,
 			darktheme: true,
-			brightness: 50
+			brightness: 50,
 		}
 	}
 }
