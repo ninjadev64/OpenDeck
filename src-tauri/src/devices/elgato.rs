@@ -20,7 +20,7 @@ pub async fn update_image(context: &crate::shared::Context, url: &str) -> Result
 }
 
 pub async fn set_brightness(brightness: u8) {
-	for (id, device) in ELGATO_DEVICES.read().await.iter() {
+	for (_id, device) in ELGATO_DEVICES.read().await.iter() {
 		let _ = device.set_brightness(brightness).await;
 	}
 }
