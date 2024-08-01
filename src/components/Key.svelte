@@ -25,7 +25,7 @@
 
 	export let active: boolean = true;
 	export let scale: number = 1;
-	export let pressed: number = 0
+	export let pressed: boolean = false;
 
 	let state: ActionState | undefined;
 	$: {
@@ -52,12 +52,12 @@
 	});
 
 	listen("key_pressed", ({ payload }: { payload: { context: Context }}) => {
-		pressed = context.position
+		pressed = true
 		
 	});
 
 	listen("key_released", ({ payload }: { payload: { context: Context }}) => {
-		//pressed = false;
+		pressed = false;
 	});
 
 	function select() {
