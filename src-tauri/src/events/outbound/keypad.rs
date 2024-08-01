@@ -42,11 +42,7 @@ pub async fn key_down(device: &str, key: u8) -> Result<(), anyhow::Error> {
 			},
 		)
 		.await?;
-<<<<<<< HEAD
-	} else if slot.len() > 0 {
-=======
 	} else if !slot.is_empty() {
->>>>>>> 25d6b797a7c7fdd28efd8f90ccf5a1eb61ce5a2e
 		for instance in slot {
 			send_to_plugin(
 				&instance.action.plugin,
