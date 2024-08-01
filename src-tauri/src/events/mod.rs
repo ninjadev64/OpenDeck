@@ -30,8 +30,11 @@ pub async fn register_plugin(event: RegisterEvent, stream: WebSocketStream<TcpSt
 				}
 				let _ = read.flush().await;
 			}
-			PLUGIN_SOCKETS.lock().await.insert(uuid, read);
-			tokio::spawn(write.for_each(inbound::process_incoming_message));
+			PLUGIN_SOCKETS.lock().await.insert(uuid.clone(), read);
+			tokio::spawn(async move {
+				let uuid = uuid;
+				write.for_each(|event| inbound::process_incoming_message(event, &uuid)).await;
+			});
 		}
 		RegisterEvent::RegisterPropertyInspector { uuid } => {
 			if let Some(queue) = PROPERTY_INSPECTOR_QUEUES.read().await.get(&uuid) {
@@ -40,8 +43,11 @@ pub async fn register_plugin(event: RegisterEvent, stream: WebSocketStream<TcpSt
 				}
 				let _ = read.flush().await;
 			}
-			PROPERTY_INSPECTOR_SOCKETS.lock().await.insert(uuid, read);
-			tokio::spawn(write.for_each(inbound::process_incoming_message_pi));
+			PROPERTY_INSPECTOR_SOCKETS.lock().await.insert(uuid.clone(), read);
+			tokio::spawn(async move {
+				let uuid = uuid;
+				write.for_each(|event| inbound::process_incoming_message_pi(event, &uuid)).await;
+			});
 		}
 	};
 }

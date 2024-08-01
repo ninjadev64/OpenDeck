@@ -1,4 +1,7 @@
+use std::str::FromStr;
+
 use crate::events::outbound::settings as outbound;
+use crate::shared::ActionContext;
 use crate::store::profiles::{acquire_locks, acquire_locks_mut, get_instance, get_instance_mut, save_profile};
 
 pub async fn set_settings(event: super::ContextAndPayloadEvent<serde_json::Value>, from_property_inspector: bool) -> Result<(), anyhow::Error> {
@@ -24,13 +27,23 @@ pub async fn get_settings(event: super::ContextEvent, from_property_inspector: b
 }
 
 pub async fn set_global_settings(event: super::ContextAndPayloadEvent<serde_json::Value, String>, from_property_inspector: bool) -> Result<(), anyhow::Error> {
+	let uuid = if from_property_inspector {
+		if let Some(instance) = get_instance(&ActionContext::from_str(&event.context)?, &acquire_locks().await).await? {
+			instance.action.plugin.clone()
+		} else {
+			return Ok(());
+		}
+	} else {
+		event.context.clone()
+	};
+
 	{
 		let app = crate::APP_HANDLE.get().unwrap();
 
 		let settings_dir = app.path_resolver().app_config_dir().unwrap().join("settings");
 		tokio::fs::create_dir_all(&settings_dir).await?;
 
-		let path = settings_dir.join(event.context.clone() + ".json");
+		let path = settings_dir.join(uuid + ".json");
 		tokio::fs::write(path, event.payload.to_string()).await?;
 	}
 
@@ -40,5 +53,15 @@ pub async fn set_global_settings(event: super::ContextAndPayloadEvent<serde_json
 }
 
 pub async fn get_global_settings(event: super::ContextEvent<String>, from_property_inspector: bool) -> Result<(), anyhow::Error> {
-	outbound::did_receive_global_settings(&event.context, from_property_inspector).await
+	let uuid = if from_property_inspector {
+		if let Some(instance) = get_instance(&ActionContext::from_str(&event.context)?, &acquire_locks().await).await? {
+			instance.action.plugin.clone()
+		} else {
+			return Ok(());
+		}
+	} else {
+		event.context.clone()
+	};
+
+	outbound::did_receive_global_settings(&uuid, from_property_inspector).await
 }
