@@ -66,7 +66,7 @@ export async function renderImage(canvas: HTMLCanvasElement, slotContext: Contex
 		}
 		for (const [ index, line ] of Object.entries(state.text.split("\n"))) {
 			context.strokeText(line, x, y + (size * parseInt(index)));
-			context.fillText(pressed, x, y + (size * parseInt(index)));
+			context.fillText(line, x, y + (size * parseInt(index)));
 			if (state.underline) {
 				let width = context.measureText(line).width;
 				// Set to black for the outline, since it uses the same fill style info as the text colour.
@@ -100,14 +100,15 @@ export async function renderImage(canvas: HTMLCanvasElement, slotContext: Contex
 	}
 
 	
-	//make the image smaller if the button is pressed
+	//make the image smaller while the button is pressed
 	if (pressed) {
 		let smallCanvas = document.createElement("canvas");
 		smallCanvas.width = canvas.width;
 		smallCanvas.height = canvas.height;
 		let Newcontext = smallCanvas.getContext("2d");
+		let margin = .1;
 		if (Newcontext) {
-			Newcontext.drawImage(canvas, 15, 15, canvas.width-30, canvas.height-30);
+			Newcontext.drawImage(canvas, canvas.width*margin, canvas.height*margin, canvas.width-canvas.height*margin*2, canvas.height-canvas.height*margin*2);
 			canvas = smallCanvas;
 		}
 	}

@@ -51,13 +51,17 @@
 		}
 	});
 
-	listen("key_pressed", ({ payload }: { payload: { context: Context }}) => {
-		pressed = true
-		
+	listen("key_pressed", ({ payload }: { payload: { context: Context }})=> {
+		console.log(context.device)
+		if (context.position == payload.position && context.device == payload.device){
+			pressed = true;
+		};
 	});
 
 	listen("key_released", ({ payload }: { payload: { context: Context }}) => {
-		pressed = false;
+		if (context.position == payload.position && context.device == payload.device){
+			pressed = false;
+		}
 	});
 
 	function select() {

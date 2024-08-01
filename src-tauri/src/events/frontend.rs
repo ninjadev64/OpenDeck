@@ -286,19 +286,13 @@ pub async fn update_state(app: &AppHandle, context: Context, locks: &mut LocksMu
 
 pub async fn key_pressed(app: &AppHandle, context: Context) -> Result<(), anyhow::Error> {
 	let window = app.get_window("main").unwrap();
-	window.emit(
-		"key_pressed",
-		context,
-	)?;
+	window.emit("key_pressed", context)?;
 	Ok(())
 }
 
 pub async fn key_released(app: &AppHandle, context: Context) -> Result<(), anyhow::Error> {
 	let window = app.get_window("main").unwrap();
-	window.emit(
-		"key_released",
-		context,
-	)?;
+	window.emit("key_released", context)?;
 	Ok(())
 }
 
