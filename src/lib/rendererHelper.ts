@@ -66,7 +66,7 @@ export async function renderImage(canvas: HTMLCanvasElement, slotContext: Contex
 		}
 		for (const [ index, line ] of Object.entries(state.text.split("\n"))) {
 			context.strokeText(line, x, y + (size * parseInt(index)));
-			context.fillText(line, x, y + (size * parseInt(index)));
+			context.fillText(pressed, x, y + (size * parseInt(index)));
 			if (state.underline) {
 				let width = context.measureText(line).width;
 				// Set to black for the outline, since it uses the same fill style info as the text colour.
