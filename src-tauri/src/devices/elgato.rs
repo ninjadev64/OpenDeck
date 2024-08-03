@@ -2,9 +2,8 @@ use crate::events::outbound::{encoder, keypad};
 
 use std::collections::HashMap;
 
-use elgato_streamdeck::{info, AsyncStreamDeck, DeviceStateUpdate, StreamDeckError};
-use std::cmp::{max, min};
 use base64::Engine as _;
+use elgato_streamdeck::{info, AsyncStreamDeck, DeviceStateUpdate, StreamDeckError};
 use once_cell::sync::Lazy;
 use tokio::sync::RwLock;
 
@@ -21,7 +20,7 @@ pub async fn update_image(context: &crate::shared::Context, url: &str) -> Result
 
 pub async fn set_brightness(brightness: u8) {
 	for (_id, device) in ELGATO_DEVICES.read().await.iter() {
-		let _ = device.set_brightness(min(max(brightness, 0), 100)).await;
+		let _ = device.set_brightness(brightness.clamp(0, 100)).await;
 	}
 }
 
