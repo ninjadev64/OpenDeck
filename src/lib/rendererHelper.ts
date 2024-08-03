@@ -109,7 +109,8 @@ export async function renderImage(canvas: HTMLCanvasElement, slotContext: Contex
 		let margin = .1;
 		if (Newcontext) {
 			Newcontext.drawImage(canvas, canvas.width*margin, canvas.height*margin, canvas.width-canvas.height*margin*2, canvas.height-canvas.height*margin*2);
-			canvas = smallCanvas;
+			context.clearRect(0, 0, canvas.width, canvas.height);
+			context.drawImage(smallCanvas,0,0);
 		}
 	}
 
