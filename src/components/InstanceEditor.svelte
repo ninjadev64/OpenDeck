@@ -55,9 +55,52 @@
 			on:change={async () => {
 				if (!fileInput.files || fileInput.files.length == 0) return;
 				const reader = new FileReader();
-				// @ts-expect-error
-				reader.onload = () => instance.states[state].image = reader.result;
+				
+				reader.onload = async function() {
+
+					var canvas = document.createElement("canvas");
+					canvas.width = 144;
+					canvas.height = 144;
+					let context = canvas.getContext("2d");
+					if (!context) return;
+
+					context.imageSmoothingQuality = "high";
+
+					let image = document.createElement("img");
+					image.crossOrigin = "anonymous";
+
+					image.src = getImage(reader.result?.toString(), reader.result?.toString())
+
+					await new Promise((resolve) => {
+						image.onload = resolve;
+					});
+					
+					var xoffset = 0;
+					var yoffset = 0;
+					var xscaled = canvas.width;
+					var yscaled = canvas.height;
+
+					if (image.width > image.height) {
+						var ratio = image.height/image.width;
+						yoffset =canvas.height*ratio*.5
+						yscaled =canvas.height*ratio;
+
+					} else if (image.width < image.height) {
+						var ratio = image.width/image.height;
+						xoffset =canvas.width*ratio*.5
+						xscaled =canvas.width*ratio;
+					}
+
+					context.clearRect(0, 0, canvas.width, canvas.height);
+					
+					context.drawImage(image, xoffset, yoffset, xscaled, yscaled);
+
+					instance.states[state].image = canvas.toDataURL();
+				
+				}
+				
 				reader.readAsDataURL(fileInput.files[0]);
+				
 			}}
 		/>
 

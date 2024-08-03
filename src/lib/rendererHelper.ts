@@ -19,7 +19,7 @@ export function getImage(image: string | undefined, fallback: string | undefined
 	return image;
 }
 
-export async function renderImage(canvas: HTMLCanvasElement, slotContext: Context, state: ActionState, fallback: string | undefined, showOk: boolean, showAlert: boolean, processImage: boolean, active: boolean) {
+export async function renderImage(canvas: HTMLCanvasElement, slotContext: Context, state: ActionState, fallback: string | undefined, showOk: boolean, showAlert: boolean, processImage: boolean, active: boolean, pressed: boolean) {
 	// Create canvas
 	let scale = 1;
 	if (!canvas) {
@@ -97,6 +97,20 @@ export async function renderImage(canvas: HTMLCanvasElement, slotContext: Contex
 			alertImage.onload = resolve;
 		});
 		context.drawImage(alertImage, 0, 0, canvas.width, canvas.height);
+	}
+
+	
+	//make the image smaller while the button is pressed
+	if (pressed) {
+		let smallCanvas = document.createElement("canvas");
+		smallCanvas.width = canvas.width;
+		smallCanvas.height = canvas.height;
+		let Newcontext = smallCanvas.getContext("2d");
+		let margin = .1;
+		if (Newcontext) {
+			Newcontext.drawImage(canvas, canvas.width*margin, canvas.height*margin, canvas.width-canvas.height*margin*2, canvas.height-canvas.height*margin*2);
+			canvas = smallCanvas;
+		}
 	}
 
 	if (active) setTimeout(async () => await invoke("update_image", { context: slotContext, image: canvas.toDataURL("image/jpeg") }), 10);

@@ -25,8 +25,10 @@ pub async fn key_down(device: &str, key: u8) -> Result<(), anyhow::Error> {
 		controller: "Keypad".to_owned(),
 		position: key,
 	};
-	let slot = get_slot_mut(&context, &mut locks).await?;
 
+	let _ = crate::events::frontend::key_pressed(crate::APP_HANDLE.get().unwrap(), context.clone()).await;
+
+	let slot = get_slot_mut(&context, &mut locks).await?;
 	if slot.len() == 1 {
 		let instance = &slot[0];
 		send_to_plugin(
@@ -40,7 +42,7 @@ pub async fn key_down(device: &str, key: u8) -> Result<(), anyhow::Error> {
 			},
 		)
 		.await?;
-	} else {
+	} else if !slot.is_empty() {
 		for instance in slot {
 			send_to_plugin(
 				&instance.action.plugin,
@@ -76,7 +78,7 @@ pub async fn key_down(device: &str, key: u8) -> Result<(), anyhow::Error> {
 		}
 
 		save_profile(device, &mut locks).await?;
-		let _ = crate::events::frontend::update_state(crate::APP_HANDLE.get().unwrap(), context, &mut locks).await;
+		let _ = crate::events::frontend::update_state(crate::APP_HANDLE.get().unwrap(), context.clone(), &mut locks).await;
 	}
 
 	Ok(())
@@ -91,6 +93,8 @@ pub async fn key_up(device: &str, key: u8) -> Result<(), anyhow::Error> {
 		controller: "Keypad".to_owned(),
 		position: key,
 	};
+
+	let _ = crate::events::frontend::key_released(crate::APP_HANDLE.get().unwrap(), context.clone()).await;
 
 	let slot = get_slot_mut(&context, &mut locks).await?;
 	if slot.len() != 1 {
@@ -115,7 +119,7 @@ pub async fn key_up(device: &str, key: u8) -> Result<(), anyhow::Error> {
 	.await?;
 
 	save_profile(device, &mut locks).await?;
-	let _ = crate::events::frontend::update_state(crate::APP_HANDLE.get().unwrap(), context, &mut locks).await;
+	let _ = crate::events::frontend::update_state(crate::APP_HANDLE.get().unwrap(), context.clone(), &mut locks).await;
 
 	Ok(())
 }

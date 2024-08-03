@@ -25,6 +25,7 @@
 
 	export let active: boolean = true;
 	export let scale: number = 1;
+	export let pressed: boolean = false;
 
 	let state: ActionState | undefined;
 	$: {
@@ -47,6 +48,19 @@
 			slot = payload.contents;
 		} else if (payload.contents[0]?.context == slot?.[0]?.context) {
 			slot[0] = payload.contents[0];
+		}
+	});
+
+	listen("key_pressed", ({ payload }: { payload: { context: Context }})=> {
+		console.log(context.device)
+		if (context.position == payload.position && context.device == payload.device){
+			pressed = true;
+		};
+	});
+
+	listen("key_released", ({ payload }: { payload: { context: Context }}) => {
+		if (context.position == payload.position && context.device == payload.device){
+			pressed = false;
 		}
 	});
 
@@ -116,11 +130,11 @@
 				if (context) context.clearRect(0, 0, canvas.width, canvas.height);
 			}
 		} else if (slot.length > 1) {
-			renderImage(canvas, context, state!, null!, false, false, false, active);
+			renderImage(canvas, context, state!, null!, false, false, false, active, pressed);
 		} else if (slot.length) {
 			let instance = slot[0];
 			let fallback = instance.action.states[instance.current_state].image ?? instance.action.icon;
-			if (state) renderImage(canvas, context, state, fallback, showOk, showAlert, true, active);
+			if (state) renderImage(canvas, context, state, fallback, showOk, showAlert, true, active, pressed);
 		}
 	}
 </script>
