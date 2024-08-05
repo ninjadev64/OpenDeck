@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { ActionInstance } from "$lib/ActionInstance";
 
-	import { getImage } from "$lib/rendererHelper";
+	import { getImage, resizeImage } from "$lib/rendererHelper";
 
 	import { invoke } from "@tauri-apps/api";
 
@@ -55,52 +55,17 @@
 			on:change={async () => {
 				if (!fileInput.files || fileInput.files.length == 0) return;
 				const reader = new FileReader();
-				
-				reader.onload = async function() {
 
-					var canvas = document.createElement("canvas");
-					canvas.width = 144;
-					canvas.height = 144;
-					let context = canvas.getContext("2d");
-					if (!context) return;
-
-					context.imageSmoothingQuality = "high";
-
-					let image = document.createElement("img");
-					image.crossOrigin = "anonymous";
-
-					image.src = getImage(reader.result?.toString(), reader.result?.toString())
-
-					await new Promise((resolve) => {
-						image.onload = resolve;
-					});
-					
-					var xoffset = 0;
-					var yoffset = 0;
-					var xscaled = canvas.width;
-					var yscaled = canvas.height;
-
-					if (image.width > image.height) {
-						var ratio = image.height/image.width;
-						yoffset =canvas.height*ratio*.5
-						yscaled =canvas.height*ratio;
-
-					} else if (image.width < image.height) {
-						var ratio = image.width/image.height;
-						xoffset =canvas.width*ratio*.5
-						xscaled =canvas.width*ratio;
+				reader.onload = async () => {
+					let result = reader.result?.toString();
+					if (result) {
+						let resized = await resizeImage(result);
+						if (resized) instance.states[state].image = resized;
+						else instance.states[state].image = result;
 					}
-
-					context.clearRect(0, 0, canvas.width, canvas.height);
-					
-					context.drawImage(image, xoffset, yoffset, xscaled, yscaled);
-
-					instance.states[state].image = canvas.toDataURL();
-				
 				}
-				
+
 				reader.readAsDataURL(fileInput.files[0]);
-				
 			}}
 		/>
 

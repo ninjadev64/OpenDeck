@@ -284,15 +284,15 @@ pub async fn update_state(app: &AppHandle, context: Context, locks: &mut LocksMu
 	Ok(())
 }
 
-pub async fn key_pressed(app: &AppHandle, context: Context) -> Result<(), anyhow::Error> {
-	let window = app.get_window("main").unwrap();
-	window.emit("key_pressed", context)?;
-	Ok(())
+#[derive(Clone, serde::Serialize)]
+struct KeyMovedEvent {
+	context: Context,
+	pressed: bool,
 }
 
-pub async fn key_released(app: &AppHandle, context: Context) -> Result<(), anyhow::Error> {
+pub async fn key_moved(app: &AppHandle, context: Context, pressed: bool) -> Result<(), anyhow::Error> {
 	let window = app.get_window("main").unwrap();
-	window.emit("key_released", context)?;
+	window.emit("key_moved", KeyMovedEvent { context, pressed })?;
 	Ok(())
 }
 

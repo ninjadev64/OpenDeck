@@ -25,7 +25,7 @@
 
 	export let active: boolean = true;
 	export let scale: number = 1;
-	export let pressed: boolean = false;
+	let pressed: boolean = false;
 
 	let state: ActionState | undefined;
 	$: {
@@ -51,17 +51,11 @@
 		}
 	});
 
-	listen("key_pressed", ({ payload }: { payload: { context: Context }})=> {
-		console.log(context.device)
-		if (context.position == payload.position && context.device == payload.device){
-			pressed = true;
+	listen("key_moved", ({ payload }: { payload: { context: Context, pressed: boolean }}) => {
+		if (JSON.stringify(context) == JSON.stringify(payload.context)) {
+			console.log(payload);
+			pressed = payload.pressed;
 		};
-	});
-
-	listen("key_released", ({ payload }: { payload: { context: Context }}) => {
-		if (context.position == payload.position && context.device == payload.device){
-			pressed = false;
-		}
 	});
 
 	function select() {
