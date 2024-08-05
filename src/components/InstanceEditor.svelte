@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { ActionInstance } from "$lib/ActionInstance";
 
-	import { getImage } from "$lib/rendererHelper";
+	import { getImage, resizeImage } from "$lib/rendererHelper";
 
 	import { invoke } from "@tauri-apps/api";
 
@@ -55,8 +55,16 @@
 			on:change={async () => {
 				if (!fileInput.files || fileInput.files.length == 0) return;
 				const reader = new FileReader();
-				// @ts-expect-error
-				reader.onload = () => instance.states[state].image = reader.result;
+
+				reader.onload = async () => {
+					let result = reader.result?.toString();
+					if (result) {
+						let resized = await resizeImage(result);
+						if (resized) instance.states[state].image = resized;
+						else instance.states[state].image = result;
+					}
+				}
+
 				reader.readAsDataURL(fileInput.files[0]);
 			}}
 		/>

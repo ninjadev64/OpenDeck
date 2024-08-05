@@ -25,8 +25,10 @@ pub async fn key_down(device: &str, key: u8) -> Result<(), anyhow::Error> {
 		controller: "Keypad".to_owned(),
 		position: key,
 	};
-	let slot = get_slot_mut(&context, &mut locks).await?;
 
+	let _ = crate::events::frontend::key_moved(crate::APP_HANDLE.get().unwrap(), context.clone(), true).await;
+
+	let slot = get_slot_mut(&context, &mut locks).await?;
 	if slot.len() == 1 {
 		let instance = &slot[0];
 		send_to_plugin(
@@ -91,6 +93,8 @@ pub async fn key_up(device: &str, key: u8) -> Result<(), anyhow::Error> {
 		controller: "Keypad".to_owned(),
 		position: key,
 	};
+
+	let _ = crate::events::frontend::key_moved(crate::APP_HANDLE.get().unwrap(), context.clone(), false).await;
 
 	let slot = get_slot_mut(&context, &mut locks).await?;
 	if slot.len() != 1 {

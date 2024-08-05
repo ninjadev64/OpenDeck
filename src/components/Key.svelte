@@ -25,6 +25,7 @@
 
 	export let active: boolean = true;
 	export let scale: number = 1;
+	let pressed: boolean = false;
 
 	let state: ActionState | undefined;
 	$: {
@@ -48,6 +49,12 @@
 		} else if (payload.contents[0]?.context == slot?.[0]?.context) {
 			slot[0] = payload.contents[0];
 		}
+	});
+
+	listen("key_moved", ({ payload }: { payload: { context: Context, pressed: boolean }}) => {
+		if (JSON.stringify(context) == JSON.stringify(payload.context)) {
+			pressed = payload.pressed;
+		};
 	});
 
 	function select() {
@@ -116,11 +123,11 @@
 				if (context) context.clearRect(0, 0, canvas.width, canvas.height);
 			}
 		} else if (slot.length > 1) {
-			renderImage(canvas, context, state!, null!, false, false, false, active);
+			renderImage(canvas, context, state!, null!, false, false, false, active, pressed);
 		} else if (slot.length) {
 			let instance = slot[0];
 			let fallback = instance.action.states[instance.current_state].image ?? instance.action.icon;
-			if (state) renderImage(canvas, context, state, fallback, showOk, showAlert, true, active);
+			if (state) renderImage(canvas, context, state, fallback, showOk, showAlert, true, active, pressed);
 		}
 	}
 </script>

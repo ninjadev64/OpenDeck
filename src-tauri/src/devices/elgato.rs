@@ -2,9 +2,8 @@ use crate::events::outbound::{encoder, keypad};
 
 use std::collections::HashMap;
 
-use elgato_streamdeck::{info, AsyncStreamDeck, DeviceStateUpdate, StreamDeckError};
-
 use base64::Engine as _;
+use elgato_streamdeck::{info, AsyncStreamDeck, DeviceStateUpdate, StreamDeckError};
 use once_cell::sync::Lazy;
 use tokio::sync::RwLock;
 
@@ -21,7 +20,7 @@ pub async fn update_image(context: &crate::shared::Context, url: &str) -> Result
 
 pub async fn set_brightness(brightness: u8) {
 	for (_id, device) in ELGATO_DEVICES.read().await.iter() {
-		let _ = device.set_brightness(brightness).await;
+		let _ = device.set_brightness(brightness.clamp(0, 100)).await;
 	}
 }
 
@@ -43,7 +42,8 @@ pub(super) async fn init(device: AsyncStreamDeck) {
 		_ => 7,
 	};
 	let _ = device.clear_all_button_images().await;
-	let device_id = format!("sd-{}", device.serial_number().await.unwrap());
+	// The replacement of \u{0001} is needed to fix what is likely a bug in the elgato-streamdeck crate (awaiting a fix upstream).
+	let device_id = format!("sd-{}", device.serial_number().await.unwrap().replace('\u{0001}', ""));
 	super::register_device(
 		device_id.clone(),
 		super::DeviceInfo {

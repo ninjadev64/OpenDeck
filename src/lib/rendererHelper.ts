@@ -19,7 +19,7 @@ export function getImage(image: string | undefined, fallback: string | undefined
 	return image;
 }
 
-export async function renderImage(canvas: HTMLCanvasElement, slotContext: Context, state: ActionState, fallback: string | undefined, showOk: boolean, showAlert: boolean, processImage: boolean, active: boolean) {
+export async function renderImage(canvas: HTMLCanvasElement, slotContext: Context, state: ActionState, fallback: string | undefined, showOk: boolean, showAlert: boolean, processImage: boolean, active: boolean, pressed: boolean) {
 	// Create canvas
 	let scale = 1;
 	if (!canvas) {
@@ -99,5 +99,54 @@ export async function renderImage(canvas: HTMLCanvasElement, slotContext: Contex
 		context.drawImage(alertImage, 0, 0, canvas.width, canvas.height);
 	}
 
+	// Make the image smaller while the button is pressed.
+	if (pressed) {
+		let smallCanvas = document.createElement("canvas");
+		smallCanvas.width = canvas.width;
+		smallCanvas.height = canvas.height;
+		let newContext = smallCanvas.getContext("2d");
+		let margin = 0.1;
+		if (newContext) {
+			newContext.drawImage(
+				canvas,
+				canvas.width * margin, canvas.height * margin,
+				canvas.width * (1 - (margin * 2)), canvas.height * (1 - (margin * 2))
+			);
+			context.clearRect(0, 0, canvas.width, canvas.height);
+			context.drawImage(smallCanvas, 0, 0);
+		}
+	}
+
 	if (active) setTimeout(async () => await invoke("update_image", { context: slotContext, image: canvas.toDataURL("image/jpeg") }), 10);
+}
+
+export async function resizeImage(source: string): Promise<string | undefined> {
+	let canvas = document.createElement("canvas");
+	canvas.width = 288;
+	canvas.height = 288;
+	let context = canvas.getContext("2d");
+	if (!context) return;
+
+	let image = document.createElement("img");
+	image.crossOrigin = "anonymous";
+	image.src = source;
+	await new Promise((resolve) => image.onload = resolve);
+
+	let xOffset = 0, yOffset = 0;
+	let xScaled = canvas.width, yScaled = canvas.height;
+	if (image.width > image.height) {
+		let ratio = image.height / image.width;
+		yOffset = canvas.height * ratio / 2;
+		yScaled = canvas.height * ratio;
+	} else if (image.width < image.height) {
+		let ratio = image.width / image.height;
+		xOffset = canvas.width * ratio / 2;
+		xScaled = canvas.width * ratio;
+	}
+
+	context.imageSmoothingQuality = "high";
+	context.clearRect(0, 0, canvas.width, canvas.height);
+	context.drawImage(image, xOffset, yOffset, xScaled, yScaled);
+
+	return canvas.toDataURL();
 }

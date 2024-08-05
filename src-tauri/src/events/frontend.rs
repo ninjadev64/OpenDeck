@@ -284,6 +284,18 @@ pub async fn update_state(app: &AppHandle, context: Context, locks: &mut LocksMu
 	Ok(())
 }
 
+#[derive(Clone, serde::Serialize)]
+struct KeyMovedEvent {
+	context: Context,
+	pressed: bool,
+}
+
+pub async fn key_moved(app: &AppHandle, context: Context, pressed: bool) -> Result<(), anyhow::Error> {
+	let window = app.get_window("main").unwrap();
+	window.emit("key_moved", KeyMovedEvent { context, pressed })?;
+	Ok(())
+}
+
 #[command]
 pub async fn set_state(instance: ActionInstance, state: u16) -> Result<(), Error> {
 	let mut locks = acquire_locks_mut().await;
