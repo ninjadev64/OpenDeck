@@ -160,6 +160,7 @@ pub static PROFILE_STORES: Lazy<RwLock<ProfileStores>> = Lazy::new(|| RwLock::ne
 pub static DEVICE_STORES: Lazy<RwLock<DeviceStores>> = Lazy::new(|| RwLock::new(DeviceStores { stores: HashMap::new() }));
 
 pub struct Locks<'a> {
+	#[allow(dead_code)]
 	pub device_stores: RwLockReadGuard<'a, DeviceStores>,
 	pub devices: RwLockReadGuard<'a, HashMap<String, crate::devices::DeviceInfo>>,
 	pub profile_stores: RwLockReadGuard<'a, ProfileStores>,

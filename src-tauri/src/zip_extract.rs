@@ -11,6 +11,7 @@ use std::path::Path;
 use std::{fs, io};
 
 #[derive(Debug)]
+#[allow(dead_code)]
 pub enum ZipExtractError {
 	Io(io::Error),
 	Zip(zip::result::ZipError),
