@@ -21,16 +21,22 @@ jobs:
             args: ""
           - platform: "windows-latest"
             args: ""
-
     runs-on: ${{ matrix.platform }}
+    env:
+      DENO_DIR: deno_cache
     steps:
       - uses: actions/checkout@v4
 
-      - name: setup node
-        uses: actions/setup-node@v4
+      - name: cache Deno dependencies
+        uses: actions/cache@v2
         with:
-          node-version: lts/*
-          cache: "npm"
+          path: ${{ env.DENO_DIR }}
+          key: ${{ hashFiles('deno.lock') }}
+
+      - name: setup Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x
 
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
