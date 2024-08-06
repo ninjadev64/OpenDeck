@@ -28,10 +28,14 @@
 		<details open class="mb-2">
 			<summary class="text-xl font-semibold dark:text-neutral-300"> {name} </summary>
 			{#each actions as action}
-				{#if action.visible_in_action_list}
-					<ListedAction {action} localisation={localiseAction(action, $localisations)} />
-				{/if}
+				<ListedAction {action} localisation={localiseAction(action, $localisations)} />
 			{/each}
 		</details>
 	{/each}
+	{#if Object.keys(categories).length == 0}
+		<div class="flex flex-col justify-center items-center w-full h-full text-center dark:text-neutral-300">
+			<h2 class="text-lg font-bold mb-2"> No plugins installed </h2>
+			<p> If you're looking for something to try, install the OpenDeck Starter Pack plugin. </p>
+		</div>
+	{/if}
 </div>
