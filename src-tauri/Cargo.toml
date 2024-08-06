@@ -18,8 +18,8 @@ built = { version = "0.7", features = [ "dependency-tree", "git2" ] }
 tauri = { version = "1.7", features = [ "dialog-confirm", "dialog-message", "shell-execute", "shell-open", "system-tray", "devtools" ] }
 serde = { version = "1.0", features = [ "derive" ] }
 serde_json = "1.0"
-serialport = "4.4"
-tokio = { version = "1.36", features = [ "full" ] }
+serialport = "4.5"
+tokio = { version = "1.38", features = [ "full" ] }
 tokio-tungstenite = "0.23"
 tiny_http = "0.12"
 elgato-streamdeck = { version = "0.7", default-features = false, features = [ "async" ] }
@@ -35,7 +35,7 @@ tauri-plugin-log = { git = "https://github.com/tauri-apps/plugins-workspace", br
 tauri-plugin-autostart = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 tauri-plugin-single-instance = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 serde-inline-default = "0.2"
-serde_with = "3.8"
+serde_with = "3.9"
 os_info = "3.8"
 urlencoding = "2.1"
 base64 = "0.22"

@@ -29,7 +29,7 @@
 			"identifier": "com.amansprojects.opendeck",
 			"publisher": "ninjadev64",
 			"shortDescription": "A cross-platform desktop application for ProntoKey and Stream Deck.",
-			"longDescription": "OpenDeck is a desktop application that provides Stream Deck-like functionality for ProntoKey and Elgato hardware, implementing the Stream Deck SDK for cross-compatibility.",
+			"longDescription": "OpenDeck is a cross-platform desktop application that provides functionality for stream controller devices.",
 			"category": "Productivity",
 			"icon": [
 				"icons/icon.png",

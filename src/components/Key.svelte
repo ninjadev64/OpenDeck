@@ -82,10 +82,10 @@
 		}
 	}
 
-	export let handlePaste: (source: Context, destination: Context) => void;
+	export let handlePaste: ((source: Context, destination: Context) => void) | undefined = undefined;
 	async function paste() {
 		if (!$copiedContext) return;
-		handlePaste($copiedContext, context);
+		if (handlePaste) handlePaste($copiedContext, context);
 	}
 
 	async function clear() {
