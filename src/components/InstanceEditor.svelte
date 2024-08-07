@@ -34,12 +34,8 @@
 		<button class="ml-3 mr-2 float-right text-xl dark:text-neutral-300" on:click={() => showEditor = false}> ✕ </button>
 	</div>
 	<div class="flex flex-row">
-		<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-		<img
-			src={getImage(instance.states[state].image, instance.action.states[state].image ?? instance.action.icon)}
-			class="mx-1 my-auto p-1 w-32 h-min aspect-square rounded-xl cursor-pointer"
-			alt="State {state}"
-			on:click={() => fileInput.click()} on:keyup={() => fileInput.click()}
+		<button
+			on:click={() => fileInput.click()}
 			on:contextmenu={(event) => {
 				event.preventDefault();
 				if (event.ctrlKey) {
@@ -48,7 +44,13 @@
 					instance.states[state].image = instance.action.states[state].image;
 				}
 			}}
-		/>
+		>
+			<img
+				src={getImage(instance.states[state].image, instance.action.states[state].image ?? instance.action.icon)}
+				class="mx-1 my-auto p-1 w-32 h-min aspect-square rounded-xl cursor-pointer"
+				alt="State {state}"
+			/>
+		</button>
 		<input
 			bind:this={fileInput}
 			type="file" class="hidden" accept="image/*"

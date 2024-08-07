@@ -175,11 +175,9 @@
 					<input type="radio" bind:group={value} value="{profile}" />
 					<span class="dark:text-neutral-400"> {id ? profile.split("/")[1] : profile} </span>
 					{#if profile != value}
-						<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 						<button
-							class="float-right"
 							on:click={() => deleteProfile(profile)}
-							on:keyup={() => deleteProfile(profile)}
+							class="float-right"
 						>
 							<Trash
 								size="20"
@@ -188,7 +186,7 @@
 						</button>
 					{:else}
 						<button
-							on:click={exportProfile} on:keyup={exportProfile}
+							on:click={exportProfile}
 							class="float-right"
 						>
 							<Download

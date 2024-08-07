@@ -18,7 +18,7 @@
 
 	<button
 		class="ml-auto mr-4"
-		on:click={action} on:keyup={action}
+		on:click={action}
 	>
 		<slot />
 	</button>

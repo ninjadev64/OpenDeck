@@ -55,10 +55,9 @@
 		<div class="flex flex-row items-center mx-4 my-1 bg-neutral-100 dark:bg-neutral-800 rounded-md">
 			<Key inslot={[instance]} {context} active={false} scale={3/4} />
 			<p class="ml-4 text-xl dark:text-neutral-400"> {instance.action.name} </p>
-			<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 			<button
 				class="ml-auto mr-10"
-				on:click={() => removeInstance(index)} on:keyup={() => removeInstance(index)}
+				on:click={() => removeInstance(index)}
 			>
 				<Trash size="32" color={document.documentElement.classList.contains("dark") ? "#C0BFBC" : "#77767B"} />
 			</button>
