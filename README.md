@@ -2,29 +2,33 @@
 
 OpenDeck is a desktop application for interfacing between human interface devices with keys or encoders and plugins, which provide actions to be carried out when the user interacts with the device. OpenDeck conforms to the [OpenAction](https://openaction.amansprojects.com/) API, which is cross-compatible with the Stream Deck SDK, allowing a wide range of pre-existing plugins to be used.
 
-OpenDeck supports ProntoKey and Elgato Stream Deck hardware on all three major desktop platforms. If you would like to contribute support for additional hardware (e.g. Loupedeck) feel free to reach out on any of the support forums and make a pull request!
+OpenDeck supports ProntoKey, Elgato Stream Deck and AKP153 (not AKP153e) hardware on all three major desktop platforms. If you would like to contribute support for additional hardware (e.g. Loupedeck) feel free to reach out on any of the support forums and make a pull request!
 
 ## Installation
 
 ### GNU+Linux
 
 - Download the latest release from GitHub Releases.
+	- You should avoid AppImage releases of OpenDeck as they tend to have problems (you should also just avoid AppImages in general).
+	- For users of Arch-based distributions, there is the `opendeck` AUR package for the latest release, as well as the `opendeck-git` AUR package for the latest commit on the `main` branch of this repository.
 - Install OpenDeck using your package manager of choice.
 - If using Elgato hardware, install the appropriate udev subsystem rules from [here](https://raw.githubusercontent.com/streamduck-org/elgato-streamdeck/main/40-streamdeck.rules):
 	- If you're using a `.deb` or `.rpm` release artifact, this file should be installed automatically.
 	- Otherwise, download and copy it to the correct location with `sudo cp 40-streamdeck.rules /etc/udev/rules.d/`.
 	- In both cases, you will need to reload your udev subsystem rules with `sudo udevadm control --reload-rules`.
+- If you intend to use plugins that are only compiled for Windows or macOS (which are the majority of plugins), you will need to have [Wine](https://www.winehq.org/) installed on your system.
 
 ### Windows
 
-- Download the latest release from GitHub Releases.
+- Download the latest release (`.exe` or `.msi`) from GitHub Releases.
 - Double-click the downloaded file to run the installer.
 
 ### macOS
 
 - Download the latest release from GitHub Releases.
-- Open the downloaded disk image and drag the application inside into your Applications folder.
+- If you downloaded a `.dmg`, open the downloaded disk image and drag the application inside into your Applications folder; otherwise, extract the `.tar.gz` to your Applications folder.
 - Open the installed application. Note: if you receive a warning about OpenDeck being distributed by an unknown developer, *right-click the app in Finder and then click Open* to suppress the warning.
+- If you intend to use plugins that are only compiled for Windows, you will need to have [Wine](https://www.winehq.org/) installed on your system.
 
 ## Showcase
 

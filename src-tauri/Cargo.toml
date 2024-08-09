@@ -10,7 +10,7 @@ edition = "2021"
 rust-version = "1.77"
 
 [build-dependencies]
-tauri-build = { version = "1.5.1", features = [] }
+tauri-build = { version = "1.5", features = [] }
 built = { version = "0.7", features = [ "dependency-tree", "git2" ] }
 
 [dependencies]

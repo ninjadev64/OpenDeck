@@ -64,7 +64,7 @@
 		</div>
 
 		<div class="flex flex-row items-center m-2 space-x-2">
-			<span class="dark:text-neutral-400"> Default device brightness: </span>
+			<span class="dark:text-neutral-400"> Device brightness: </span>
 			<input type="range" min="0" max="100" bind:value={$settings.brightness} />
 		</div>
 	{/if}

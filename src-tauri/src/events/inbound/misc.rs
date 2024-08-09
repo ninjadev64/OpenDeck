@@ -16,6 +16,7 @@ pub struct LogMessageEvent {
 
 pub async fn open_url(event: PayloadEvent<OpenUrlEvent>) -> Result<(), anyhow::Error> {
 	let app_handle = crate::APP_HANDLE.get().unwrap();
+	log::debug!("Opening URL {}", event.payload.url);
 	open(&app_handle.shell_scope(), event.payload.url, None)?;
 	Ok(())
 }
