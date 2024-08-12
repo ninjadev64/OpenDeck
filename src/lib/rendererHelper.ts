@@ -137,12 +137,12 @@ export async function resizeImage(source: string): Promise<string | undefined> {
 	let xScaled = canvas.width, yScaled = canvas.height;
 	if (image.width > image.height) {
 		let ratio = image.height / image.width;
-		yOffset = canvas.height * ratio / 2;
 		yScaled = canvas.height * ratio;
+		yOffset = (canvas.height - yScaled) / 2;
 	} else if (image.width < image.height) {
 		let ratio = image.width / image.height;
-		xOffset = canvas.width * ratio / 2;
 		xScaled = canvas.width * ratio;
+		xOffset = (canvas.width - xScaled) / 2;
 	}
 
 	context.imageSmoothingQuality = "high";
