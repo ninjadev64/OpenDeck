@@ -1,4 +1,4 @@
-// use std::time::Duration;
+use std::time::Duration;
 
 use super::{send_to_plugin, GenericInstancePayload};
 
@@ -28,8 +28,8 @@ pub async fn key_down(device: &str, key: u8) -> Result<(), anyhow::Error> {
 
 	let _ = crate::events::frontend::key_moved(crate::APP_HANDLE.get().unwrap(), context.clone(), true).await;
 
-	let slot = get_slot_mut(&context, &mut locks).await?;
-	if let Some(instance) = slot {
+	let Some(instance) = get_slot_mut(&context, &mut locks).await? else { return Ok(()) };
+	if instance.action.uuid != "com.amansprojects.opendeck.multiaction" {
 		send_to_plugin(
 			&instance.action.plugin,
 			&KeyEvent {
@@ -41,36 +41,34 @@ pub async fn key_down(device: &str, key: u8) -> Result<(), anyhow::Error> {
 			},
 		)
 		.await?;
-	}
-	/*
-	else if !slot.is_empty() {
-		for instance in slot {
+	} else {
+		for child in instance.children.as_mut().unwrap() {
 			send_to_plugin(
-				&instance.action.plugin,
+				&child.action.plugin,
 				&KeyEvent {
 					event: "keyDown",
-					action: instance.action.uuid.clone(),
-					context: instance.context.clone(),
-					device: instance.context.device.clone(),
-					payload: GenericInstancePayload::new(instance, true),
+					action: child.action.uuid.clone(),
+					context: child.context.clone(),
+					device: child.context.device.clone(),
+					payload: GenericInstancePayload::new(child, true),
 				},
 			)
 			.await?;
 
 			tokio::time::sleep(Duration::from_millis(100)).await;
 
-			if instance.states.len() == 2 && !instance.action.disable_automatic_states {
-				instance.current_state = (instance.current_state + 1) % (instance.states.len() as u16);
+			if child.states.len() == 2 && !child.action.disable_automatic_states {
+				child.current_state = (child.current_state + 1) % (child.states.len() as u16);
 			}
 
 			send_to_plugin(
-				&instance.action.plugin,
+				&child.action.plugin,
 				&KeyEvent {
 					event: "keyUp",
-					action: instance.action.uuid.clone(),
-					context: instance.context.clone(),
-					device: instance.context.device.clone(),
-					payload: GenericInstancePayload::new(instance, true),
+					action: child.action.uuid.clone(),
+					context: child.context.clone(),
+					device: child.context.device.clone(),
+					payload: GenericInstancePayload::new(child, true),
 				},
 			)
 			.await?;
@@ -81,7 +79,6 @@ pub async fn key_down(device: &str, key: u8) -> Result<(), anyhow::Error> {
 		save_profile(device, &mut locks).await?;
 		let _ = crate::events::frontend::update_state(crate::APP_HANDLE.get().unwrap(), context, &mut locks).await;
 	}
-	*/
 
 	Ok(())
 }

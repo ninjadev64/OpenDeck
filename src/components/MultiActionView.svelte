@@ -11,14 +11,8 @@
 
 	export let profile: Profile;
 
-	let slot: ActionInstance[];
-	$: {
-		if ($inspectedMultiAction?.controller == "Encoder") {
-			slot = profile.sliders[$inspectedMultiAction.position];
-		} else {
-			slot = profile.keys[$inspectedMultiAction!.position];
-		}
-	}
+	let children: ActionInstance[];
+	$: children = profile.keys[$inspectedMultiAction!.position]!.children!;
 
 	function handleDragOver(event: DragEvent) {
 		event.preventDefault();
@@ -29,16 +23,15 @@
 		if (dataTransfer?.getData("action")) {
 			let action = JSON.parse(dataTransfer?.getData("action"));
 			if (!action.supported_in_multi_actions) return;
-			let response: ActionInstance[] = await invoke("create_instance", { context: $inspectedMultiAction, action });
-			if (response) slot = response;
+			let response: ActionInstance | null = await invoke("create_instance", { context: $inspectedMultiAction, action });
+			if (response) profile.keys[$inspectedMultiAction!.position]!.children = [ ...children, response ];
 		}
 	}
 
 	async function removeInstance(index: number) {
-		await invoke("remove_instance", { context: slot[index].context });
-		let temp = [...slot];
-		temp.splice(index, 1);
-		slot = temp;
+		await invoke("remove_instance", { context: children[index].context });
+		children.splice(index, 1);
+		profile.keys[$inspectedMultiAction!.position]!.children = children;
 	}
 
 	let context: Context;
@@ -51,9 +44,9 @@
 </div>
 
 <div class="flex flex-col h-80 overflow-scroll">
-	{#each slot as instance, index}
+	{#each children as instance, index}
 		<div class="flex flex-row items-center mx-4 my-1 bg-neutral-100 dark:bg-neutral-800 rounded-md">
-			<Key inslot={[instance]} {context} active={false} scale={3/4} />
+			<Key inslot={instance} {context} active={false} scale={3/4} />
 			<p class="ml-4 text-xl dark:text-neutral-400"> {instance.action.name} </p>
 			<button
 				class="ml-auto mr-10"

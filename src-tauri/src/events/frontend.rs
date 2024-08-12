@@ -28,6 +28,12 @@ impl Error {
 	}
 }
 
+impl From<serde_json::Error> for Error {
+	fn from(error: serde_json::Error) -> Self {
+		Self::new(error.to_string())
+	}
+}
+
 impl From<anyhow::Error> for Error {
 	fn from(error: anyhow::Error) -> Self {
 		Self::new(error.to_string())
@@ -85,7 +91,13 @@ pub async fn set_selected_profile(app: AppHandle, device: String, id: String, pr
 	if selected_profile != id {
 		let old_profile = &profile_stores.get_profile_store(devices.get(&device).unwrap(), selected_profile)?.value;
 		for instance in old_profile.keys.iter().flatten().chain(&mut old_profile.sliders.iter().flatten()) {
-			let _ = crate::events::outbound::will_appear::will_disappear(instance, false).await;
+			if instance.action.uuid != "com.amansprojects.opendeck.multiaction" {
+				let _ = crate::events::outbound::will_appear::will_disappear(instance, false).await;
+			} else {
+				for child in instance.children.as_ref().unwrap() {
+					let _ = crate::events::outbound::will_appear::will_disappear(child, true).await;
+				}
+			}
 		}
 	}
 
@@ -96,7 +108,13 @@ pub async fn set_selected_profile(app: AppHandle, device: String, id: String, pr
 		*new_profile = profile;
 	}
 	for instance in new_profile.keys.iter().flatten().chain(&mut new_profile.sliders.iter().flatten()) {
-		let _ = crate::events::outbound::will_appear::will_appear(instance, false).await;
+		if instance.action.uuid != "com.amansprojects.opendeck.multiaction" {
+			let _ = crate::events::outbound::will_appear::will_appear(instance, false).await;
+		} else {
+			for child in instance.children.as_ref().unwrap() {
+				let _ = crate::events::outbound::will_appear::will_appear(child, true).await;
+			}
+		}
 	}
 	store.save()?;
 
@@ -120,21 +138,45 @@ pub async fn create_instance(action: Action, context: Context) -> Result<Option<
 	let mut locks = acquire_locks_mut().await;
 	let slot = get_slot_mut(&context, &mut locks).await?;
 
-	let instance = ActionInstance {
-		action: action.clone(),
-		context: ActionContext::from_context(context.clone(), 0),
-		states: action.states.clone(),
-		current_state: 0,
-		settings: serde_json::Value::Object(serde_json::Map::new()),
-	};
+	if let Some(parent) = slot {
+		let Some(ref mut children) = parent.children else { return Ok(None) };
+		let index = match children.last() {
+			None => 1,
+			Some(instance) => instance.context.index + 1,
+		};
 
-	*slot = Some(instance.clone());
-	let slot = slot.clone();
+		let instance = ActionInstance {
+			action: action.clone(),
+			context: ActionContext::from_context(context.clone(), index),
+			states: action.states.clone(),
+			current_state: 0,
+			settings: serde_json::Value::Object(serde_json::Map::new()),
+			children: None,
+		};
 
-	save_profile(&context.device, &mut locks).await?;
-	let _ = crate::events::outbound::will_appear::will_appear(&instance, false).await;
+		children.push(instance.clone());
+		save_profile(&context.device, &mut locks).await?;
+		let _ = crate::events::outbound::will_appear::will_appear(&instance, true).await;
 
-	Ok(slot)
+		Ok(Some(instance))
+	} else {
+		let instance = ActionInstance {
+			action: action.clone(),
+			context: ActionContext::from_context(context.clone(), 0),
+			states: action.states.clone(),
+			current_state: 0,
+			settings: serde_json::Value::Object(serde_json::Map::new()),
+			children: if action.uuid == "com.amansprojects.opendeck.multiaction" { Some(vec![]) } else { None },
+		};
+
+		*slot = Some(instance.clone());
+		let slot = slot.clone();
+
+		save_profile(&context.device, &mut locks).await?;
+		let _ = crate::events::outbound::will_appear::will_appear(&instance, false).await;
+
+		Ok(slot)
+	}
 }
 
 #[command]
@@ -146,10 +188,15 @@ pub async fn move_slot(source: Context, destination: Context, retain: bool) -> R
 	let mut locks = acquire_locks_mut().await;
 	let src = get_slot_mut(&source, &mut locks).await?;
 
-	let Some(mut new): Option<ActionInstance> = src.clone() else {
+	let Some(mut new) = src.clone() else {
 		return Ok(None);
 	};
 	new.context = ActionContext::from_context(destination.clone(), 0);
+	if let Some(ref mut children) = new.children {
+		for (index, instance) in children.iter_mut().enumerate() {
+			instance.context = ActionContext::from_context(destination.clone(), index as u16 + 1);
+		}
+	}
 
 	let dst = get_slot_mut(&destination, &mut locks).await?;
 	if dst.is_some() {
@@ -178,7 +225,13 @@ pub async fn clear_slot(context: Context) -> Result<(), Error> {
 	let slot = get_slot_mut(&context, &mut locks).await?;
 
 	if let Some(instance) = slot {
-		let _ = crate::events::outbound::will_appear::will_disappear(instance, false).await;
+		if instance.action.uuid != "com.amansprojects.opendeck.multiaction" {
+			let _ = crate::events::outbound::will_appear::will_disappear(instance, false).await;
+		} else {
+			for child in instance.children.as_ref().unwrap() {
+				let _ = crate::events::outbound::will_appear::will_disappear(child, true).await;
+			}
+		}
 	}
 
 	*slot = None;
@@ -191,10 +244,22 @@ pub async fn clear_slot(context: Context) -> Result<(), Error> {
 pub async fn remove_instance(context: ActionContext) -> Result<(), Error> {
 	let mut locks = acquire_locks_mut().await;
 	let slot = get_slot_mut(&(&context).into(), &mut locks).await?;
+	let Some(instance) = slot else {
+		return Ok(());
+	};
 
-	if let Some(instance) = slot {
+	if instance.action.uuid != "com.amansprojects.opendeck.multiaction" {
 		let _ = crate::events::outbound::will_appear::will_disappear(instance, false).await;
 		*slot = None;
+	} else {
+		let children = instance.children.as_mut().unwrap();
+		for (index, instance) in children.iter().enumerate() {
+			if instance.context == context {
+				let _ = crate::events::outbound::will_appear::will_disappear(instance, true).await;
+				children.remove(index);
+				break;
+			}
+		}
 	}
 
 	save_profile(&context.device, &mut locks).await?;
@@ -214,10 +279,7 @@ pub async fn make_info(app: AppHandle, plugin: String) -> Result<crate::plugins:
 		Err(error) => return Err(anyhow::Error::from(error).into()),
 	};
 
-	let manifest: crate::plugins::manifest::PluginManifest = match serde_json::from_slice(&manifest) {
-		Ok(manifest) => manifest,
-		Err(error) => return Err(anyhow::Error::from(error).into()),
-	};
+	let manifest: crate::plugins::manifest::PluginManifest = serde_json::from_slice(&manifest)?;
 
 	Ok(crate::plugins::info_param::make_info(plugin, manifest.version, false).await)
 }

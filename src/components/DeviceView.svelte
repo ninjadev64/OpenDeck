@@ -7,7 +7,8 @@
 	import Key from "./Key.svelte";
 	import Slider from "./Slider.svelte";
 
-	import { invoke } from "@tauri-apps/api";
+    import { inspectedMultiAction } from "$lib/propertyInspector";
+    import { invoke } from "@tauri-apps/api";
 
 	export let device: DeviceInfo;
 	export let profile: Profile;
@@ -60,7 +61,7 @@
 </script>
 
 {#key device}
-	<div class="flex flex-row" class:hidden={selectedDevice != device.id}>
+	<div class="flex flex-row" class:hidden={$inspectedMultiAction || selectedDevice != device.id}>
 		{#each { length: device.sliders } as _, i}
 			<Slider
 				context={{ device: device.id, profile: profile.id, controller: "Encoder", position: i }}

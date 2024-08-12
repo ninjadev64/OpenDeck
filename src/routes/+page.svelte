@@ -26,7 +26,8 @@
 <div class="flex flex-col grow">
 	{#if $inspectedMultiAction}
 		<MultiActionView bind:profile={selectedProfiles[selectedDevice]} />
-	{:else if Object.keys(devices).length > 0 && selectedProfiles}
+	{/if}
+	{#if Object.keys(devices).length > 0 && selectedProfiles}
 		{#each Object.entries(devices) as [ id, device ]}
 			{#if device && selectedProfiles[id]}
 				<DeviceView bind:device={device} bind:profile={selectedProfiles[id]} bind:selectedDevice={selectedDevice} />

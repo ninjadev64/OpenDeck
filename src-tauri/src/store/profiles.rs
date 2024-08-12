@@ -1,5 +1,5 @@
 use super::Store;
-use crate::shared::{ActionInstance, Profile};
+use crate::shared::{Action, ActionInstance, ActionState, Profile};
 
 use std::collections::HashMap;
 use std::fs;
@@ -131,8 +131,40 @@ impl From<ProfileV1> for Profile {
 	fn from(val: ProfileV1) -> Self {
 		let mut keys = vec![];
 		for slot in val.keys {
-			if !slot.is_empty() {
+			if slot.len() == 1 {
 				keys.push(Some(slot[0].clone()));
+			} else if !slot.is_empty() {
+				let mut children = slot.clone();
+				for child in &mut children {
+					child.context.index += 1;
+				}
+				keys.push(Some(ActionInstance {
+					action: Action {
+						name: "Multi Action".to_owned(),
+						uuid: "com.amansprojects.opendeck.multiaction".to_owned(),
+						plugin: "com.amansprojects.opendeck".to_owned(),
+						tooltip: "Execute multiple actions".to_owned(),
+						icon: "opendeck/multi-action.png".to_owned(),
+						disable_automatic_states: false,
+						visible_in_action_list: true,
+						supported_in_multi_actions: false,
+						user_title_enabled: true,
+						property_inspector: String::new(),
+						controllers: vec!["Keypad".to_owned()],
+						states: vec![ActionState {
+							image: "opendeck/multi-action.png".to_owned(),
+							..Default::default()
+						}],
+					},
+					context: slot[0].context.clone(),
+					states: vec![ActionState {
+						image: "opendeck/multi-action.png".to_owned(),
+						..Default::default()
+					}],
+					current_state: 0,
+					settings: serde_json::Value::Object(serde_json::Map::new()),
+					children: Some(children),
+				}));
 			} else {
 				keys.push(None);
 			}
@@ -273,6 +305,12 @@ pub async fn get_instance<'a>(context: &crate::shared::ActionContext, locks: &'a
 	if let Some(instance) = slot {
 		if instance.context == *context {
 			return Ok(Some(instance));
+		} else if let Some(children) = &instance.children {
+			for child in children {
+				if child.context == *context {
+					return Ok(Some(child));
+				}
+			}
 		}
 	}
 	Ok(None)
@@ -283,6 +321,12 @@ pub async fn get_instance_mut<'a>(context: &crate::shared::ActionContext, locks:
 	if let Some(instance) = slot {
 		if instance.context == *context {
 			return Ok(Some(instance));
+		} else if let Some(children) = &mut instance.children {
+			for child in children {
+				if child.context == *context {
+					return Ok(Some(child));
+				}
+			}
 		}
 	}
 	Ok(None)

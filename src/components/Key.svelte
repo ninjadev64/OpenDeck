@@ -9,7 +9,7 @@
 	import Trash from "phosphor-svelte/lib/Trash";
 	import InstanceEditor from "./InstanceEditor.svelte";
 
-	import { copiedContext, inspectedInstance, openContextMenu } from "$lib/propertyInspector";
+	import { copiedContext, inspectedInstance, inspectedMultiAction, openContextMenu } from "$lib/propertyInspector";
 	import { renderImage } from "$lib/rendererHelper";
 
 	import { invoke } from "@tauri-apps/api";
@@ -50,7 +50,11 @@
 
 	function select() {
 		if (!slot) return;
-		inspectedInstance.set(slot.context);
+		if (slot.action.uuid == "com.amansprojects.opendeck.multiaction") {
+			inspectedMultiAction.set(context);
+		} else {
+			inspectedInstance.set(slot.context);
+		}
 	}
 
 	async function contextMenu(event: MouseEvent) {

@@ -100,7 +100,10 @@
 	});
 
 	const nonNull = <T>(o: T | null): o is T => o != null;
-	$: instances = profile.keys.filter(nonNull).concat(profile.sliders.filter(nonNull));
+	$: instances = profile.
+		keys.filter(nonNull)
+		.reduce((prev, current) => prev.concat(current.children ? [ current, ...current.children ] : current), [] as ActionInstance[])
+		.concat(profile.sliders.filter(nonNull));
 </script>
 
 <div class="grow overflow-scroll bg-white dark:bg-neutral-900 border-t dark:border-neutral-700" bind:this={iframeContainer}>

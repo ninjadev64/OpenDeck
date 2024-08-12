@@ -6,5 +6,6 @@ export type ActionInstance = {
 	context: string,
 	states: ActionState[],
 	current_state: number,
-	settings: any
+	settings: any,
+	children: ActionInstance[] | null
 };
