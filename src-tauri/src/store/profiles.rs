@@ -1,5 +1,5 @@
 use super::Store;
-use crate::shared::Profile;
+use crate::shared::{ActionInstance, Profile};
 
 use std::collections::HashMap;
 use std::fs;
@@ -39,8 +39,8 @@ impl ProfileStores {
 		} else {
 			let default = Profile {
 				id: id.to_owned(),
-				keys: vec![vec![]; (device.rows * device.columns) as usize],
-				sliders: vec![vec![]; device.sliders as usize],
+				keys: vec![None; (device.rows * device.columns) as usize],
+				sliders: vec![None; device.sliders as usize],
 			};
 
 			let store = Store::new(path, app.path_resolver().app_config_dir().unwrap(), default).context(format!("Failed to create store for profile {}", path))?;
@@ -65,11 +65,9 @@ impl ProfileStores {
 	pub fn all_from_plugin(&self, plugin: &str) -> Vec<crate::shared::ActionContext> {
 		let mut all = vec![];
 		for store in self.stores.values() {
-			for slot in store.value.keys.iter().chain(&store.value.sliders) {
-				for instance in slot {
-					if instance.action.plugin == plugin {
-						all.push(instance.context.clone());
-					}
+			for instance in store.value.keys.iter().chain(&store.value.sliders).flatten() {
+				if instance.action.plugin == plugin {
+					all.push(instance.context.clone());
 				}
 			}
 		}
@@ -122,6 +120,52 @@ impl DeviceStores {
 	}
 }
 
+#[derive(Deserialize)]
+struct ProfileV1 {
+	id: String,
+	keys: Vec<Vec<ActionInstance>>,
+	sliders: Vec<Vec<ActionInstance>>,
+}
+
+impl From<ProfileV1> for Profile {
+	fn from(val: ProfileV1) -> Self {
+		let mut keys = vec![];
+		for slot in val.keys {
+			if !slot.is_empty() {
+				keys.push(Some(slot[0].clone()));
+			} else {
+				keys.push(None);
+			}
+		}
+		let mut sliders = vec![];
+		for slot in val.sliders {
+			if !slot.is_empty() {
+				sliders.push(Some(slot[0].clone()));
+			} else {
+				sliders.push(None);
+			}
+		}
+		Self { id: val.id, keys, sliders }
+	}
+}
+
+#[derive(Deserialize)]
+#[serde(untagged)]
+#[allow(dead_code)]
+enum ProfileVersions {
+	V1(ProfileV1),
+	V2(Profile),
+}
+
+fn migrate_profile(path: PathBuf) -> Result<(), anyhow::Error> {
+	let profile = serde_json::from_slice(&fs::read(&path)?)?;
+	if let ProfileVersions::V1(v1) = profile {
+		let migrated: Profile = v1.into();
+		fs::write(path, serde_json::to_string_pretty(&migrated)?)?;
+	}
+	Ok(())
+}
+
 pub fn get_device_profiles(device: &str, app: &tauri::AppHandle) -> Result<Vec<String>, anyhow::Error> {
 	let mut profiles: Vec<String> = vec![];
 
@@ -131,11 +175,17 @@ pub fn get_device_profiles(device: &str, app: &tauri::AppHandle) -> Result<Vec<S
 
 	for entry in entries.flatten() {
 		if entry.metadata()?.is_file() {
+			if let Err(error) = migrate_profile(entry.path()) {
+				log::warn!("Failed to migrate profile: {}", error);
+			}
 			profiles.push(entry.file_name().to_string_lossy()[..entry.file_name().len() - 5].to_owned());
 		} else if entry.metadata()?.is_dir() {
 			let entries = fs::read_dir(entry.path())?;
 			for subentry in entries.flatten() {
 				if subentry.metadata()?.is_file() {
+					if let Err(error) = migrate_profile(subentry.path()) {
+						log::warn!("Failed to migrate profile: {}", error);
+					}
 					profiles.push(format!(
 						"{}/{}",
 						entry.file_name().to_string_lossy(),
@@ -194,7 +244,7 @@ pub async fn acquire_locks_mut() -> LocksMut<'static> {
 	}
 }
 
-pub async fn get_slot<'a>(context: &crate::shared::Context, locks: &'a Locks<'_>) -> Result<&'a Vec<crate::shared::ActionInstance>, anyhow::Error> {
+pub async fn get_slot<'a>(context: &crate::shared::Context, locks: &'a Locks<'_>) -> Result<&'a Option<crate::shared::ActionInstance>, anyhow::Error> {
 	let device = locks.devices.get(&context.device).unwrap();
 	let store = locks.profile_stores.get_profile_store(device, &context.profile)?;
 
@@ -206,7 +256,7 @@ pub async fn get_slot<'a>(context: &crate::shared::Context, locks: &'a Locks<'_>
 	Ok(configured)
 }
 
-pub async fn get_slot_mut<'a>(context: &crate::shared::Context, locks: &'a mut LocksMut<'_>) -> Result<&'a mut Vec<crate::shared::ActionInstance>, anyhow::Error> {
+pub async fn get_slot_mut<'a>(context: &crate::shared::Context, locks: &'a mut LocksMut<'_>) -> Result<&'a mut Option<crate::shared::ActionInstance>, anyhow::Error> {
 	let device = locks.devices.get(&context.device).unwrap();
 	let store = locks.profile_stores.get_profile_store_mut(device, &context.profile, crate::APP_HANDLE.get().unwrap())?;
 
@@ -220,7 +270,7 @@ pub async fn get_slot_mut<'a>(context: &crate::shared::Context, locks: &'a mut L
 
 pub async fn get_instance<'a>(context: &crate::shared::ActionContext, locks: &'a Locks<'_>) -> Result<Option<&'a crate::shared::ActionInstance>, anyhow::Error> {
 	let slot = get_slot(&(context.into()), locks).await?;
-	for instance in slot {
+	if let Some(instance) = slot {
 		if instance.context == *context {
 			return Ok(Some(instance));
 		}
@@ -230,7 +280,7 @@ pub async fn get_instance<'a>(context: &crate::shared::ActionContext, locks: &'a
 
 pub async fn get_instance_mut<'a>(context: &crate::shared::ActionContext, locks: &'a mut LocksMut<'_>) -> Result<Option<&'a mut crate::shared::ActionInstance>, anyhow::Error> {
 	let slot = get_slot_mut(&(context.into()), locks).await?;
-	for instance in slot {
+	if let Some(instance) = slot {
 		if instance.context == *context {
 			return Ok(Some(instance));
 		}

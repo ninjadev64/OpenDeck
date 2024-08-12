@@ -99,7 +99,8 @@
 		}
 	});
 
-	$: instances = profile.keys.reduce((prev, current) => prev.concat(current), []).concat(profile.sliders.reduce((prev, current) => prev.concat(current), []));
+	const nonNull = <T>(o: T | null): o is T => o != null;
+	$: instances = profile.keys.filter(nonNull).concat(profile.sliders.filter(nonNull));
 </script>
 
 <div class="grow overflow-scroll bg-white dark:bg-neutral-900 border-t dark:border-neutral-700" bind:this={iframeContainer}>

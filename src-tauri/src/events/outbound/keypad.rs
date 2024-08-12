@@ -1,4 +1,4 @@
-use std::time::Duration;
+// use std::time::Duration;
 
 use super::{send_to_plugin, GenericInstancePayload};
 
@@ -29,8 +29,7 @@ pub async fn key_down(device: &str, key: u8) -> Result<(), anyhow::Error> {
 	let _ = crate::events::frontend::key_moved(crate::APP_HANDLE.get().unwrap(), context.clone(), true).await;
 
 	let slot = get_slot_mut(&context, &mut locks).await?;
-	if slot.len() == 1 {
-		let instance = &slot[0];
+	if let Some(instance) = slot {
 		send_to_plugin(
 			&instance.action.plugin,
 			&KeyEvent {
@@ -42,7 +41,9 @@ pub async fn key_down(device: &str, key: u8) -> Result<(), anyhow::Error> {
 			},
 		)
 		.await?;
-	} else if !slot.is_empty() {
+	}
+	/*
+	else if !slot.is_empty() {
 		for instance in slot {
 			send_to_plugin(
 				&instance.action.plugin,
@@ -80,6 +81,7 @@ pub async fn key_down(device: &str, key: u8) -> Result<(), anyhow::Error> {
 		save_profile(device, &mut locks).await?;
 		let _ = crate::events::frontend::update_state(crate::APP_HANDLE.get().unwrap(), context, &mut locks).await;
 	}
+	*/
 
 	Ok(())
 }
@@ -97,10 +99,7 @@ pub async fn key_up(device: &str, key: u8) -> Result<(), anyhow::Error> {
 	let _ = crate::events::frontend::key_moved(crate::APP_HANDLE.get().unwrap(), context.clone(), false).await;
 
 	let slot = get_slot_mut(&context, &mut locks).await?;
-	if slot.len() != 1 {
-		return Ok(());
-	}
-	let instance = &mut slot[0];
+	let Some(instance) = slot else { return Ok(()) };
 
 	if instance.states.len() == 2 && !instance.action.disable_automatic_states {
 		instance.current_state = (instance.current_state + 1) % (instance.states.len() as u16);

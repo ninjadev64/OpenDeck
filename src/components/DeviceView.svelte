@@ -24,7 +24,7 @@
 		let array = controller == "Encoder" ? profile.sliders : profile.keys;
 		if (dataTransfer?.getData("action")) {
 			let action = JSON.parse(dataTransfer?.getData("action"));
-			if (array[position].length >= 1 && (!array[position][0].action.supported_in_multi_actions || !action.supported_in_multi_actions)) {
+			if (array[position]) {
 				return;
 			}
 			array[position] = await invoke("create_instance", { context, action });
@@ -32,14 +32,14 @@
 		} else if (dataTransfer?.getData("controller")) {
 			let oldArray = dataTransfer?.getData("controller") == "Encoder" ? profile.sliders : profile.keys;
 			let oldPosition = parseInt(dataTransfer?.getData("position"));
-			let response: ActionInstance[] = await invoke("move_slot", {
+			let response: ActionInstance = await invoke("move_slot", {
 				source: { device: device.id, profile: profile.id, controller: dataTransfer?.getData("controller"), position: oldPosition },
 				destination: context,
 				retain: false
 			});
 			if (response) {
 				array[position] = response;
-				oldArray[oldPosition] = [];
+				oldArray[oldPosition] = null;
 				profile = profile;
 			}
 		}
@@ -51,7 +51,7 @@
 	}
 
 	async function handlePaste(source: Context, destination: Context) {
-		let response: ActionInstance[] = await invoke("move_slot", { source, destination, retain: true });
+		let response: ActionInstance = await invoke("move_slot", { source, destination, retain: true });
 		if (response) {
 			profile.keys[destination.position] = response;
 			profile = profile;

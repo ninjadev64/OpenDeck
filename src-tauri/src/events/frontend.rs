@@ -84,10 +84,8 @@ pub async fn set_selected_profile(app: AppHandle, device: String, id: String, pr
 
 	if selected_profile != id {
 		let old_profile = &profile_stores.get_profile_store(devices.get(&device).unwrap(), selected_profile)?.value;
-		for slot in old_profile.keys.iter().chain(&old_profile.sliders) {
-			for instance in slot {
-				let _ = crate::events::outbound::will_appear::will_disappear(instance, slot.len() > 1).await;
-			}
+		for instance in old_profile.keys.iter().flatten().chain(&mut old_profile.sliders.iter().flatten()) {
+			let _ = crate::events::outbound::will_appear::will_disappear(instance, false).await;
 		}
 	}
 
@@ -97,10 +95,8 @@ pub async fn set_selected_profile(app: AppHandle, device: String, id: String, pr
 	if let Some(profile) = profile {
 		*new_profile = profile;
 	}
-	for slot in new_profile.keys.iter().chain(&new_profile.sliders) {
-		for instance in slot {
-			let _ = crate::events::outbound::will_appear::will_appear(instance, slot.len() > 1).await;
-		}
+	for instance in new_profile.keys.iter().flatten().chain(&mut new_profile.sliders.iter().flatten()) {
+		let _ = crate::events::outbound::will_appear::will_appear(instance, false).await;
 	}
 	store.save()?;
 
@@ -116,74 +112,64 @@ pub async fn delete_profile(app: AppHandle, device: String, profile: String) {
 }
 
 #[command]
-pub async fn create_instance(action: Action, context: Context) -> Result<Option<Vec<ActionInstance>>, Error> {
+pub async fn create_instance(action: Action, context: Context) -> Result<Option<ActionInstance>, Error> {
 	if !action.controllers.contains(&context.controller) {
 		return Ok(None);
 	}
 
 	let mut locks = acquire_locks_mut().await;
 	let slot = get_slot_mut(&context, &mut locks).await?;
-	let index = match slot.last() {
-		None => 0,
-		Some(instance) => instance.context.index + 1,
-	};
 
 	let instance = ActionInstance {
 		action: action.clone(),
-		context: ActionContext::from_context(context.clone(), index),
+		context: ActionContext::from_context(context.clone(), 0),
 		states: action.states.clone(),
 		current_state: 0,
 		settings: serde_json::Value::Object(serde_json::Map::new()),
 	};
 
-	slot.push(instance.clone());
+	*slot = Some(instance.clone());
 	let slot = slot.clone();
 
 	save_profile(&context.device, &mut locks).await?;
-	let _ = crate::events::outbound::will_appear::will_appear(&instance, index != 0).await;
+	let _ = crate::events::outbound::will_appear::will_appear(&instance, false).await;
 
-	Ok(Some(slot))
+	Ok(slot)
 }
 
 #[command]
-pub async fn move_slot(source: Context, destination: Context, retain: bool) -> Result<Option<Vec<ActionInstance>>, Error> {
+pub async fn move_slot(source: Context, destination: Context, retain: bool) -> Result<Option<ActionInstance>, Error> {
 	if source.controller != destination.controller {
 		return Ok(None);
 	}
 
 	let mut locks = acquire_locks_mut().await;
 	let src = get_slot_mut(&source, &mut locks).await?;
-	let multi_action = src.len() > 1;
 
-	let mut vec: Vec<ActionInstance> = vec![];
-
-	for (index, instance) in src.iter_mut().enumerate() {
-		let mut new = instance.clone();
-		new.context = ActionContext::from_context(destination.clone(), index as u16);
-		vec.push(new);
-	}
+	let Some(mut new): Option<ActionInstance> = src.clone() else {
+		return Ok(None);
+	};
+	new.context = ActionContext::from_context(destination.clone(), 0);
 
 	let dst = get_slot_mut(&destination, &mut locks).await?;
-	if !dst.is_empty() {
+	if dst.is_some() {
 		return Ok(None);
 	}
-	dst.clone_from(&vec);
+	*dst = Some(new.clone());
 
 	if !retain {
 		let src = get_slot_mut(&source, &mut locks).await?;
-		for old in &*src {
-			let _ = crate::events::outbound::will_appear::will_disappear(old, multi_action).await;
+		if let Some(old) = src {
+			let _ = crate::events::outbound::will_appear::will_disappear(old, false).await;
 		}
-		*src = vec![];
+		*src = None;
 	}
 
-	for new in &vec {
-		let _ = crate::events::outbound::will_appear::will_appear(new, multi_action).await;
-	}
+	let _ = crate::events::outbound::will_appear::will_appear(&new, false).await;
 
 	save_profile(&destination.device, &mut locks).await?;
 
-	Ok(Some(vec))
+	Ok(Some(new))
 }
 
 #[command]
@@ -191,11 +177,11 @@ pub async fn clear_slot(context: Context) -> Result<(), Error> {
 	let mut locks = acquire_locks_mut().await;
 	let slot = get_slot_mut(&context, &mut locks).await?;
 
-	for instance in &*slot {
-		let _ = crate::events::outbound::will_appear::will_disappear(instance, slot.len() > 1).await;
+	if let Some(instance) = slot {
+		let _ = crate::events::outbound::will_appear::will_disappear(instance, false).await;
 	}
 
-	*slot = vec![];
+	*slot = None;
 	save_profile(&context.device, &mut locks).await?;
 
 	Ok(())
@@ -206,12 +192,9 @@ pub async fn remove_instance(context: ActionContext) -> Result<(), Error> {
 	let mut locks = acquire_locks_mut().await;
 	let slot = get_slot_mut(&(&context).into(), &mut locks).await?;
 
-	for (index, instance) in slot.iter().enumerate() {
-		if instance.context == context {
-			let _ = crate::events::outbound::will_appear::will_disappear(instance, slot.len() > 1).await;
-			slot.remove(index);
-			break;
-		}
+	if let Some(instance) = slot {
+		let _ = crate::events::outbound::will_appear::will_disappear(instance, false).await;
+		*slot = None;
 	}
 
 	save_profile(&context.device, &mut locks).await?;
@@ -269,7 +252,7 @@ pub async fn update_image(context: Context, image: String) {
 #[derive(Clone, serde::Serialize)]
 struct UpdateStateEvent {
 	context: Context,
-	contents: Vec<ActionInstance>,
+	contents: Option<ActionInstance>,
 }
 
 pub async fn update_state(app: &AppHandle, context: Context, locks: &mut LocksMut<'_>) -> Result<(), anyhow::Error> {
