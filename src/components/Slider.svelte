@@ -22,10 +22,11 @@
 	}
 
 	async function clear(event: MouseEvent) {
+		if (!slot) return;
 		event.preventDefault();
 		if (event.ctrlKey) return;
-		await invoke("clear_slot", { context });
-		if ($inspectedInstance == slot?.context) inspectedInstance.set(null);
+		await invoke("remove_instance", { context: slot.context });
+		if ($inspectedInstance == slot.context) inspectedInstance.set(null);
 		slot = null;
 	}
 

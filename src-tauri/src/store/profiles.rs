@@ -27,7 +27,7 @@ impl ProfileStores {
 		}
 	}
 
-	pub fn get_profile_store_mut(&mut self, device: &crate::devices::DeviceInfo, id: &str, app: &tauri::AppHandle) -> Result<&mut Store<Profile>, anyhow::Error> {
+	pub async fn get_profile_store_mut(&mut self, device: &crate::devices::DeviceInfo, id: &str, app: &tauri::AppHandle) -> Result<&mut Store<Profile>, anyhow::Error> {
 		#[cfg(target_os = "windows")]
 		let path = PathBuf::from("profiles").join(&device.id).join(id.replace('/', "\\"));
 		#[cfg(not(target_os = "windows"))]
@@ -43,7 +43,19 @@ impl ProfileStores {
 				sliders: vec![None; device.sliders as usize],
 			};
 
-			let store = Store::new(path, app.path_resolver().app_config_dir().unwrap(), default).context(format!("Failed to create store for profile {}", path))?;
+			let mut store = Store::new(path, app.path_resolver().app_config_dir().unwrap(), default).context(format!("Failed to create store for profile {}", path))?;
+
+			let categories = crate::shared::CATEGORIES.read().await;
+			let actions = categories.values().flatten().collect::<Vec<_>>();
+			for slot in store.value.keys.iter_mut() {
+				if let Some(instance) = slot {
+					if !actions.iter().any(|v| v.uuid == instance.action.uuid) {
+						*slot = None;
+					} else if let Some(children) = &mut instance.children {
+						children.retain_mut(|child| actions.iter().any(|v| v.uuid == child.action.uuid));
+					}
+				}
+			}
 			store.save()?;
 
 			self.stores.insert(path.to_owned(), store);
@@ -290,7 +302,7 @@ pub async fn get_slot<'a>(context: &crate::shared::Context, locks: &'a Locks<'_>
 
 pub async fn get_slot_mut<'a>(context: &crate::shared::Context, locks: &'a mut LocksMut<'_>) -> Result<&'a mut Option<crate::shared::ActionInstance>, anyhow::Error> {
 	let device = locks.devices.get(&context.device).unwrap();
-	let store = locks.profile_stores.get_profile_store_mut(device, &context.profile, crate::APP_HANDLE.get().unwrap())?;
+	let store = locks.profile_stores.get_profile_store_mut(device, &context.profile, crate::APP_HANDLE.get().unwrap()).await?;
 
 	let configured = match &context.controller[..] {
 		"Encoder" => &mut store.value.sliders[context.position as usize],

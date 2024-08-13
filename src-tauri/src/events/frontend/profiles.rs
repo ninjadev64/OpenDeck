@@ -43,7 +43,7 @@ pub async fn set_selected_profile(app: AppHandle, device: String, id: String, pr
 	}
 
 	// We must use the mutable version of get_profile_store in order to create the store if it does not exist.
-	let store = profile_stores.get_profile_store_mut(devices.get(&device).unwrap(), &id, &app)?;
+	let store = profile_stores.get_profile_store_mut(devices.get(&device).unwrap(), &id, &app).await?;
 	let new_profile = &mut store.value;
 	if let Some(profile) = profile {
 		*new_profile = profile;

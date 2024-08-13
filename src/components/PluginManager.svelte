@@ -87,7 +87,27 @@
 	}
 
 	let installed: any[] = [];
-	(async () => installed = await invoke("list_plugins"))();
+	(async () => {
+		installed = await invoke("list_plugins");
+		if (!installed.some((v) => v.id == "com.amansprojects.starterpack.sdPlugin")) {
+			let tempConfirm = confirm;
+			let tempAlert = alert;
+			// @ts-expect-error
+			confirm = () => true;
+			// @ts-expect-error
+			alert = () => {};
+			try {
+				await installPluginGitHub(
+					"com.amansprojects.starterpack",
+					{ repository: "https://github.com/ninjadev64/opendeck-starterpack" } as GitHubPlugin
+				);
+			} catch {}
+			// @ts-expect-error
+			confirm = tempConfirm;
+			// @ts-expect-error
+			alert = tempAlert;
+		}
+	})();
 
 	let plugins: { [ id: string ]: GitHubPlugin };
 	(async () => plugins = await (await fetch("https://ninjadev64.github.io/openaction-plugins/catalogue.json")).json())();
