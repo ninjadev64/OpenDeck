@@ -74,3 +74,5 @@ To enable automatic launch on startup, the light theme, or to change the languag
 You'll need to ensure that all of the [prerequisites for building a Tauri application](https://tauri.app/v1/guides/getting-started/prerequisites) are satisfied to build OpenDeck (this includes the Tauri CLI from `cargo install tauri-cli`), as well as [Deno](https://deno.com/). On GNU+Linux, you'll also need `libudev` installed for your distribution. You can then use `cargo tauri dev` and `cargo tauri build` to work with OpenDeck.
 
 When submitting a pull request, ensure that all of your Rust code has been formatted using `cargo fmt`, `cargo clippy` returns no violations, `deno task check` returns no violations, and modified Svelte code sticks to the existing style used as far as possible. Feel free to reach out on the support channels above for guidance when contributing!
+
+OpenDeck is licensed under the MIT license.

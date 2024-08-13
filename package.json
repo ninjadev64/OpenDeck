@@ -3,7 +3,7 @@
 	"version": "2.0.0",
 	"description": "OpenDeck is a cross-platform desktop application that provides functionality for stream controller devices.",
 	"author": "ninjadev64",
-	"license": "BSD-3-Clause",
+	"license": "MIT",
 	"repository": "https://github.com/ninjadev64/OpenDeck",
 	"scripts": {
 		"dev": "deno run -A npm:vite dev",
