@@ -36,16 +36,12 @@
 		}
 	}
 
-	listen("update_state", ({ payload }: { payload: { context: Context, contents: ActionInstance | null }}) => {
-		if (JSON.stringify(payload.context) == JSON.stringify(context)) {
-			slot = payload.contents;
-		}
+	listen("update_state", ({ payload }: { payload: { context: string, contents: ActionInstance | null }}) => {
+		if (payload.context == slot?.context) slot = payload.contents;
 	});
 
 	listen("key_moved", ({ payload }: { payload: { context: Context, pressed: boolean }}) => {
-		if (JSON.stringify(context) == JSON.stringify(payload.context)) {
-			pressed = payload.pressed;
-		};
+		if (JSON.stringify(context) == JSON.stringify(payload.context)) pressed = payload.pressed;
 	});
 
 	function select() {
@@ -76,8 +72,9 @@
 	}
 
 	async function clear() {
-		await invoke("clear_slot", { context });
-		if ($inspectedInstance == slot?.context) inspectedInstance.set(null);
+		if (!slot) return;
+		await invoke("remove_instance", { context: slot.context });
+		if ($inspectedInstance == slot.context) inspectedInstance.set(null);
 		showEditor = false;
 		slot = null;
 		inslot = slot;

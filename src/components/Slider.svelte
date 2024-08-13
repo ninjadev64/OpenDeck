@@ -13,8 +13,8 @@
 
 	$: state = slot ? slot.states[slot.current_state] : undefined;
 
-	listen("update_state", ({ payload }: { payload: { context: Context, contents: ActionInstance }}) => {
-		if (JSON.stringify(payload.context) == JSON.stringify(context)) slot = payload.contents;
+	listen("update_state", ({ payload }: { payload: { context: string, contents: ActionInstance | null }}) => {
+		if (payload.context == slot?.context) slot = payload.contents;
 	});
 
 	function select() {

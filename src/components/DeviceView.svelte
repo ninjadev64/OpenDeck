@@ -33,7 +33,7 @@
 		} else if (dataTransfer?.getData("controller")) {
 			let oldArray = dataTransfer?.getData("controller") == "Encoder" ? profile.sliders : profile.keys;
 			let oldPosition = parseInt(dataTransfer?.getData("position"));
-			let response: ActionInstance = await invoke("move_slot", {
+			let response: ActionInstance = await invoke("move_instance", {
 				source: { device: device.id, profile: profile.id, controller: dataTransfer?.getData("controller"), position: oldPosition },
 				destination: context,
 				retain: false
@@ -52,7 +52,7 @@
 	}
 
 	async function handlePaste(source: Context, destination: Context) {
-		let response: ActionInstance = await invoke("move_slot", { source, destination, retain: true });
+		let response: ActionInstance = await invoke("move_instance", { source, destination, retain: true });
 		if (response) {
 			profile.keys[destination.position] = response;
 			profile = profile;

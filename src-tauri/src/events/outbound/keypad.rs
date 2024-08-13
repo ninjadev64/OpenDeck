@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use super::{send_to_plugin, GenericInstancePayload};
 
+use crate::events::frontend::instances::{key_moved, update_state};
 use crate::shared::{ActionContext, Context};
 use crate::store::profiles::{acquire_locks_mut, get_slot_mut, save_profile};
 
@@ -26,7 +27,7 @@ pub async fn key_down(device: &str, key: u8) -> Result<(), anyhow::Error> {
 		position: key,
 	};
 
-	let _ = crate::events::frontend::key_moved(crate::APP_HANDLE.get().unwrap(), context.clone(), true).await;
+	let _ = key_moved(crate::APP_HANDLE.get().unwrap(), context.clone(), true).await;
 
 	let Some(instance) = get_slot_mut(&context, &mut locks).await? else { return Ok(()) };
 	if instance.action.uuid == "com.amansprojects.opendeck.multiaction" {
@@ -64,8 +65,12 @@ pub async fn key_down(device: &str, key: u8) -> Result<(), anyhow::Error> {
 			tokio::time::sleep(Duration::from_millis(100)).await;
 		}
 
+		let contexts = instance.children.as_ref().unwrap().iter().map(|x| x.context.clone()).collect::<Vec<_>>();
+		for child in contexts {
+			let _ = update_state(crate::APP_HANDLE.get().unwrap(), child, &mut locks).await;
+		}
+
 		save_profile(device, &mut locks).await?;
-		let _ = crate::events::frontend::update_state(crate::APP_HANDLE.get().unwrap(), context, &mut locks).await;
 	} else if instance.action.uuid == "com.amansprojects.opendeck.toggleaction" {
 		let child = &instance.children.as_ref().unwrap()[instance.settings.as_u64().unwrap() as usize];
 		send_to_plugin(
@@ -106,7 +111,7 @@ pub async fn key_up(device: &str, key: u8) -> Result<(), anyhow::Error> {
 		position: key,
 	};
 
-	let _ = crate::events::frontend::key_moved(crate::APP_HANDLE.get().unwrap(), context.clone(), false).await;
+	let _ = key_moved(crate::APP_HANDLE.get().unwrap(), context.clone(), false).await;
 
 	let slot = get_slot_mut(&context, &mut locks).await?;
 	let Some(instance) = slot else { return Ok(()) };
@@ -144,11 +149,11 @@ pub async fn key_up(device: &str, key: u8) -> Result<(), anyhow::Error> {
 				payload: GenericInstancePayload::new(instance, false),
 			},
 		)
-		.await?
+		.await?;
+		let _ = update_state(crate::APP_HANDLE.get().unwrap(), instance.context.clone(), &mut locks).await;
 	};
 
 	save_profile(device, &mut locks).await?;
-	let _ = crate::events::frontend::update_state(crate::APP_HANDLE.get().unwrap(), context, &mut locks).await;
 
 	Ok(())
 }

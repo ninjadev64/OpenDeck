@@ -1,6 +1,6 @@
 use super::ContextAndPayloadEvent;
 
-use crate::events::frontend::update_state;
+use crate::events::frontend::instances::update_state;
 use crate::store::profiles::{acquire_locks_mut, get_instance_mut, save_profile};
 
 use serde::Deserialize;
@@ -33,7 +33,7 @@ pub async fn set_title(event: ContextAndPayloadEvent<SetTitlePayload>) -> Result
 				state.text = event.payload.title.clone().unwrap_or(instance.action.states[index].text.clone());
 			}
 		}
-		update_state(crate::APP_HANDLE.get().unwrap(), (&instance.context).into(), &mut locks).await?;
+		update_state(crate::APP_HANDLE.get().unwrap(), instance.context.clone(), &mut locks).await?;
 	}
 	save_profile(&event.context.device, &mut locks).await?;
 
@@ -51,7 +51,7 @@ pub async fn set_image(event: ContextAndPayloadEvent<SetImagePayload>) -> Result
 				state.image = event.payload.image.clone().unwrap_or(instance.action.states[index].image.clone());
 			}
 		}
-		update_state(crate::APP_HANDLE.get().unwrap(), (&instance.context).into(), &mut locks).await?;
+		update_state(crate::APP_HANDLE.get().unwrap(), instance.context.clone(), &mut locks).await?;
 	}
 	save_profile(&event.context.device, &mut locks).await?;
 
@@ -63,7 +63,7 @@ pub async fn set_state(event: ContextAndPayloadEvent<SetStatePayload>) -> Result
 
 	if let Some(instance) = get_instance_mut(&event.context, &mut locks).await? {
 		instance.current_state = event.payload.state;
-		update_state(crate::APP_HANDLE.get().unwrap(), (&instance.context).into(), &mut locks).await?;
+		update_state(crate::APP_HANDLE.get().unwrap(), instance.context.clone(), &mut locks).await?;
 	}
 	save_profile(&event.context.device, &mut locks).await?;
 
