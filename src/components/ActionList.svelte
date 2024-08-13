@@ -24,7 +24,7 @@
 </script>
 
 <div class="grow mt-1 overflow-auto">
-	{#each Object.entries(categories) as [ name, actions ]}
+	{#each Object.entries(categories).sort((a, b) => a[0] == "OpenDeck" ? -1 : b[0] == "OpenDeck" ? 1 : a[0].localeCompare(b[0])) as [ name, actions ]}
 		<details open class="mb-2">
 			<summary class="text-xl font-semibold dark:text-neutral-300"> {name} </summary>
 			{#each actions as action}
