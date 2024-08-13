@@ -17,7 +17,10 @@ fn mime(extension: &str) -> String {
 pub async fn init_webserver(prefix: PathBuf) {
 	let server = Server::http("0.0.0.0:57118").unwrap();
 	for request in server.incoming_requests() {
-		let url = format!("{}", urlencoding::decode(request.url()).unwrap());
+		let mut url = urlencoding::decode(request.url()).unwrap().into_owned();
+		if url.contains('?') {
+			url = url.split_once('?').unwrap().0.to_owned();
+		}
 		#[cfg(target_os = "windows")]
 		let url = url[1..].replace('/', "\\");
 
