@@ -42,8 +42,7 @@ pub(super) async fn init(device: AsyncStreamDeck) {
 		_ => 7,
 	};
 	let _ = device.clear_all_button_images().await;
-	// The replacement of \u{0001} is needed to fix what is likely a bug in the elgato-streamdeck crate (awaiting a fix upstream).
-	let device_id = format!("sd-{}", device.serial_number().await.unwrap().replace('\u{0001}', ""));
+	let device_id = format!("sd-{}", device.serial_number().await.unwrap());
 	super::register_device(
 		device_id.clone(),
 		super::DeviceInfo {

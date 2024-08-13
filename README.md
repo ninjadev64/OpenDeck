@@ -6,6 +6,8 @@ OpenDeck supports ProntoKey, Elgato Stream Deck and AKP153 (not AKP153e) hardwar
 
 If you would like to support development of OpenDeck, consider [sponsoring me](https://github.com/sponsors/ninjadev64) on GitHub Sponsors!
 
+Special thanks go to the developers of [Tauri](https://github.com/tauri-apps/tauri), [elgato-streamdeck](https://github.com/streamduck-org/elgato-streamdeck), and [Phosphor Icons](https://phosphoricons.com/).
+
 ## Installation
 
 ### GNU+Linux
