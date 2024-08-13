@@ -9,7 +9,7 @@
 	import Trash from "phosphor-svelte/lib/Trash";
 	import InstanceEditor from "./InstanceEditor.svelte";
 
-	import { copiedContext, inspectedInstance, inspectedMultiAction, openContextMenu } from "$lib/propertyInspector";
+	import { copiedContext, inspectedInstance, inspectedParentAction, openContextMenu } from "$lib/propertyInspector";
 	import { renderImage } from "$lib/rendererHelper";
 
 	import { invoke } from "@tauri-apps/api";
@@ -50,8 +50,8 @@
 
 	function select() {
 		if (!slot) return;
-		if (slot.action.uuid == "com.amansprojects.opendeck.multiaction") {
-			inspectedMultiAction.set(context);
+		if (slot.action.uuid == "com.amansprojects.opendeck.multiaction" || slot.action.uuid == "com.amansprojects.opendeck.toggleaction") {
+			inspectedParentAction.set(context);
 		} else {
 			inspectedInstance.set(slot.context);
 		}

@@ -91,7 +91,7 @@ pub async fn set_selected_profile(app: AppHandle, device: String, id: String, pr
 	if selected_profile != id {
 		let old_profile = &profile_stores.get_profile_store(devices.get(&device).unwrap(), selected_profile)?.value;
 		for instance in old_profile.keys.iter().flatten().chain(&mut old_profile.sliders.iter().flatten()) {
-			if instance.action.uuid != "com.amansprojects.opendeck.multiaction" {
+			if !matches!(instance.action.uuid.as_str(), "com.amansprojects.opendeck.multiaction" | "com.amansprojects.opendeck.toggleaction") {
 				let _ = crate::events::outbound::will_appear::will_disappear(instance, false).await;
 			} else {
 				for child in instance.children.as_ref().unwrap() {
@@ -108,7 +108,7 @@ pub async fn set_selected_profile(app: AppHandle, device: String, id: String, pr
 		*new_profile = profile;
 	}
 	for instance in new_profile.keys.iter().flatten().chain(&mut new_profile.sliders.iter().flatten()) {
-		if instance.action.uuid != "com.amansprojects.opendeck.multiaction" {
+		if !matches!(instance.action.uuid.as_str(), "com.amansprojects.opendeck.multiaction" | "com.amansprojects.opendeck.toggleaction") {
 			let _ = crate::events::outbound::will_appear::will_appear(instance, false).await;
 		} else {
 			for child in instance.children.as_ref().unwrap() {
@@ -165,8 +165,16 @@ pub async fn create_instance(action: Action, context: Context) -> Result<Option<
 			context: ActionContext::from_context(context.clone(), 0),
 			states: action.states.clone(),
 			current_state: 0,
-			settings: serde_json::Value::Object(serde_json::Map::new()),
-			children: if action.uuid == "com.amansprojects.opendeck.multiaction" { Some(vec![]) } else { None },
+			settings: if action.uuid == "com.amansprojects.opendeck.toggleaction" {
+				serde_json::Value::from(0)
+			} else {
+				serde_json::Value::Object(serde_json::Map::new())
+			},
+			children: if matches!(action.uuid.as_str(), "com.amansprojects.opendeck.multiaction" | "com.amansprojects.opendeck.toggleaction") {
+				Some(vec![])
+			} else {
+				None
+			},
 		};
 
 		*slot = Some(instance.clone());
@@ -225,7 +233,7 @@ pub async fn clear_slot(context: Context) -> Result<(), Error> {
 	let slot = get_slot_mut(&context, &mut locks).await?;
 
 	if let Some(instance) = slot {
-		if instance.action.uuid != "com.amansprojects.opendeck.multiaction" {
+		if !matches!(instance.action.uuid.as_str(), "com.amansprojects.opendeck.multiaction" | "com.amansprojects.opendeck.toggleaction") {
 			let _ = crate::events::outbound::will_appear::will_disappear(instance, false).await;
 		} else {
 			for child in instance.children.as_ref().unwrap() {
@@ -248,7 +256,7 @@ pub async fn remove_instance(context: ActionContext) -> Result<(), Error> {
 		return Ok(());
 	};
 
-	if instance.action.uuid != "com.amansprojects.opendeck.multiaction" {
+	if !matches!(instance.action.uuid.as_str(), "com.amansprojects.opendeck.multiaction" | "com.amansprojects.opendeck.toggleaction") {
 		let _ = crate::events::outbound::will_appear::will_disappear(instance, false).await;
 		*slot = None;
 	} else {
@@ -259,6 +267,9 @@ pub async fn remove_instance(context: ActionContext) -> Result<(), Error> {
 				children.remove(index);
 				break;
 			}
+		}
+		if instance.action.uuid == "com.amansprojects.opendeck.toggleaction" && instance.settings.as_u64().unwrap() as usize >= children.len() {
+			instance.settings = serde_json::Value::from(if children.is_empty() { 0 } else { children.len() - 1 });
 		}
 	}
 

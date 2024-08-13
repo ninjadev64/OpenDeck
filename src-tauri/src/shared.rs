@@ -206,19 +206,34 @@ pub static CATEGORIES: Lazy<RwLock<HashMap<String, Vec<Action>>>> = Lazy::new(||
 	let mut hashmap = HashMap::new();
 	hashmap.insert(
 		"OpenDeck".to_owned(),
-		vec![serde_json::from_str(
-			r#"{
-				"name": "Multi Action",
-				"icon": "opendeck/multi-action.png",
-				"plugin": "com.amansprojects.opendeck",
-				"uuid": "com.amansprojects.opendeck.multiaction",
-				"tooltip": "Execute multiple actions",
-				"controllers": [ "Keypad" ],
-				"states": [ { "image": "opendeck/multi-action.png" } ],
-				"supported_in_multi_actions": false
-			}"#,
-		)
-		.unwrap()],
+		vec![
+			serde_json::from_str(
+				r#"{
+					"name": "Multi Action",
+					"icon": "opendeck/multi-action.png",
+					"plugin": "com.amansprojects.opendeck",
+					"uuid": "com.amansprojects.opendeck.multiaction",
+					"tooltip": "Execute multiple actions",
+					"controllers": [ "Keypad" ],
+					"states": [ { "image": "opendeck/multi-action.png" } ],
+					"supported_in_multi_actions": false
+				}"#,
+			)
+			.unwrap(),
+			serde_json::from_str(
+				r#"{
+					"name": "Toggle Action",
+					"icon": "opendeck/toggle-action.png",
+					"plugin": "com.amansprojects.opendeck",
+					"uuid": "com.amansprojects.opendeck.toggleaction",
+					"tooltip": "Cycle through multiple actions",
+					"controllers": [ "Keypad" ],
+					"states": [ { "image": "opendeck/toggle-action.png" } ],
+					"supported_in_multi_actions": false
+				}"#,
+			)
+			.unwrap(),
+		],
 	);
 	RwLock::new(hashmap)
 });

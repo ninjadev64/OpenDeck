@@ -29,19 +29,7 @@ pub async fn key_down(device: &str, key: u8) -> Result<(), anyhow::Error> {
 	let _ = crate::events::frontend::key_moved(crate::APP_HANDLE.get().unwrap(), context.clone(), true).await;
 
 	let Some(instance) = get_slot_mut(&context, &mut locks).await? else { return Ok(()) };
-	if instance.action.uuid != "com.amansprojects.opendeck.multiaction" {
-		send_to_plugin(
-			&instance.action.plugin,
-			&KeyEvent {
-				event: "keyDown",
-				action: instance.action.uuid.clone(),
-				context: instance.context.clone(),
-				device: instance.context.device.clone(),
-				payload: GenericInstancePayload::new(instance, false),
-			},
-		)
-		.await?;
-	} else {
+	if instance.action.uuid == "com.amansprojects.opendeck.multiaction" {
 		for child in instance.children.as_mut().unwrap() {
 			send_to_plugin(
 				&child.action.plugin,
@@ -78,6 +66,31 @@ pub async fn key_down(device: &str, key: u8) -> Result<(), anyhow::Error> {
 
 		save_profile(device, &mut locks).await?;
 		let _ = crate::events::frontend::update_state(crate::APP_HANDLE.get().unwrap(), context, &mut locks).await;
+	} else if instance.action.uuid == "com.amansprojects.opendeck.toggleaction" {
+		let child = &instance.children.as_ref().unwrap()[instance.settings.as_u64().unwrap() as usize];
+		send_to_plugin(
+			&child.action.plugin,
+			&KeyEvent {
+				event: "keyDown",
+				action: child.action.uuid.clone(),
+				context: child.context.clone(),
+				device: child.context.device.clone(),
+				payload: GenericInstancePayload::new(child, false),
+			},
+		)
+		.await?;
+	} else {
+		send_to_plugin(
+			&instance.action.plugin,
+			&KeyEvent {
+				event: "keyDown",
+				action: instance.action.uuid.clone(),
+				context: instance.context.clone(),
+				device: instance.context.device.clone(),
+				payload: GenericInstancePayload::new(instance, false),
+			},
+		)
+		.await?;
 	}
 
 	Ok(())
@@ -98,21 +111,41 @@ pub async fn key_up(device: &str, key: u8) -> Result<(), anyhow::Error> {
 	let slot = get_slot_mut(&context, &mut locks).await?;
 	let Some(instance) = slot else { return Ok(()) };
 
-	if instance.states.len() == 2 && !instance.action.disable_automatic_states {
-		instance.current_state = (instance.current_state + 1) % (instance.states.len() as u16);
-	}
-
-	send_to_plugin(
-		&instance.action.plugin,
-		&KeyEvent {
-			event: "keyUp",
-			action: instance.action.uuid.clone(),
-			context: instance.context.clone(),
-			device: instance.context.device.clone(),
-			payload: GenericInstancePayload::new(instance, false),
-		},
-	)
-	.await?;
+	if instance.action.uuid == "com.amansprojects.opendeck.toggleaction" {
+		let index = instance.settings.as_u64().unwrap() as usize;
+		let children = instance.children.as_ref().unwrap();
+		if children.is_empty() {
+			return Ok(());
+		};
+		let child = &children[index];
+		send_to_plugin(
+			&child.action.plugin,
+			&KeyEvent {
+				event: "keyUp",
+				action: child.action.uuid.clone(),
+				context: child.context.clone(),
+				device: child.context.device.clone(),
+				payload: GenericInstancePayload::new(child, false),
+			},
+		)
+		.await?;
+		instance.settings = serde_json::Value::from((index + 1) % instance.children.as_ref().unwrap().len());
+	} else if instance.action.uuid != "com.amansprojects.opendeck.multiaction" {
+		if instance.states.len() == 2 && !instance.action.disable_automatic_states {
+			instance.current_state = (instance.current_state + 1) % (instance.states.len() as u16);
+		}
+		send_to_plugin(
+			&instance.action.plugin,
+			&KeyEvent {
+				event: "keyUp",
+				action: instance.action.uuid.clone(),
+				context: instance.context.clone(),
+				device: instance.context.device.clone(),
+				payload: GenericInstancePayload::new(instance, false),
+			},
+		)
+		.await?
+	};
 
 	save_profile(device, &mut locks).await?;
 	let _ = crate::events::frontend::update_state(crate::APP_HANDLE.get().unwrap(), context, &mut locks).await;

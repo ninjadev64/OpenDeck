@@ -6,13 +6,15 @@
 	import Trash from "phosphor-svelte/lib/Trash";
 	import Key from "./Key.svelte";
 
-	import { inspectedMultiAction } from "$lib/propertyInspector";
+	import { inspectedParentAction } from "$lib/propertyInspector";
 	import { invoke } from "@tauri-apps/api";
 
 	export let profile: Profile;
 
 	let children: ActionInstance[];
-	$: children = profile.keys[$inspectedMultiAction!.position]!.children!;
+	$: children = profile.keys[$inspectedParentAction!.position]!.children!;
+	let parentUuid: string;
+	$: parentUuid = profile.keys[$inspectedParentAction!.position]!.action.uuid;
 
 	function handleDragOver(event: DragEvent) {
 		event.preventDefault();
@@ -22,16 +24,24 @@
 	async function handleDrop({ dataTransfer }: DragEvent) {
 		if (dataTransfer?.getData("action")) {
 			let action = JSON.parse(dataTransfer?.getData("action"));
-			if (!action.supported_in_multi_actions) return;
-			let response: ActionInstance | null = await invoke("create_instance", { context: $inspectedMultiAction, action });
-			if (response) profile.keys[$inspectedMultiAction!.position]!.children = [ ...children, response ];
+			if (
+				(parentUuid == "com.amansprojects.opendeck.multiaction" && !action.supported_in_multi_actions) ||
+				(
+					parentUuid == "com.amansprojects.opendeck.toggleaction" &&
+					(action.uuid == "com.amansprojects.opendeck.multiaction" || action.uuid == "com.amansprojects.opendeck.toggleaction")
+				)
+			) {
+				return;
+			}
+			let response: ActionInstance | null = await invoke("create_instance", { context: $inspectedParentAction, action });
+			if (response) profile.keys[$inspectedParentAction!.position]!.children = [ ...children, response ];
 		}
 	}
 
 	async function removeInstance(index: number) {
 		await invoke("remove_instance", { context: children[index].context });
 		children.splice(index, 1);
-		profile.keys[$inspectedMultiAction!.position]!.children = children;
+		profile.keys[$inspectedParentAction!.position]!.children = children;
 	}
 
 	let context: Context;
@@ -39,8 +49,8 @@
 </script>
 
 <div class="px-6 pt-6 pb-4 dark:text-neutral-300">
-	<button class="float-right text-xl" on:click={() => $inspectedMultiAction = null}> ✕ </button>
-	<h1 class="font-semibold text-2xl"> Multi Action </h1>
+	<button class="float-right text-xl" on:click={() => $inspectedParentAction = null}> ✕ </button>
+	<h1 class="font-semibold text-2xl"> {parentUuid == "com.amansprojects.opendeck.toggleaction" ? "Toggle Action" : "Multi Action"} </h1>
 </div>
 
 <div class="flex flex-col h-80 overflow-scroll">
