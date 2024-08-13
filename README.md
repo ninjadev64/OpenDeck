@@ -4,6 +4,8 @@ OpenDeck is a desktop application for interfacing between human interface device
 
 OpenDeck supports ProntoKey, Elgato Stream Deck and AKP153 (not AKP153e) hardware on all three major desktop platforms. If you would like to contribute support for additional hardware (e.g. Loupedeck) feel free to reach out on any of the support forums and make a pull request!
 
+If you would like to support development of OpenDeck, consider [sponsoring me](https://github.com/sponsors/ninjadev64) on GitHub Sponsors!
+
 ## Installation
 
 ### GNU+Linux
@@ -42,9 +44,7 @@ OpenDeck supports ProntoKey, Elgato Stream Deck and AKP153 (not AKP153e) hardwar
 
 ### How do I...?
 
-To create a Multi Action, drag an action from the list onto another existing action in your profile. This should result in a Multi Action being created with those two actions. If nothing happens, it's likely that one or both of the actions don't support being in a Multi Action.
-
-To view or modify an action's settings, left-click on it to display its property inspector. To remove an action or Multi Action, right-click on it and choose "Delete" from the context menu.
+To view or modify an action's settings, left-click on it to display its property inspector. To remove an action, right-click on it and choose "Delete" from the context menu.
 
 To edit an action's appearance, right-click on it and select "Edit" in the context menu. You should then be able to customise the image and title of each of its states. To choose an image from your device: left-click on the image, to reset it to the plugin-provided default: right-click on the image, and to remove the image entirely: CTRL+right-click on the image.
 
