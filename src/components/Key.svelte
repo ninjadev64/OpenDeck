@@ -107,7 +107,7 @@
 				if (context) context.clearRect(0, 0, canvas.width, canvas.height);
 			}
 		} else {
-			let fallback = slot.action.states[slot.current_state].image ?? slot.action.icon;
+			let fallback = slot.action.states[slot.current_state]?.image ?? slot.action.icon;
 			if (state) renderImage(canvas, context, state, fallback, showOk, showAlert, true, active, pressed);
 		}
 	}

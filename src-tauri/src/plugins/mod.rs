@@ -152,6 +152,7 @@ pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 
 		if let Ok(store) = get_settings(APP_HANDLE.get().unwrap()) {
 			if store.value.developer {
+				let _ = window.show();
 				window.open_devtools();
 			}
 		}

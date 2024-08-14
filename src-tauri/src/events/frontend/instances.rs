@@ -6,7 +6,7 @@ use crate::store::profiles::{acquire_locks_mut, get_instance_mut, get_slot_mut, 
 use tauri::{command, AppHandle, Manager};
 
 #[command]
-pub async fn create_instance(action: Action, context: Context) -> Result<Option<ActionInstance>, Error> {
+pub async fn create_instance(app: AppHandle, action: Action, context: Context) -> Result<Option<ActionInstance>, Error> {
 	if !action.controllers.contains(&context.controller) {
 		return Ok(None);
 	}
@@ -29,8 +29,16 @@ pub async fn create_instance(action: Action, context: Context) -> Result<Option<
 			settings: serde_json::Value::Object(serde_json::Map::new()),
 			children: None,
 		};
-
 		children.push(instance.clone());
+
+		if parent.action.uuid == "com.amansprojects.opendeck.toggleaction" && parent.states.len() < children.len() {
+			parent.states.push(crate::shared::ActionState {
+				image: "opendeck/toggle-action.png".to_owned(),
+				..Default::default()
+			});
+			let _ = update_state(&app, parent.context.clone(), &mut locks).await;
+		}
+
 		save_profile(&context.device, &mut locks).await?;
 		let _ = crate::events::outbound::will_appear::will_appear(&instance, true).await;
 
@@ -41,11 +49,7 @@ pub async fn create_instance(action: Action, context: Context) -> Result<Option<
 			context: ActionContext::from_context(context.clone(), 0),
 			states: action.states.clone(),
 			current_state: 0,
-			settings: if action.uuid == "com.amansprojects.opendeck.toggleaction" {
-				serde_json::Value::from(0)
-			} else {
-				serde_json::Value::Object(serde_json::Map::new())
-			},
+			settings: serde_json::Value::Object(serde_json::Map::new()),
 			children: if matches!(action.uuid.as_str(), "com.amansprojects.opendeck.multiaction" | "com.amansprojects.opendeck.toggleaction") {
 				Some(vec![])
 			} else {
@@ -128,8 +132,14 @@ pub async fn remove_instance(context: ActionContext) -> Result<(), Error> {
 				break;
 			}
 		}
-		if instance.action.uuid == "com.amansprojects.opendeck.toggleaction" && instance.settings.as_u64().unwrap() as usize >= children.len() {
-			instance.settings = serde_json::Value::from(if children.is_empty() { 0 } else { children.len() - 1 });
+		if instance.action.uuid == "com.amansprojects.opendeck.toggleaction" {
+			if instance.current_state as usize >= children.len() {
+				instance.current_state = if children.is_empty() { 0 } else { children.len() as u16 - 1 };
+			}
+			if !children.is_empty() {
+				instance.states.pop();
+				let _ = update_state(crate::APP_HANDLE.get().unwrap(), instance.context.clone(), &mut locks).await;
+			}
 		}
 	}
 

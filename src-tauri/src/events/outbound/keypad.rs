@@ -72,7 +72,11 @@ pub async fn key_down(device: &str, key: u8) -> Result<(), anyhow::Error> {
 
 		save_profile(device, &mut locks).await?;
 	} else if instance.action.uuid == "com.amansprojects.opendeck.toggleaction" {
-		let child = &instance.children.as_ref().unwrap()[instance.settings.as_u64().unwrap() as usize];
+		let children = instance.children.as_ref().unwrap();
+		if children.is_empty() {
+			return Ok(());
+		}
+		let child = &children[instance.current_state as usize];
 		send_to_plugin(
 			&child.action.plugin,
 			&KeyEvent {
@@ -117,11 +121,11 @@ pub async fn key_up(device: &str, key: u8) -> Result<(), anyhow::Error> {
 	let Some(instance) = slot else { return Ok(()) };
 
 	if instance.action.uuid == "com.amansprojects.opendeck.toggleaction" {
-		let index = instance.settings.as_u64().unwrap() as usize;
+		let index = instance.current_state as usize;
 		let children = instance.children.as_ref().unwrap();
 		if children.is_empty() {
 			return Ok(());
-		};
+		}
 		let child = &children[index];
 		send_to_plugin(
 			&child.action.plugin,
@@ -134,7 +138,7 @@ pub async fn key_up(device: &str, key: u8) -> Result<(), anyhow::Error> {
 			},
 		)
 		.await?;
-		instance.settings = serde_json::Value::from((index + 1) % instance.children.as_ref().unwrap().len());
+		instance.current_state = ((index + 1) % instance.children.as_ref().unwrap().len()) as u16;
 	} else if instance.action.uuid != "com.amansprojects.opendeck.multiaction" {
 		if instance.states.len() == 2 && !instance.action.disable_automatic_states {
 			instance.current_state = (instance.current_state + 1) % (instance.states.len() as u16);
@@ -150,9 +154,9 @@ pub async fn key_up(device: &str, key: u8) -> Result<(), anyhow::Error> {
 			},
 		)
 		.await?;
-		let _ = update_state(crate::APP_HANDLE.get().unwrap(), instance.context.clone(), &mut locks).await;
 	};
 
+	let _ = update_state(crate::APP_HANDLE.get().unwrap(), instance.context.clone(), &mut locks).await;
 	save_profile(device, &mut locks).await?;
 
 	Ok(())

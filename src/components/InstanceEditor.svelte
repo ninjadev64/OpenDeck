@@ -46,7 +46,7 @@
 			}}
 		>
 			<img
-				src={getImage(instance.states[state].image, instance.action.states[state].image ?? instance.action.icon)}
+				src={getImage(instance.states[state].image, instance.action.states[state]?.image ?? instance.action.icon)}
 				class="mx-1 my-auto p-1 w-32 h-min aspect-square rounded-xl cursor-pointer"
 				alt="State {state}"
 			/>
