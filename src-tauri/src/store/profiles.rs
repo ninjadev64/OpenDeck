@@ -97,7 +97,7 @@ pub struct DeviceStores {
 }
 
 impl DeviceStores {
-	pub fn get_selected_profile(&mut self, device: &str) -> Result<&str, anyhow::Error> {
+	pub fn get_selected_profile(&mut self, device: &str) -> Result<String, anyhow::Error> {
 		if !self.stores.contains_key(device) {
 			let default = DeviceConfig {
 				selected_profile: "Default".to_owned(),
@@ -111,7 +111,13 @@ impl DeviceStores {
 			self.stores.insert(device.to_owned(), store);
 		}
 
-		Ok(&self.stores.get(device).unwrap().value.selected_profile)
+		let from_store = &self.stores.get(device).unwrap().value.selected_profile;
+		let all = get_device_profiles(device, crate::APP_HANDLE.get().unwrap())?;
+		if all.contains(from_store) {
+			Ok(from_store.clone())
+		} else {
+			Ok(all.first().unwrap().clone())
+		}
 	}
 
 	pub fn set_selected_profile(&mut self, device: &str, id: String, app: &tauri::AppHandle) -> Result<(), anyhow::Error> {
@@ -347,6 +353,6 @@ pub async fn get_instance_mut<'a>(context: &crate::shared::ActionContext, locks:
 pub async fn save_profile<'a>(device: &str, locks: &'a mut LocksMut<'_>) -> Result<(), anyhow::Error> {
 	let selected_profile = locks.device_stores.get_selected_profile(device)?;
 	let device = locks.devices.get(device).unwrap();
-	let store = locks.profile_stores.get_profile_store(device, selected_profile)?;
+	let store = locks.profile_stores.get_profile_store(device, &selected_profile)?;
 	store.save()
 }

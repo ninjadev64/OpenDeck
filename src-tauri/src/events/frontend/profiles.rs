@@ -16,7 +16,7 @@ pub async fn get_selected_profile(device: String) -> Result<crate::shared::Profi
 	let profile_stores = PROFILE_STORES.read().await;
 
 	let selected_profile = device_stores.get_selected_profile(&device)?;
-	let profile = profile_stores.get_profile_store(DEVICES.read().await.get(&device).unwrap(), selected_profile)?;
+	let profile = profile_stores.get_profile_store(DEVICES.read().await.get(&device).unwrap(), &selected_profile)?;
 
 	Ok(profile.value.clone())
 }
@@ -30,7 +30,7 @@ pub async fn set_selected_profile(app: AppHandle, device: String, id: String, pr
 	let selected_profile = device_stores.get_selected_profile(&device)?;
 
 	if selected_profile != id {
-		let old_profile = &profile_stores.get_profile_store(devices.get(&device).unwrap(), selected_profile)?.value;
+		let old_profile = &profile_stores.get_profile_store(devices.get(&device).unwrap(), &selected_profile)?.value;
 		for instance in old_profile.keys.iter().flatten().chain(&mut old_profile.sliders.iter().flatten()) {
 			if !matches!(instance.action.uuid.as_str(), "com.amansprojects.opendeck.multiaction" | "com.amansprojects.opendeck.toggleaction") {
 				let _ = crate::events::outbound::will_appear::will_disappear(instance, false).await;
