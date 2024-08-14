@@ -43,7 +43,7 @@ impl ProfileStores {
 				sliders: vec![None; device.sliders as usize],
 			};
 
-			let mut store = Store::new(path, app.path_resolver().app_config_dir().unwrap(), default).context(format!("Failed to create store for profile {}", path))?;
+			let mut store = Store::new(path, &app.path_resolver().app_config_dir().unwrap(), default).context(format!("Failed to create store for profile {}", path))?;
 
 			let categories = crate::shared::CATEGORIES.read().await;
 			let actions = categories.values().flatten().collect::<Vec<_>>();
@@ -104,7 +104,7 @@ impl DeviceStores {
 			};
 
 			let path = PathBuf::from("profiles").join(device);
-			let store = Store::new(path.to_str().unwrap(), crate::APP_HANDLE.get().unwrap().path_resolver().app_config_dir().unwrap(), default)
+			let store = Store::new(path.to_str().unwrap(), &crate::APP_HANDLE.get().unwrap().path_resolver().app_config_dir().unwrap(), default)
 				.context(format!("Failed to create store for device config {}", device))?;
 			store.save()?;
 
@@ -123,7 +123,7 @@ impl DeviceStores {
 			let default = DeviceConfig { selected_profile: id };
 
 			let path = PathBuf::from("profiles").join(device);
-			let store = Store::new(path.to_str().unwrap(), app.path_resolver().app_config_dir().unwrap(), default).context(format!("Failed to create store for device config {}", device))?;
+			let store = Store::new(path.to_str().unwrap(), &app.path_resolver().app_config_dir().unwrap(), default).context(format!("Failed to create store for device config {}", device))?;
 			store.save()?;
 
 			self.stores.insert(device.to_owned(), store);

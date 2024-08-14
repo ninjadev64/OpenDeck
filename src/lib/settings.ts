@@ -2,7 +2,8 @@ export type Settings = {
 	language: string,
 	autolaunch: boolean,
 	darktheme: boolean,
-	brightness: number
+	brightness: number,
+	developer: boolean
 };
 
 import { invoke } from "@tauri-apps/api";

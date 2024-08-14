@@ -25,7 +25,11 @@ pub async fn init_webserver(prefix: PathBuf) {
 		let url = url[1..].replace('/', "\\");
 
 		// Ensure the requested path is within the OpenDeck config directory to prevent unrestricted access to the filesystem.
-		if !Path::new(&url).starts_with(&prefix) {
+		let developer = match crate::store::Store::new("settings", &prefix, crate::store::Settings::default()) {
+			Ok(store) => store.value.developer,
+			Err(_) => false,
+		};
+		if !developer && !Path::new(&url).starts_with(&prefix) {
 			let _ = request.respond(Response::empty(403));
 			continue;
 		}

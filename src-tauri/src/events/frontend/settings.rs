@@ -8,7 +8,7 @@ use tauri_plugin_autostart::ManagerExt;
 
 #[command]
 pub async fn get_settings(app: AppHandle) -> Result<crate::store::Settings, Error> {
-	let store = crate::store::get_settings(app).await;
+	let store = crate::store::get_settings(&app);
 	match store {
 		Ok(store) => Ok(store.value),
 		Err(error) => Err(error.into()),
@@ -24,7 +24,7 @@ pub async fn set_settings(app: AppHandle, settings: crate::store::Settings) -> R
 	};
 
 	crate::devices::elgato::set_brightness(settings.brightness).await;
-	let mut store = match crate::store::get_settings(app).await {
+	let mut store = match crate::store::get_settings(&app) {
 		Ok(store) => store,
 		Err(error) => return Err(error.into()),
 	};

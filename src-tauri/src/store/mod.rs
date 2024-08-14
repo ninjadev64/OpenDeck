@@ -19,7 +19,7 @@ where
 	T: Serialize + for<'a> Deserialize<'a>,
 {
 	/// Create a new Store given an ID and storage directory.
-	pub fn new(id: &str, config_dir: PathBuf, default: T) -> Result<Self, anyhow::Error> {
+	pub fn new(id: &str, config_dir: &PathBuf, default: T) -> Result<Self, anyhow::Error> {
 		let path = config_dir.join(format!("{}.json", id));
 
 		if path.exists() {
@@ -47,6 +47,7 @@ pub struct Settings {
 	pub autolaunch: bool,
 	pub darktheme: bool,
 	pub brightness: u8,
+	pub developer: bool,
 }
 
 impl Default for Settings {
@@ -56,10 +57,11 @@ impl Default for Settings {
 			autolaunch: false,
 			darktheme: true,
 			brightness: 50,
+			developer: false,
 		}
 	}
 }
 
-pub async fn get_settings(app_handle: tauri::AppHandle) -> Result<Store<Settings>, anyhow::Error> {
-	Store::new("settings", app_handle.path_resolver().app_config_dir().unwrap(), Settings::default())
+pub fn get_settings(app_handle: &tauri::AppHandle) -> Result<Store<Settings>, anyhow::Error> {
+	Store::new("settings", &app_handle.path_resolver().app_config_dir().unwrap(), Settings::default())
 }

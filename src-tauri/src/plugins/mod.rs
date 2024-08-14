@@ -3,6 +3,7 @@ pub mod manifest;
 mod webserver;
 
 use crate::shared::{convert_icon, Action, CATEGORIES};
+use crate::store::get_settings;
 use crate::APP_HANDLE;
 
 use std::collections::HashMap;
@@ -149,7 +150,11 @@ pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 			.visible(false)
 			.build()?;
 
-		// window.open_devtools();
+		if let Ok(store) = get_settings(APP_HANDLE.get().unwrap()) {
+			if store.value.developer {
+				window.open_devtools();
+			}
+		}
 
 		let info = info_param::make_info(plugin_uuid.to_owned(), manifest.version, false).await;
 		window.eval(&format!(

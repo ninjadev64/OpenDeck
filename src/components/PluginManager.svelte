@@ -2,13 +2,14 @@
 	import type ActionList from "./ActionList.svelte";
 	import type DeviceSelector from "./DeviceSelector.svelte";
 
+	import ArrowClockwise from "phosphor-svelte/lib/ArrowClockwise";
 	import CloudArrowDown from "phosphor-svelte/lib/CloudArrowDown";
 	import Trash from "phosphor-svelte/lib/Trash";
 	import ListedPlugin from "./ListedPlugin.svelte";
 	import Popup from "./Popup.svelte";
 	import Tooltip from "./Tooltip.svelte";
 
-	import { localisations } from "$lib/settings";
+	import { localisations, settings } from "$lib/settings";
 
 	import { invoke } from "@tauri-apps/api";
 
@@ -25,7 +26,7 @@
 			actionList().reload();
 			installed = await invoke("list_plugins");
 		} catch (error: any) {
-			alert(`Failed to install ${name}: ${error.description ?? error}`);
+			alert(`Failed to install ${name}: ${error}`);
 		}
 	}
 
@@ -55,7 +56,14 @@
 		endpoint.hostname = "api." + endpoint.hostname;
 		endpoint.pathname = "/repos" + endpoint.pathname + "/releases";
 
-		let res = await (await fetch(endpoint)).json();
+		let res;
+		try {
+			res = await (await fetch(endpoint)).json();
+		} catch (error: any) {
+			alert(`Failed to install ${plugin.name}: ${error}`);
+			return;
+		}
+
 		let assets = [];
 		for (const asset of res[0].assets) {
 			if (asset.name.toLowerCase().endsWith(".streamdeckplugin") || asset.name.toLowerCase().endsWith(".zip")) {
@@ -82,7 +90,7 @@
 			deviceSelector().reloadProfiles();
 			installed = await invoke("list_plugins");
 		} catch (error: any) {
-			alert(`Failed to remove ${plugin.name}: ${error.description ?? error}`);
+			alert(`Failed to remove ${plugin.name}: ${error}`);
 		}
 	}
 
@@ -133,12 +141,22 @@
 				icon="http://localhost:57118/{plugin.icon}"
 				name={($localisations && $localisations[plugin.id] && $localisations[plugin.id].Name) ? $localisations[plugin.id].Name : plugin.name}
 				subtitle={plugin.version}
-				action={() => removePlugin(plugin)}
+				action={() => {
+					if ($settings?.developer) invoke("reload_plugin", { id: plugin.id });
+					else removePlugin(plugin);
+				}}
 			>
-				<Trash
-					size="24"
-					color={document.documentElement.classList.contains("dark") ? "#C0BFBC" : "#77767B"}
-				/>
+				{#if $settings?.developer}
+					<ArrowClockwise
+						size="24"
+						color={document.documentElement.classList.contains("dark") ? "#C0BFBC" : "#77767B"}
+					/>
+				{:else}
+					<Trash
+						size="24"
+						color={document.documentElement.classList.contains("dark") ? "#C0BFBC" : "#77767B"}
+					/>
+				{/if}
 			</ListedPlugin>
 		{/each}
 	</div>

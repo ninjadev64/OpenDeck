@@ -99,3 +99,9 @@ pub async fn remove_plugin(app: AppHandle, id: String) -> Result<(), Error> {
 
 	Ok(())
 }
+
+#[command]
+pub async fn reload_plugin(app: AppHandle, id: String) {
+	let _ = crate::plugins::deactivate_plugin(&app, &id).await;
+	let _ = crate::plugins::initialise_plugin(&app.path_resolver().app_config_dir().unwrap().join("plugins").join(id)).await;
+}
