@@ -1,4 +1,7 @@
-use super::Store;
+use super::{
+	simplified_context::{DiskActionInstance, DiskProfile},
+	Store,
+};
 use crate::shared::{Action, ActionInstance, ActionState, Profile};
 
 use std::collections::HashMap;
@@ -92,6 +95,8 @@ pub struct DeviceConfig {
 	pub selected_profile: String,
 }
 
+impl super::NotProfile for DeviceConfig {}
+
 pub struct DeviceStores {
 	stores: HashMap<String, Store<DeviceConfig>>,
 }
@@ -139,24 +144,25 @@ impl DeviceStores {
 }
 
 #[derive(Deserialize)]
+#[allow(dead_code)]
 struct ProfileV1 {
 	id: String,
 	keys: Vec<Vec<ActionInstance>>,
 	sliders: Vec<Vec<ActionInstance>>,
 }
 
-impl From<ProfileV1> for Profile {
+impl From<ProfileV1> for DiskProfile {
 	fn from(val: ProfileV1) -> Self {
 		let mut keys = vec![];
 		for slot in val.keys {
 			if slot.len() == 1 {
-				keys.push(Some(slot[0].clone()));
+				keys.push(Some(slot[0].clone().into()));
 			} else if !slot.is_empty() {
 				let mut children = slot.clone();
 				for child in &mut children {
 					child.context.index += 1;
 				}
-				keys.push(Some(ActionInstance {
+				keys.push(Some(DiskActionInstance {
 					action: Action {
 						name: "Multi Action".to_owned(),
 						uuid: "com.amansprojects.opendeck.multiaction".to_owned(),
@@ -174,14 +180,14 @@ impl From<ProfileV1> for Profile {
 							..Default::default()
 						}],
 					},
-					context: slot[0].context.clone(),
+					context: slot[0].context.clone().into(),
 					states: vec![ActionState {
 						image: "opendeck/multi-action.png".to_owned(),
 						..Default::default()
 					}],
 					current_state: 0,
 					settings: serde_json::Value::Object(serde_json::Map::new()),
-					children: Some(children),
+					children: Some(children.into_iter().map(|v| v.into()).collect()),
 				}));
 			} else {
 				keys.push(None);
@@ -190,12 +196,12 @@ impl From<ProfileV1> for Profile {
 		let mut sliders = vec![];
 		for slot in val.sliders {
 			if !slot.is_empty() {
-				sliders.push(Some(slot[0].clone()));
+				sliders.push(Some(slot[0].clone().into()));
 			} else {
 				sliders.push(None);
 			}
 		}
-		Self { id: val.id, keys, sliders }
+		Self { keys, sliders }
 	}
 }
 
@@ -205,12 +211,16 @@ impl From<ProfileV1> for Profile {
 enum ProfileVersions {
 	V1(ProfileV1),
 	V2(Profile),
+	V3(DiskProfile),
 }
 
 fn migrate_profile(path: PathBuf) -> Result<(), anyhow::Error> {
 	let profile = serde_json::from_slice(&fs::read(&path)?)?;
 	if let ProfileVersions::V1(v1) = profile {
-		let migrated: Profile = v1.into();
+		let migrated: DiskProfile = v1.into();
+		fs::write(path, serde_json::to_string_pretty(&migrated)?)?;
+	} else if let ProfileVersions::V2(v2) = profile {
+		let migrated: DiskProfile = (&v2).into();
 		fs::write(path, serde_json::to_string_pretty(&migrated)?)?;
 	}
 	Ok(())

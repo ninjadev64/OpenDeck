@@ -136,9 +136,12 @@ impl std::fmt::Display for ActionContext {
 }
 
 impl std::str::FromStr for ActionContext {
-	type Err = std::num::ParseIntError;
+	type Err = anyhow::Error;
 	fn from_str(s: &str) -> Result<Self, Self::Err> {
 		let segments: Vec<&str> = s.split('.').collect();
+		if segments.len() < 5 {
+			return Err(anyhow::anyhow!("not enough segments"));
+		}
 		let device = segments[0].to_owned();
 		let profile = segments[1].to_owned();
 		let controller = segments[2].to_owned();

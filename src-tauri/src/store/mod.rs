@@ -1,14 +1,38 @@
 pub mod profiles;
+mod simplified_context;
 
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
+
+pub trait FromAndIntoDiskValue
+where
+	Self: Sized,
+{
+	#[allow(clippy::wrong_self_convention)]
+	fn into_value(&self) -> Result<serde_json::Value, serde_json::Error>;
+	fn from_value(_: serde_json::Value, _: &Path) -> Result<Self, serde_json::Error>;
+}
+
+pub trait NotProfile {}
+
+impl<T> FromAndIntoDiskValue for T
+where
+	T: Serialize + for<'a> Deserialize<'a> + NotProfile,
+{
+	fn into_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+		serde_json::to_value(self)
+	}
+	fn from_value(value: serde_json::Value, _: &Path) -> Result<T, serde_json::Error> {
+		serde_json::from_value(value)
+	}
+}
 
 /// Allows for easy persistence of values using JSON files.
 pub struct Store<T>
 where
-	T: Serialize + for<'a> Deserialize<'a>,
+	T: FromAndIntoDiskValue,
 {
 	pub value: T,
 	path: PathBuf,
@@ -16,15 +40,15 @@ where
 
 impl<T> Store<T>
 where
-	T: Serialize + for<'a> Deserialize<'a>,
+	T: FromAndIntoDiskValue,
 {
 	/// Create a new Store given an ID and storage directory.
-	pub fn new(id: &str, config_dir: &PathBuf, default: T) -> Result<Self, anyhow::Error> {
+	pub fn new(id: &str, config_dir: &Path, default: T) -> Result<Self, anyhow::Error> {
 		let path = config_dir.join(format!("{}.json", id));
 
 		if path.exists() {
 			let file_contents = fs::read(&path)?;
-			let existing_value: T = serde_json::from_slice(&file_contents)?;
+			let existing_value: T = T::from_value(serde_json::from_slice(&file_contents)?, &path)?;
 
 			Ok(Self { path, value: existing_value })
 		} else {
@@ -35,7 +59,7 @@ where
 	/// Save the relevant Store as a file.
 	pub fn save(&self) -> Result<(), anyhow::Error> {
 		fs::create_dir_all(self.path.parent().unwrap())?;
-		fs::write(&self.path, serde_json::to_string_pretty(&self.value)?)?;
+		fs::write(&self.path, serde_json::to_string_pretty(&T::into_value(&self.value)?)?)?;
 		Ok(())
 	}
 }
@@ -61,6 +85,8 @@ impl Default for Settings {
 		}
 	}
 }
+
+impl NotProfile for Settings {}
 
 pub fn get_settings(app_handle: &tauri::AppHandle) -> Result<Store<Settings>, anyhow::Error> {
 	Store::new("settings", &app_handle.path_resolver().app_config_dir().unwrap(), Settings::default())
