@@ -28,13 +28,13 @@
 	getProfiles(device);
 
 	export let profile: Profile;
-	export async function setProfile(id: string, toSet: Profile | undefined = undefined) {
+	export async function setProfile(id: string) {
 		if (!device || !id) return;
 		if (value != id) {
 			value = id;
 			return;
 		}
-		await invoke("set_selected_profile", { device: device.id, id, profile: toSet });
+		await invoke("set_selected_profile", { device: device.id, id });
 		profile = await invoke("get_selected_profile", { device: device.id });
 
 		let folder = id.includes("/") ? id.split("/")[0] : "";
@@ -50,43 +50,6 @@
 		let folder = id.includes("/") ? id.split("/")[0] : "";
 		folders[folder].splice(folders[folder].indexOf(id), 1);
 		folders = folders;
-	}
-
-	function exportProfile() {
-		navigator.clipboard.writeText(JSON.stringify(
-			profile,
-			(k: string, v: string) => {
-				if (k == "context") return v.replace(device.id, "no-device");
-				return v;
-			},
-			2
-		));
-		alert(`Copied profile ${value} to clipboard.`);
-	}
-
-	let fileInput: HTMLInputElement;
-	function importProfile() {
-		if (!fileInput.files || fileInput.files.length == 0) return;
-		const reader = new FileReader();
-		reader.onload = async () => {
-			let p: Profile = JSON.parse(
-				reader.result! as string,
-				(k: string, v: string) => {
-					if (k == "context") return v.replace("no-device", device.id);
-					return v;
-				}
-			);
-			if (p.keys.length != device.rows * device.columns || p.sliders.length != device.sliders) {
-				alert("The imported profile is incompatible with the selected device.");
-				return;
-			}
-			if ((p.id.includes("/") ? folders[p.id.split("/")[0]] : folders[""]).includes(p.id)) {
-				if (!await confirm(`Are you sure you want to overwrite profile ${p.id}?`)) return;
-			}
-			setProfile(p.id, p);
-			value = p.id;
-		};
-		reader.readAsText(fileInput.files[0]);
 	}
 
 	let oldValue: string;
@@ -135,22 +98,6 @@
 			placeholder='Profile ID (e.g. "folder/profile")'
 		/>
 
-		<input
-			type="file"
-			bind:this={fileInput}
-			on:change={importProfile}
-			class="hidden"
-		/>
-		<button
-			on:click={() => fileInput.click()}
-			class="px-3 dark:text-neutral-300 bg-neutral-200 dark:bg-neutral-900 border-r border-neutral-300 dark:border-neutral-700"
-		>
-			<Upload
-				size="20"
-				color={document.documentElement.classList.contains("dark") ? "#C0BFBC" : "#77767B"}
-			/>
-		</button>
-
 		<button
 			on:click={async () => {
 				if (!nameInput.checkValidity()) return;
@@ -180,16 +127,6 @@
 							class="float-right"
 						>
 							<Trash
-								size="20"
-								color={document.documentElement.classList.contains("dark") ? "#C0BFBC" : "#77767B"}
-							/>
-						</button>
-					{:else}
-						<button
-							on:click={exportProfile}
-							class="float-right"
-						>
-							<Download
 								size="20"
 								color={document.documentElement.classList.contains("dark") ? "#C0BFBC" : "#77767B"}
 							/>

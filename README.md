@@ -34,14 +34,6 @@ Special thanks go to the developers of [Tauri](https://github.com/tauri-apps/tau
 - Open the installed application. Note: if you receive a warning about OpenDeck being distributed by an unknown developer, *right-click the app in Finder and then click Open* to suppress the warning.
 - If you intend to use plugins that are only compiled for Windows, you will need to have [Wine](https://www.winehq.org/) installed on your system.
 
-## Showcase
-
-![Main menu](.github/readme/mainmenu.png)
-![Light mode](.github/readme/lightmode.png)
-![Multi action](.github/readme/multiaction.png)
-![Plugins](.github/readme/plugins.png)
-![Profiles](.github/readme/profiles.png)
-
 ## Support
 
 ### How do I...?
@@ -50,7 +42,7 @@ To view or modify an action's settings, left-click on it to display its property
 
 To edit an action's appearance, right-click on it and select "Edit" in the context menu. You should then be able to customise the image and title of each of its states. To choose an image from your device: left-click on the image, to reset it to the plugin-provided default: right-click on the image, and to remove the image entirely: CTRL+right-click on the image.
 
-To select another device, or to view, switch, modify, import or export profiles, use the dropdowns in the top right corner. You can organise profiles into group-like folders by prefixing the profile name with the folder name and a forward slash.
+To select another device, or to view or switch profiles, use the dropdowns in the top right corner. You can organise profiles into group-like folders by prefixing the profile name with the folder name and a forward slash.
 
 To enable automatic launch on startup, the light theme, or to change the language plugins are localised in, open Settings. From here, you can also view information about your version of OpenDeck or open the configuration directory. To add or remove plugins, visit the Plugins tab.
 
@@ -58,9 +50,10 @@ To enable automatic launch on startup, the light theme, or to change the languag
 
 - Check the OpenDeck log file for any important messages. This file should be included with any support request.
 	- GNU+Linux: `~/config/com.amansprojects.opendeck/logs/`
-	- Windows: `%appdata%/com.amansprojects.opendeck/logs`
-	- macOS: `~/Library/Application Support/com.amansprojects.opendeck/logs`
-- When trying to run Windows-only plugins (which are the majority of plugins) on GNU+Linux or macOS, please ensure you have the latest version of Wine installed on your system.
+	- Windows: `%appdata%\com.amansprojects.opendeck\logs\`
+	- macOS: `~/Library/Application Support/com.amansprojects.opendeck/logs/`
+- For issues with plugins, you can also check the plugin's logs (in the same folder as above, sometimes as well as a file named `plugin.log` or similar in the plugin's own folder).
+- When trying to run Windows-only plugins (which are the majority of plugins) on GNU+Linux or macOS, please ensure you have the latest version of Wine (and Wine Mono) installed on your system.
 - If your device isn't showing up, ensure you have the correct permissions to access it, and that you have restarted OpenDeck since connecting it.
 
 ### Support forums
@@ -76,3 +69,11 @@ You'll need to ensure that all of the [prerequisites for building a Tauri applic
 When submitting a pull request, ensure that all of your Rust code has been formatted using `cargo fmt`, `cargo clippy` returns no violations, `deno task check` returns no violations, and modified Svelte code sticks to the existing style used as far as possible. Feel free to reach out on the support channels above for guidance when contributing!
 
 OpenDeck is licensed under the MIT license.
+
+## Showcase
+
+![Main menu](.github/readme/mainmenu.png)
+![Light mode](.github/readme/lightmode.png)
+![Multi action](.github/readme/multiaction.png)
+![Plugins](.github/readme/plugins.png)
+![Profiles](.github/readme/profiles.png)
