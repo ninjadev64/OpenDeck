@@ -20,7 +20,7 @@ serde = { version = "1.0", features = [ "derive" ] }
 serde_json = "1.0"
 serialport = "4.5"
 tokio = { version = "1.38", features = [ "full" ] }
-tokio-tungstenite = "0.23"
+tokio-tungstenite = "0.24"
 tiny_http = "0.12"
 elgato-streamdeck = { version = "0.7", default-features = false, features = [ "async" ] }
 hidapi = { version = "2.6", default-features = false, features = [ "linux-static-hidraw", "macos-shared-device", "windows-native" ] }
@@ -42,7 +42,7 @@ os_info = "3.8"
 urlencoding = "2.1"
 base64 = "0.22"
 reqwest = "0.12"
-zip = { version = "2.1", default-features = false, features = [ "deflate", "zstd" ] }
+zip = { version = "2.2", default-features = false, features = [ "deflate", "zstd" ] }
 
 [features]
 custom-protocol = [ "tauri/custom-protocol" ]
