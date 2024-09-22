@@ -46,7 +46,7 @@ impl From<ActionContext> for DiskActionContext {
 
 impl DiskActionContext {
 	fn into_action_context(self, path: &Path) -> ActionContext {
-		let config_dir = crate::APP_HANDLE.get().unwrap().path_resolver().app_config_dir().unwrap();
+		let config_dir = crate::shared::config_dir();
 		let mut iter = path.strip_prefix(config_dir).unwrap().iter();
 		let device = iter.nth(1).unwrap().to_string_lossy().into_owned();
 		let mut profile = iter.map(|x| x.to_string_lossy()).collect::<Vec<_>>().join("/");
@@ -114,7 +114,7 @@ impl From<&Profile> for DiskProfile {
 
 impl DiskProfile {
 	fn into_profile(self, path: &Path) -> Profile {
-		let config_dir = crate::APP_HANDLE.get().unwrap().path_resolver().app_config_dir().unwrap();
+		let config_dir = crate::shared::config_dir();
 		let mut iter = path.strip_prefix(config_dir).unwrap().iter();
 		let _ = iter.nth(1);
 		let mut id = iter.map(|x| x.to_string_lossy()).collect::<Vec<_>>().join("/");

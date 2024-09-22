@@ -8,7 +8,7 @@
 	import Slider from "./Slider.svelte";
 
     import { inspectedParentAction } from "$lib/propertyInspector";
-    import { invoke } from "@tauri-apps/api";
+    import { invoke } from "@tauri-apps/api/core";
 
 	export let device: DeviceInfo;
 	export let profile: Profile;

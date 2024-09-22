@@ -6,7 +6,7 @@ export type Settings = {
 	developer: boolean
 };
 
-import { invoke } from "@tauri-apps/api";
+import { invoke } from "@tauri-apps/api/core";
 import { writable, type Writable } from "svelte/store";
 
 export const settings: Writable<Settings | null> = writable(null);

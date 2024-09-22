@@ -10,12 +10,12 @@ edition = "2021"
 rust-version = "1.77"
 
 [build-dependencies]
-tauri-build = { version = "1.5", features = [] }
+tauri-build = { version = "2.0.0-rc", features = [] }
 built = { version = "0.7", features = [ "dependency-tree", "git2" ] }
 
 [dependencies]
 # Large, fundamental libraries
-tauri = { version = "1.7", features = [ "dialog-confirm", "dialog-message", "shell-execute", "shell-open", "system-tray", "devtools" ] }
+tauri = { version = "2.0.0-rc", features = [ "devtools" , "tray-icon"] }
 serde = { version = "1.0", features = [ "derive" ] }
 serde_json = "1.0"
 serialport = "4.5"
@@ -31,9 +31,11 @@ futures-util = "0.3"
 anyhow = "1.0"
 log = "0.4"
 log-panics = "2.1"
-tauri-plugin-log = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
-tauri-plugin-autostart = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
-tauri-plugin-single-instance = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
+tauri-plugin-shell = { version = "2.0.0-rc" }
+tauri-plugin-dialog = { version = "2.0.0-rc" }
+tauri-plugin-log = { version = "2.0.0-rc" }
+tauri-plugin-single-instance = { version = "2.0.0-rc" }
+tauri-plugin-autostart = { version = "2.0.0-rc" }
 serde-inline-default = "0.2"
 serde_with = "3.9"
 os_info = "3.8"

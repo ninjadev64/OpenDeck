@@ -1,4 +1,4 @@
-import { invoke } from "@tauri-apps/api";
+import { invoke } from "@tauri-apps/api/core";
 
 import type { ActionState } from "./ActionState";
 import type { Context } from "./Context";

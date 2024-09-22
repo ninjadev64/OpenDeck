@@ -3,7 +3,7 @@
 
 	import { getImage, resizeImage } from "$lib/rendererHelper";
 
-	import { invoke } from "@tauri-apps/api";
+	import { invoke } from "@tauri-apps/api/core";
 
 	export let instance: ActionInstance;
 	export let showEditor: boolean;

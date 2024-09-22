@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { invoke } from "@tauri-apps/api";
+	import { invoke } from "@tauri-apps/api/core";
 </script>
 
 <div class="flex flex-col justify-center items-center w-full h-full text-center dark:text-neutral-300">

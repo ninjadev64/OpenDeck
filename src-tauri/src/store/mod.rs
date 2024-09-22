@@ -88,6 +88,6 @@ impl Default for Settings {
 
 impl NotProfile for Settings {}
 
-pub fn get_settings(app_handle: &tauri::AppHandle) -> Result<Store<Settings>, anyhow::Error> {
-	Store::new("settings", &app_handle.path_resolver().app_config_dir().unwrap(), Settings::default())
+pub fn get_settings() -> Result<Store<Settings>, anyhow::Error> {
+	Store::new("settings", &crate::shared::config_dir(), Settings::default())
 }

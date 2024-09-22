@@ -1,6 +1,6 @@
 <script lang="ts">
     import { settings } from "$lib/settings";
-    import { invoke } from "@tauri-apps/api";
+    import { invoke } from "@tauri-apps/api/core";
 
 	import Popup from "./Popup.svelte";
 	import Tooltip from "./Tooltip.svelte";

@@ -5,7 +5,14 @@ use serde::{Deserialize, Serialize};
 use serde_inline_default::serde_inline_default;
 
 use once_cell::sync::Lazy;
+use tauri::Manager;
 use tokio::sync::RwLock;
+
+/// Get the application configuration directory.
+pub fn config_dir() -> std::path::PathBuf {
+	let app_handle = crate::APP_HANDLE.get().unwrap();
+	app_handle.path().app_config_dir().unwrap()
+}
 
 /// Convert an icon specified in a plugin manifest to its full path.
 pub fn convert_icon(path: String) -> String {

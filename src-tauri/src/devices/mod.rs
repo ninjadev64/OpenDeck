@@ -66,12 +66,11 @@ pub fn initialise_devices() {
 }
 
 async fn register_device(id: String, device: DeviceInfo) {
-	let app = crate::APP_HANDLE.get().unwrap();
-	if let Ok(profiles) = get_device_profiles(&device.id, app) {
+	if let Ok(profiles) = get_device_profiles(&device.id) {
 		let mut profile_stores = crate::store::profiles::PROFILE_STORES.write().await;
 		for profile in profiles {
 			// This is called to initialise the store for each profile when the device is registered.
-			if let Err(e) = profile_stores.get_profile_store_mut(&device, &profile, app).await {
+			if let Err(e) = profile_stores.get_profile_store_mut(&device, &profile).await {
 				error!("{}", e);
 			}
 		}

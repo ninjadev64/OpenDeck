@@ -7,7 +7,7 @@
 	import Upload from "phosphor-svelte/lib/Upload";
 	import Popup from "./Popup.svelte";
 
-	import { invoke } from "@tauri-apps/api";
+	import { invoke } from "@tauri-apps/api/core";
 
 	let folders: { [name: string]: string[] } = {};
 	let value: string;

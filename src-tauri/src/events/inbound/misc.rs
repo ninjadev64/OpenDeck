@@ -1,6 +1,7 @@
 use super::{ContextAndPayloadEvent, ContextEvent, PayloadEvent};
 
-use tauri::{api::shell::open, Manager};
+use tauri::{Emitter, Manager};
+use tauri_plugin_shell::ShellExt;
 
 use serde::Deserialize;
 
@@ -17,7 +18,7 @@ pub struct LogMessageEvent {
 pub async fn open_url(event: PayloadEvent<OpenUrlEvent>) -> Result<(), anyhow::Error> {
 	let app_handle = crate::APP_HANDLE.get().unwrap();
 	log::debug!("Opening URL {}", event.payload.url);
-	open(&app_handle.shell_scope(), event.payload.url, None)?;
+	app_handle.shell().open(event.payload.url, None)?;
 	Ok(())
 }
 
@@ -38,15 +39,13 @@ pub async fn send_to_plugin(event: ContextAndPayloadEvent<serde_json::Value>) ->
 
 pub async fn show_alert(event: ContextEvent) -> Result<(), anyhow::Error> {
 	let app = crate::APP_HANDLE.get().unwrap();
-	let window = app.get_window("main").unwrap();
-	window.emit("show_alert", event.context)?;
+	app.get_webview_window("main").unwrap().emit("show_alert", event.context)?;
 	Ok(())
 }
 
 pub async fn show_ok(event: ContextEvent) -> Result<(), anyhow::Error> {
 	let app = crate::APP_HANDLE.get().unwrap();
-	let window = app.get_window("main").unwrap();
-	window.emit("show_ok", event.context)?;
+	app.get_webview_window("main").unwrap().emit("show_ok", event.context)?;
 	Ok(())
 }
 
@@ -58,6 +57,6 @@ pub struct SwitchProfileEvent {
 
 pub async fn switch_profile(event: SwitchProfileEvent) -> Result<(), anyhow::Error> {
 	let app_handle = crate::APP_HANDLE.get().unwrap();
-	app_handle.get_window("main").unwrap().emit("switch_profile", event)?;
+	app_handle.get_webview_window("main").unwrap().emit("switch_profile", event)?;
 	Ok(())
 }

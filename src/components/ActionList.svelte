@@ -4,7 +4,7 @@
 	import ListedAction from "./ListedAction.svelte";
 
 	import { localisations } from "$lib/settings";
-	import { invoke } from "@tauri-apps/api";
+	import { invoke } from "@tauri-apps/api/core";
 
 	let categories: { [name: string]: Action[] } = {};
 	export async function reload() {

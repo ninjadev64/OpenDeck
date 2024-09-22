@@ -5,7 +5,7 @@
 	import { inspectedInstance } from "$lib/propertyInspector";
 	import { getImage } from "$lib/rendererHelper";
 
-	import { invoke } from "@tauri-apps/api";
+	import { invoke } from "@tauri-apps/api/core";
 	import { listen } from "@tauri-apps/api/event";
 
 	export let context: Context;

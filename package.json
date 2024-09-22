@@ -25,7 +25,7 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@tauri-apps/api": "^1.6",
+		"@tauri-apps/api": "^2.0.0-rc",
 		"phosphor-svelte": "^2.0"
 	}
 }

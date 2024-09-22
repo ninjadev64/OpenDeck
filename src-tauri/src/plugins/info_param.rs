@@ -84,7 +84,7 @@ pub async fn make_info(uuid: String, version: String, wine: bool) -> Info {
 	Info {
 		application: ApplicationInfo {
 			font: "ui-sans-serif".to_owned(),
-			language: crate::store::get_settings(crate::APP_HANDLE.get().unwrap()).unwrap().value.language,
+			language: crate::store::get_settings().unwrap().value.language,
 			platform: if !wine { platform.to_owned() } else { "windows".to_owned() },
 			platformVersion: if !wine { os_info::get().version().to_string() } else { "10.0.19045.4474".to_owned() },
 			version: env!("CARGO_PKG_VERSION").to_owned(),

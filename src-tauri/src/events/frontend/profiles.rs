@@ -3,11 +3,11 @@ use super::Error;
 use crate::devices::DEVICES;
 use crate::store::profiles::{get_device_profiles, DEVICE_STORES, PROFILE_STORES};
 
-use tauri::{command, AppHandle};
+use tauri::command;
 
 #[command]
-pub fn get_profiles(app: AppHandle, device: &str) -> Result<Vec<String>, Error> {
-	Ok(get_device_profiles(device, &app)?)
+pub fn get_profiles(device: &str) -> Result<Vec<String>, Error> {
+	Ok(get_device_profiles(device)?)
 }
 
 #[command]
@@ -23,7 +23,7 @@ pub async fn get_selected_profile(device: String) -> Result<crate::shared::Profi
 
 #[allow(clippy::flat_map_identity)]
 #[command]
-pub async fn set_selected_profile(app: AppHandle, device: String, id: String) -> Result<(), Error> {
+pub async fn set_selected_profile(device: String, id: String) -> Result<(), Error> {
 	let mut device_stores = DEVICE_STORES.write().await;
 	let devices = DEVICES.read().await;
 	let mut profile_stores = PROFILE_STORES.write().await;
@@ -43,7 +43,7 @@ pub async fn set_selected_profile(app: AppHandle, device: String, id: String) ->
 	}
 
 	// We must use the mutable version of get_profile_store in order to create the store if it does not exist.
-	let store = profile_stores.get_profile_store_mut(devices.get(&device).unwrap(), &id, &app).await?;
+	let store = profile_stores.get_profile_store_mut(devices.get(&device).unwrap(), &id).await?;
 	let new_profile = &store.value;
 	for instance in new_profile.keys.iter().flatten().chain(&mut new_profile.sliders.iter().flatten()) {
 		if !matches!(instance.action.uuid.as_str(), "com.amansprojects.opendeck.multiaction" | "com.amansprojects.opendeck.toggleaction") {
@@ -56,13 +56,13 @@ pub async fn set_selected_profile(app: AppHandle, device: String, id: String) ->
 	}
 	store.save()?;
 
-	device_stores.set_selected_profile(&device, id, &app)?;
+	device_stores.set_selected_profile(&device, id)?;
 
 	Ok(())
 }
 
 #[command]
-pub async fn delete_profile(app: AppHandle, device: String, profile: String) {
+pub async fn delete_profile(device: String, profile: String) {
 	let mut profile_stores = PROFILE_STORES.write().await;
-	profile_stores.remove_profile(&device, &profile, &app);
+	profile_stores.remove_profile(&device, &profile);
 }

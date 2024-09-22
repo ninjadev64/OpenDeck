@@ -9,7 +9,7 @@ use crate::shared::{Action, CATEGORIES};
 
 use std::collections::HashMap;
 
-use tauri::{command, AppHandle, Manager};
+use tauri::{command, Emitter, Manager};
 
 #[derive(Debug, serde_with::SerializeDisplay, serde::Deserialize)]
 pub struct Error {
@@ -47,9 +47,10 @@ pub async fn get_devices() -> HashMap<std::string::String, crate::devices::Devic
 	DEVICES.read().await.clone()
 }
 
-pub async fn update_devices() {
+pub async fn update_devices() -> Option<()> {
 	let app = crate::APP_HANDLE.get().unwrap();
-	let _ = app.get_window("main").unwrap().emit("devices", DEVICES.read().await.clone());
+	let _ = app.get_webview_window("main")?.emit("devices", DEVICES.read().await.clone());
+	Some(())
 }
 
 #[command]
@@ -67,10 +68,10 @@ pub async fn get_categories() -> HashMap<std::string::String, Vec<Action>> {
 }
 
 #[command]
-pub async fn get_localisations(app: AppHandle, locale: &str) -> Result<HashMap<String, serde_json::Value>, Error> {
+pub async fn get_localisations(locale: &str) -> Result<HashMap<String, serde_json::Value>, Error> {
 	let mut localisations: HashMap<String, serde_json::Value> = HashMap::new();
 
-	let mut entries = match tokio::fs::read_dir(&app.path_resolver().app_config_dir().unwrap().join("plugins")).await {
+	let mut entries = match tokio::fs::read_dir(&crate::shared::config_dir().join("plugins")).await {
 		Ok(entries) => entries,
 		Err(error) => return Err(anyhow::Error::from(error).into()),
 	};

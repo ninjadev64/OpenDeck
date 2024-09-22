@@ -2,43 +2,13 @@
 	"build": {
 		"beforeBuildCommand": "deno task build",
 		"beforeDevCommand": "deno task dev",
-		"devPath": "http://localhost:5173",
-		"distDir": "../build"
+		"frontendDist": "../build",
+		"devUrl": "http://localhost:5173"
 	},
-	"package": {
-		"productName": "OpenDeck",
-		"version": "2.0.0"
-	},
-	"tauri": {
-		"windows": [
-			{
-				"title": "OpenDeck",
-				"fullscreen": false,
-				"resizable": true,
-				"width": 800,
-				"height": 600,
-				"minWidth": 800,
-				"minHeight": 600,
-				"center": true,
-				"fileDropEnabled": false
-			}
-		],
-		"bundle": {
-			"active": true,
-			"targets": "all",
-			"identifier": "com.amansprojects.opendeck",
-			"publisher": "ninjadev64",
-			"shortDescription": "A cross-platform desktop application for ProntoKey and Stream Deck.",
-			"longDescription": "OpenDeck is a cross-platform desktop application that provides functionality for stream controller devices.",
-			"category": "Productivity",
-			"icon": [
-				"icons/icon.png",
-				"icons/icon.icns",
-				"icons/icon.ico"
-			],
-			"macOS": {
-				"exceptionDomain": "localhost"
-			},
+	"bundle": {
+		"active": true,
+		"targets": "all",
+		"linux": {
 			"deb": {
 				"desktopTemplate": "opendeck.desktop",
 				"files": {
@@ -52,24 +22,42 @@
 				}
 			}
 		},
-		"security": {
-			"csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: http://localhost:57118 https://ninjadev64.github.io https://plugins.amansprojects.com; frame-src http://localhost:57118; connect-src https://ninjadev64.github.io https://api.github.com https://plugins.amansprojects.com;"
-		},
-		"allowlist": {
-			"shell": {
-				"open": true,
-				"execute": true
-			},
-			"dialog": {
-				"message": true,
-				"confirm": true
+		"publisher": "ninjadev64",
+		"shortDescription": "A cross-platform desktop application for ProntoKey and Stream Deck.",
+		"longDescription": "OpenDeck is a cross-platform desktop application that provides functionality for stream controller devices.",
+		"category": "Productivity",
+		"icon": [
+			"icons/icon.png",
+			"icons/icon.icns",
+			"icons/icon.ico"
+		],
+		"macOS": {
+			"exceptionDomain": "localhost"
+		}
+	},
+	"productName": "OpenDeck",
+	"mainBinaryName": "opendeck",
+	"version": "2.0.0",
+	"identifier": "com.amansprojects.opendeck",
+	"plugins": {},
+	"app": {
+		"windows": [
+			{
+				"title": "OpenDeck",
+				"fullscreen": false,
+				"resizable": true,
+				"width": 800,
+				"height": 600,
+				"minWidth": 800,
+				"minHeight": 600,
+				"center": true
 			}
-		},
-		"updater": {
-			"active": false
-		},
-		"systemTray": {
+		],
+		"trayIcon": {
 			"iconPath": "icons/icon.png"
+		},
+		"security": {
+			"csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: http://localhost:57118 https://ninjadev64.github.io https://plugins.amankhanna.me; frame-src http://localhost:57118; connect-src ipc: http://ipc.localhost https://ninjadev64.github.io https://api.github.com https://plugins.amankhanna.me;"
 		}
 	}
 }

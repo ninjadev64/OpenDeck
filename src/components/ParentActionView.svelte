@@ -7,7 +7,7 @@
 	import Key from "./Key.svelte";
 
 	import { inspectedParentAction } from "$lib/propertyInspector";
-	import { invoke } from "@tauri-apps/api";
+	import { invoke } from "@tauri-apps/api/core";
 
 	export let profile: Profile;
 

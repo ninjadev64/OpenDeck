@@ -12,7 +12,7 @@
 	import { copiedContext, inspectedInstance, inspectedParentAction, openContextMenu } from "$lib/propertyInspector";
 	import { renderImage } from "$lib/rendererHelper";
 
-	import { invoke } from "@tauri-apps/api";
+	import { invoke } from "@tauri-apps/api/core";
 	import { listen } from "@tauri-apps/api/event";
 
 	export let context: Context;

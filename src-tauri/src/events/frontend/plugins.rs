@@ -1,3 +1,5 @@
+use crate::shared::config_dir;
+
 use super::Error;
 
 use tauri::{command, AppHandle};
@@ -12,10 +14,10 @@ pub struct PluginInfo {
 }
 
 #[command]
-pub async fn list_plugins(app: AppHandle) -> Result<Vec<PluginInfo>, Error> {
+pub async fn list_plugins() -> Result<Vec<PluginInfo>, Error> {
 	let mut plugins = vec![];
 
-	let mut entries = match tokio::fs::read_dir(&app.path_resolver().app_config_dir().unwrap().join("plugins")).await {
+	let mut entries = match tokio::fs::read_dir(&config_dir().join("plugins")).await {
 		Ok(entries) => entries,
 		Err(error) => return Err(anyhow::Error::from(error).into()),
 	};
@@ -57,7 +59,7 @@ pub async fn install_plugin(app: AppHandle, id: String, url: Option<String>) -> 
 
 	let _ = crate::plugins::deactivate_plugin(&app, &format!("{}.sdPlugin", id)).await;
 
-	let config_dir = app.path_resolver().app_config_dir().unwrap();
+	let config_dir = config_dir();
 	let _ = tokio::fs::create_dir_all(config_dir.join("temp")).await;
 
 	let temp = config_dir.join("temp").join(format!("{id}.sdPlugin"));
@@ -87,7 +89,7 @@ pub async fn remove_plugin(app: AppHandle, id: String) -> Result<(), Error> {
 	}
 
 	crate::plugins::deactivate_plugin(&app, &id).await?;
-	if let Err(error) = tokio::fs::remove_dir_all(app.path_resolver().app_config_dir().unwrap().join("plugins").join(&id)).await {
+	if let Err(error) = tokio::fs::remove_dir_all(config_dir().join("plugins").join(&id)).await {
 		return Err(anyhow::Error::from(error).into());
 	}
 
@@ -103,5 +105,5 @@ pub async fn remove_plugin(app: AppHandle, id: String) -> Result<(), Error> {
 #[command]
 pub async fn reload_plugin(app: AppHandle, id: String) {
 	let _ = crate::plugins::deactivate_plugin(&app, &id).await;
-	let _ = crate::plugins::initialise_plugin(&app.path_resolver().app_config_dir().unwrap().join("plugins").join(id)).await;
+	let _ = crate::plugins::initialise_plugin(&config_dir().join("plugins").join(id)).await;
 }

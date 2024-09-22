@@ -2,13 +2,13 @@ use super::Error;
 
 use crate::built_info;
 
-use tauri::{command, AppHandle};
+use tauri::command;
 #[cfg(not(debug_assertions))]
 use tauri_plugin_autostart::ManagerExt;
 
 #[command]
-pub async fn get_settings(app: AppHandle) -> Result<crate::store::Settings, Error> {
-	let store = crate::store::get_settings(&app);
+pub async fn get_settings() -> Result<crate::store::Settings, Error> {
+	let store = crate::store::get_settings();
 	match store {
 		Ok(store) => Ok(store.value),
 		Err(error) => Err(error.into()),
@@ -16,15 +16,15 @@ pub async fn get_settings(app: AppHandle) -> Result<crate::store::Settings, Erro
 }
 
 #[command]
-pub async fn set_settings(app: AppHandle, settings: crate::store::Settings) -> Result<(), Error> {
+pub async fn set_settings(_app: tauri::AppHandle, settings: crate::store::Settings) -> Result<(), Error> {
 	#[cfg(not(debug_assertions))]
 	let _ = match settings.autolaunch {
-		true => app.autolaunch().enable(),
-		false => app.autolaunch().disable(),
+		true => _app.autolaunch().enable(),
+		false => _app.autolaunch().disable(),
 	};
 
 	crate::devices::elgato::set_brightness(settings.brightness).await;
-	let mut store = match crate::store::get_settings(&app) {
+	let mut store = match crate::store::get_settings() {
 		Ok(store) => store,
 		Err(error) => return Err(error.into()),
 	};
@@ -35,14 +35,14 @@ pub async fn set_settings(app: AppHandle, settings: crate::store::Settings) -> R
 }
 
 #[command]
-pub fn open_config_directory(app: AppHandle) {
+pub fn open_config_directory() {
 	#[cfg(target_os = "windows")]
 	let command = "explorer";
 	#[cfg(target_os = "macos")]
 	let command = "open";
 	#[cfg(target_os = "linux")]
 	let command = "xdg-open";
-	std::process::Command::new(command).arg(app.path_resolver().app_config_dir().unwrap()).spawn().unwrap();
+	std::process::Command::new(command).arg(crate::shared::config_dir()).spawn().unwrap();
 }
 
 #[command]

@@ -2,7 +2,7 @@ pub mod info_param;
 pub mod manifest;
 mod webserver;
 
-use crate::shared::{convert_icon, Action, CATEGORIES};
+use crate::shared::{config_dir, convert_icon, Action, CATEGORIES};
 use crate::store::get_settings;
 use crate::APP_HANDLE;
 
@@ -146,11 +146,11 @@ pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 	if code_path.to_lowercase().ends_with(".html") || code_path.to_lowercase().ends_with(".htm") || code_path.to_lowercase().ends_with(".xhtml") {
 		// Create a webview window for the plugin and call its registration function.
 		let url = "http://localhost:57118/".to_owned() + path.join(code_path).to_str().unwrap();
-		let window = tauri::WindowBuilder::new(APP_HANDLE.get().unwrap(), plugin_uuid.replace('.', "_"), tauri::WindowUrl::External(url.parse()?))
+		let window = tauri::WebviewWindowBuilder::new(APP_HANDLE.get().unwrap(), plugin_uuid.replace('.', "_"), tauri::WebviewUrl::External(url.parse()?))
 			.visible(false)
 			.build()?;
 
-		if let Ok(store) = get_settings(APP_HANDLE.get().unwrap()) {
+		if let Ok(store) = get_settings() {
 			if store.value.developer {
 				let _ = window.show();
 				window.open_devtools();
@@ -278,7 +278,7 @@ pub async fn deactivate_plugin(app: &AppHandle, uuid: &str) -> Result<(), anyhow
 	if let Some(instance) = instances.remove(uuid) {
 		match instance {
 			PluginInstance::Webview => {
-				let window = app.get_window(&uuid.replace('.', "_")).unwrap();
+				let window = app.get_webview_window(&uuid.replace('.', "_")).unwrap();
 				Ok(window.close()?)
 			}
 			PluginInstance::Node(mut child) | PluginInstance::Wine(mut child) | PluginInstance::Native(mut child) => Ok(child.kill()?),
@@ -289,13 +289,13 @@ pub async fn deactivate_plugin(app: &AppHandle, uuid: &str) -> Result<(), anyhow
 }
 
 /// Initialise plugins from the plugins directory.
-pub fn initialise_plugins(app: AppHandle) {
+pub fn initialise_plugins() {
 	tokio::spawn(init_websocket_server());
-	tokio::spawn(webserver::init_webserver(app.path_resolver().app_config_dir().unwrap()));
+	tokio::spawn(webserver::init_webserver(config_dir()));
 
-	let plugin_dir = app.path_resolver().app_config_dir().unwrap().join("plugins");
+	let plugin_dir = config_dir().join("plugins");
 	let _ = fs::create_dir_all(&plugin_dir);
-	let _ = fs::create_dir_all(app.path_resolver().app_config_dir().unwrap().join("logs").join("plugins"));
+	let _ = fs::create_dir_all(config_dir().join("logs").join("plugins"));
 
 	let entries = match fs::read_dir(&plugin_dir) {
 		Ok(p) => p,

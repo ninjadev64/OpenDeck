@@ -3,7 +3,7 @@ use super::Error;
 use crate::shared::{Action, ActionContext, ActionInstance, Context};
 use crate::store::profiles::{acquire_locks_mut, get_instance_mut, get_slot_mut, save_profile, LocksMut};
 
-use tauri::{command, AppHandle, Manager};
+use tauri::{command, AppHandle, Emitter, Manager};
 
 #[command]
 pub async fn create_instance(app: AppHandle, action: Action, context: Context) -> Result<Option<ActionInstance>, Error> {
@@ -155,7 +155,7 @@ struct UpdateStateEvent {
 }
 
 pub async fn update_state(app: &AppHandle, context: ActionContext, locks: &mut LocksMut<'_>) -> Result<(), anyhow::Error> {
-	let window = app.get_window("main").unwrap();
+	let window = app.get_webview_window("main").unwrap();
 	window.emit(
 		"update_state",
 		UpdateStateEvent {
@@ -192,7 +192,7 @@ struct KeyMovedEvent {
 }
 
 pub async fn key_moved(app: &AppHandle, context: Context, pressed: bool) -> Result<(), anyhow::Error> {
-	let window = app.get_window("main").unwrap();
+	let window = app.get_webview_window("main").unwrap();
 	window.emit("key_moved", KeyMovedEvent { context, pressed })?;
 	Ok(())
 }

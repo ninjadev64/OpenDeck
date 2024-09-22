@@ -2,11 +2,12 @@ use super::Error;
 
 use crate::shared::ActionContext;
 
-use tauri::{command, AppHandle, Manager};
+use tauri::{command, AppHandle};
+use tauri_plugin_shell::ShellExt;
 
 #[command]
-pub async fn make_info(app: AppHandle, plugin: String) -> Result<crate::plugins::info_param::Info, Error> {
-	let mut path = app.path_resolver().app_config_dir().unwrap();
+pub async fn make_info(plugin: String) -> Result<crate::plugins::info_param::Info, Error> {
+	let mut path = crate::shared::config_dir();
 	path.push("plugins");
 	path.push(&plugin);
 	path.push("manifest.json");
@@ -33,7 +34,7 @@ pub async fn switch_property_inspector(old: Option<ActionContext>, new: Option<A
 
 #[command]
 pub async fn open_url(app: AppHandle, url: String) -> Result<(), Error> {
-	if let Err(error) = tauri::api::shell::open(&app.shell_scope(), url, None) {
+	if let Err(error) = app.shell().open(url, None) {
 		return Err(anyhow::Error::from(error).into());
 	}
 	Ok(())

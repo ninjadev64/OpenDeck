@@ -3,14 +3,12 @@
   "packages": {
     "specifiers": {
       "npm:@sveltejs/adapter-static@^3.0": "npm:@sveltejs/adapter-static@3.0.4_@sveltejs+kit@2.5.26__@sveltejs+vite-plugin-svelte@3.1.2___svelte@4.2.19___vite@5.4.3__svelte@4.2.19__vite@5.4.3_@sveltejs+vite-plugin-svelte@3.1.2__svelte@4.2.19__vite@5.4.3_svelte@4.2.19_vite@5.4.3",
-      "npm:@sveltejs/kit@2.5.26": "npm:@sveltejs/kit@2.5.26_@sveltejs+vite-plugin-svelte@3.1.2__svelte@4.2.19__vite@5.4.3_svelte@4.2.19_vite@5.4.3",
       "npm:@sveltejs/kit@^2.5": "npm:@sveltejs/kit@2.5.26_@sveltejs+vite-plugin-svelte@3.1.2__svelte@4.2.19__vite@5.4.3_svelte@4.2.19_vite@5.4.3",
       "npm:@sveltejs/vite-plugin-svelte@^3.1": "npm:@sveltejs/vite-plugin-svelte@3.1.2_svelte@4.2.19_vite@5.4.3",
-      "npm:@tauri-apps/api@^1.6": "npm:@tauri-apps/api@1.6.0",
+      "npm:@tauri-apps/api@^2.0.0-rc": "npm:@tauri-apps/api@2.0.0-rc.4",
       "npm:autoprefixer@^10.4": "npm:autoprefixer@10.4.20_postcss@8.4.45",
       "npm:phosphor-svelte@^2.0": "npm:phosphor-svelte@2.0.1_svelte@4.2.19",
       "npm:postcss@^8.4": "npm:postcss@8.4.45",
-      "npm:svelte-check@3.8.6": "npm:svelte-check@3.8.6_svelte@4.2.19_postcss@8.4.45_typescript@5.5.4",
       "npm:svelte-check@^3.8": "npm:svelte-check@3.8.6_svelte@4.2.19_postcss@8.4.45_typescript@5.5.4",
       "npm:svelte@^4.2": "npm:svelte@4.2.19",
       "npm:tailwindcss@^3.4": "npm:tailwindcss@3.4.10_postcss@8.4.45",
@@ -300,8 +298,8 @@
           "vitefu": "vitefu@0.2.5_vite@5.4.3"
         }
       },
-      "@tauri-apps/api@1.6.0": {
-        "integrity": "sha512-rqI++FWClU5I2UBp4HXFvl+sBWkdigBkxnpJDQUWttNyG7IZP4FwQGhTNL5EOw0vI8i6eSAJ5frLqO7n7jbJdg==",
+      "@tauri-apps/api@2.0.0-rc.4": {
+        "integrity": "sha512-UNiIhhKG08j4ooss2oEEVexffmWkgkYlC2M3GcX3VPtNsqFgVNL8Mcw/4Y7rO9M9S+ffAMnLOF5ypzyuyb8tyg==",
         "dependencies": {}
       },
       "@types/cookie@0.6.0": {
@@ -1321,7 +1319,7 @@
         "npm:@sveltejs/adapter-static@^3.0",
         "npm:@sveltejs/kit@^2.5",
         "npm:@sveltejs/vite-plugin-svelte@^3.1",
-        "npm:@tauri-apps/api@^1.6",
+        "npm:@tauri-apps/api@^2.0.0-rc",
         "npm:autoprefixer@^10.4",
         "npm:phosphor-svelte@^2.0",
         "npm:postcss@^8.4",

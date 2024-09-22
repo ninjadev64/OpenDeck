@@ -2,7 +2,7 @@ use super::{
 	simplified_context::{DiskActionInstance, DiskProfile},
 	Store,
 };
-use crate::shared::{Action, ActionInstance, ActionState, Profile};
+use crate::shared::{config_dir, Action, ActionInstance, ActionState, Profile};
 
 use std::collections::HashMap;
 use std::fs;
@@ -30,7 +30,7 @@ impl ProfileStores {
 		}
 	}
 
-	pub async fn get_profile_store_mut(&mut self, device: &crate::devices::DeviceInfo, id: &str, app: &tauri::AppHandle) -> Result<&mut Store<Profile>, anyhow::Error> {
+	pub async fn get_profile_store_mut(&mut self, device: &crate::devices::DeviceInfo, id: &str) -> Result<&mut Store<Profile>, anyhow::Error> {
 		#[cfg(target_os = "windows")]
 		let path = PathBuf::from("profiles").join(&device.id).join(id.replace('/', "\\"));
 		#[cfg(not(target_os = "windows"))]
@@ -46,7 +46,7 @@ impl ProfileStores {
 				sliders: vec![None; device.sliders as usize],
 			};
 
-			let mut store = Store::new(path, &app.path_resolver().app_config_dir().unwrap(), default).context(format!("Failed to create store for profile {}", path))?;
+			let mut store = Store::new(path, &config_dir(), default).context(format!("Failed to create store for profile {}", path))?;
 
 			let categories = crate::shared::CATEGORIES.read().await;
 			let actions = categories.values().flatten().collect::<Vec<_>>();
@@ -66,9 +66,9 @@ impl ProfileStores {
 		}
 	}
 
-	pub fn remove_profile(&mut self, device: &str, id: &str, app: &tauri::AppHandle) {
+	pub fn remove_profile(&mut self, device: &str, id: &str) {
 		self.stores.remove(id);
-		let config_dir = app.path_resolver().app_config_dir().unwrap();
+		let config_dir = config_dir();
 		#[cfg(target_os = "windows")]
 		let id = &id.replace('/', "\\");
 		let path = config_dir.join("profiles").join(device).join(format!("{id}.json"));
@@ -109,15 +109,14 @@ impl DeviceStores {
 			};
 
 			let path = PathBuf::from("profiles").join(device);
-			let store = Store::new(path.to_str().unwrap(), &crate::APP_HANDLE.get().unwrap().path_resolver().app_config_dir().unwrap(), default)
-				.context(format!("Failed to create store for device config {}", device))?;
+			let store = Store::new(path.to_str().unwrap(), &config_dir(), default).context(format!("Failed to create store for device config {}", device))?;
 			store.save()?;
 
 			self.stores.insert(device.to_owned(), store);
 		}
 
 		let from_store = &self.stores.get(device).unwrap().value.selected_profile;
-		let all = get_device_profiles(device, crate::APP_HANDLE.get().unwrap())?;
+		let all = get_device_profiles(device)?;
 		if all.contains(from_store) {
 			Ok(from_store.clone())
 		} else {
@@ -125,7 +124,7 @@ impl DeviceStores {
 		}
 	}
 
-	pub fn set_selected_profile(&mut self, device: &str, id: String, app: &tauri::AppHandle) -> Result<(), anyhow::Error> {
+	pub fn set_selected_profile(&mut self, device: &str, id: String) -> Result<(), anyhow::Error> {
 		if self.stores.contains_key(device) {
 			let store = self.stores.get_mut(device).unwrap();
 			store.value.selected_profile = id;
@@ -134,7 +133,7 @@ impl DeviceStores {
 			let default = DeviceConfig { selected_profile: id };
 
 			let path = PathBuf::from("profiles").join(device);
-			let store = Store::new(path.to_str().unwrap(), &app.path_resolver().app_config_dir().unwrap(), default).context(format!("Failed to create store for device config {}", device))?;
+			let store = Store::new(path.to_str().unwrap(), &config_dir(), default).context(format!("Failed to create store for device config {}", device))?;
 			store.save()?;
 
 			self.stores.insert(device.to_owned(), store);
@@ -226,10 +225,10 @@ fn migrate_profile(path: PathBuf) -> Result<(), anyhow::Error> {
 	Ok(())
 }
 
-pub fn get_device_profiles(device: &str, app: &tauri::AppHandle) -> Result<Vec<String>, anyhow::Error> {
+pub fn get_device_profiles(device: &str) -> Result<Vec<String>, anyhow::Error> {
 	let mut profiles: Vec<String> = vec![];
 
-	let device_path = app.path_resolver().app_config_dir().unwrap().join("profiles").join(device);
+	let device_path = config_dir().join("profiles").join(device);
 	fs::create_dir_all(&device_path)?;
 	let entries = fs::read_dir(device_path)?;
 
@@ -318,7 +317,7 @@ pub async fn get_slot<'a>(context: &crate::shared::Context, locks: &'a Locks<'_>
 
 pub async fn get_slot_mut<'a>(context: &crate::shared::Context, locks: &'a mut LocksMut<'_>) -> Result<&'a mut Option<crate::shared::ActionInstance>, anyhow::Error> {
 	let device = locks.devices.get(&context.device).unwrap();
-	let store = locks.profile_stores.get_profile_store_mut(device, &context.profile, crate::APP_HANDLE.get().unwrap()).await?;
+	let store = locks.profile_stores.get_profile_store_mut(device, &context.profile).await?;
 
 	let configured = match &context.controller[..] {
 		"Encoder" => &mut store.value.sliders[context.position as usize],

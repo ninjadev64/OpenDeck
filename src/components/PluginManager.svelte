@@ -11,7 +11,7 @@
 
 	import { localisations, settings } from "$lib/settings";
 
-	import { invoke } from "@tauri-apps/api";
+	import { invoke } from "@tauri-apps/api/core";
 
 	export let actionList: () => ActionList;
 	export let deviceSelector: () => DeviceSelector;
