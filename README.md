@@ -68,7 +68,7 @@ You'll need to ensure that all of the [prerequisites for building a Tauri applic
 
 When submitting a pull request, ensure that all of your Rust code has been formatted using `cargo fmt`, `cargo clippy` returns no violations, `deno task check` returns no violations, and modified Svelte code sticks to the existing style used as far as possible. Feel free to reach out on the support channels above for guidance when contributing!
 
-OpenDeck is licensed under the MIT license.
+OpenDeck is licensed under the GNU General Public License version 3.0 or later. For more details, see the LICENSE.md file.
 
 ## Showcase
 
