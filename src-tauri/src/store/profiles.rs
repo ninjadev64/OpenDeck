@@ -9,6 +9,7 @@ use std::fs;
 use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 use anyhow::Context;
 use once_cell::sync::Lazy;
@@ -164,8 +165,8 @@ impl From<ProfileV1> for DiskProfile {
 				keys.push(Some(DiskActionInstance {
 					action: Action {
 						name: "Multi Action".to_owned(),
-						uuid: "com.amansprojects.opendeck.multiaction".to_owned(),
-						plugin: "com.amansprojects.opendeck".to_owned(),
+						uuid: "opendeck.multiaction".to_owned(),
+						plugin: "opendeck".to_owned(),
 						tooltip: "Execute multiple actions".to_owned(),
 						icon: "opendeck/multi-action.png".to_owned(),
 						disable_automatic_states: false,
@@ -185,7 +186,7 @@ impl From<ProfileV1> for DiskProfile {
 						..Default::default()
 					}],
 					current_state: 0,
-					settings: serde_json::Value::Object(serde_json::Map::new()),
+					settings: Value::Object(serde_json::Map::new()),
 					children: Some(children.into_iter().map(|v| v.into()).collect()),
 				}));
 			} else {
@@ -215,13 +216,30 @@ enum ProfileVersions {
 
 fn migrate_profile(path: PathBuf) -> Result<(), anyhow::Error> {
 	let profile = serde_json::from_slice(&fs::read(&path)?)?;
-	if let ProfileVersions::V1(v1) = profile {
-		let migrated: DiskProfile = v1.into();
-		fs::write(path, serde_json::to_string_pretty(&migrated)?)?;
-	} else if let ProfileVersions::V2(v2) = profile {
-		let migrated: DiskProfile = (&v2).into();
-		fs::write(path, serde_json::to_string_pretty(&migrated)?)?;
+	let migrated: DiskProfile = match profile {
+		ProfileVersions::V1(v1) => v1.into(),
+		ProfileVersions::V2(v2) => (&v2).into(),
+		ProfileVersions::V3(v3) => v3,
+	};
+	let mut as_value = serde_json::to_value(migrated)?;
+	fn replace_old_identifier(value: &mut Value) {
+		match value {
+			Value::String(v) => *v = v.replace("com.amansprojects.opendeck", "opendeck"),
+			Value::Object(v) => {
+				for value in v.values_mut() {
+					replace_old_identifier(value);
+				}
+			}
+			Value::Array(v) => {
+				for value in v.iter_mut() {
+					replace_old_identifier(value);
+				}
+			}
+			_ => (),
+		}
 	}
+	replace_old_identifier(&mut as_value);
+	fs::write(path, serde_json::to_string_pretty(&as_value)?)?;
 	Ok(())
 }
 

@@ -25,10 +25,10 @@
 		if (dataTransfer?.getData("action")) {
 			let action = JSON.parse(dataTransfer?.getData("action"));
 			if (
-				(parentUuid == "com.amansprojects.opendeck.multiaction" && !action.supported_in_multi_actions) ||
+				(parentUuid == "opendeck.multiaction" && !action.supported_in_multi_actions) ||
 				(
-					parentUuid == "com.amansprojects.opendeck.toggleaction" &&
-					(action.uuid == "com.amansprojects.opendeck.multiaction" || action.uuid == "com.amansprojects.opendeck.toggleaction")
+					parentUuid == "opendeck.toggleaction" &&
+					(action.uuid == "opendeck.multiaction" || action.uuid == "opendeck.toggleaction")
 				)
 			) {
 				return;
@@ -50,7 +50,7 @@
 
 <div class="px-6 pt-6 pb-4 dark:text-neutral-300">
 	<button class="float-right text-xl" on:click={() => $inspectedParentAction = null}> ✕ </button>
-	<h1 class="font-semibold text-2xl"> {parentUuid == "com.amansprojects.opendeck.toggleaction" ? "Toggle Action" : "Multi Action"} </h1>
+	<h1 class="font-semibold text-2xl"> {parentUuid == "opendeck.toggleaction" ? "Toggle Action" : "Multi Action"} </h1>
 </div>
 
 <div class="flex flex-col h-80 overflow-scroll">

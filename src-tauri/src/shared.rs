@@ -221,8 +221,8 @@ pub static CATEGORIES: Lazy<RwLock<HashMap<String, Vec<Action>>>> = Lazy::new(||
 				r#"{
 					"name": "Multi Action",
 					"icon": "opendeck/multi-action.png",
-					"plugin": "com.amansprojects.opendeck",
-					"uuid": "com.amansprojects.opendeck.multiaction",
+					"plugin": "opendeck",
+					"uuid": "opendeck.multiaction",
 					"tooltip": "Execute multiple actions",
 					"controllers": [ "Keypad" ],
 					"states": [ { "image": "opendeck/multi-action.png" } ],
@@ -234,8 +234,8 @@ pub static CATEGORIES: Lazy<RwLock<HashMap<String, Vec<Action>>>> = Lazy::new(||
 				r#"{
 					"name": "Toggle Action",
 					"icon": "opendeck/toggle-action.png",
-					"plugin": "com.amansprojects.opendeck",
-					"uuid": "com.amansprojects.opendeck.toggleaction",
+					"plugin": "opendeck",
+					"uuid": "opendeck.toggleaction",
 					"tooltip": "Cycle through multiple actions",
 					"controllers": [ "Keypad" ],
 					"states": [ { "image": "opendeck/toggle-action.png" } ],

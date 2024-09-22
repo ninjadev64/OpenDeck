@@ -63,6 +63,7 @@ async fn main() {
 			let menu = MenuBuilder::new(app).items(&[&open, &hide, &separator, &quit]).build()?;
 			let _tray = TrayIconBuilder::new()
 				.menu(&menu)
+				.icon(app.default_window_icon().unwrap().clone())
 				.on_menu_event(move |app, event| {
 					let window = app.get_webview_window("main").unwrap();
 					let _ = match event.id().as_ref() {
@@ -109,6 +110,11 @@ async fn main() {
 	}
 
 	APP_HANDLE.set(app.handle().clone()).unwrap();
+
+	let old = app.path().config_dir().unwrap().join("com.amansprojects.opendeck");
+	if old.exists() {
+		let _ = std::fs::rename(old, app.path().app_config_dir().unwrap());
+	}
 
 	devices::initialise_devices();
 	plugins::initialise_plugins();
