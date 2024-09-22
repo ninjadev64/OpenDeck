@@ -110,6 +110,11 @@ async fn main() {
 
 	APP_HANDLE.set(app.handle().clone()).unwrap();
 
+	let old = app.path().config_dir().unwrap().join("com.amansprojects.opendeck");
+	if old.exists() {
+		let _ = std::fs::rename(old, app.path().app_config_dir().unwrap());
+	}
+
 	devices::initialise_devices();
 	plugins::initialise_plugins();
 

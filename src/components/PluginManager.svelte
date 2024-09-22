@@ -216,7 +216,7 @@
 		</div>
 	{/if}
 
-	{#await fetch("https://plugins.amansprojects.com/catalogue.json")}
+	{#await fetch("https://plugins.amankhanna.me/catalogue.json")}
 		<h2 class="mx-2 mt-6 mb-2 text-md dark:text-neutral-400"> Loading plugin list... </h2>
 	{:then res}
 		{#await res.json() then entries}
@@ -227,7 +227,7 @@
 			<div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 				{#each entries as plugin}
 					<ListedPlugin
-						icon="https://plugins.amansprojects.com/icons/{plugin.id}.png"
+						icon="https://plugins.amankhanna.me/icons/{plugin.id}.png"
 						name={plugin.name}
 						subtitle={plugin.author}
 						hidden={!plugin.name.toUpperCase().includes(search.toUpperCase())}

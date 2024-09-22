@@ -46,7 +46,7 @@
 
 	function select() {
 		if (!slot) return;
-		if (slot.action.uuid == "com.amansprojects.opendeck.multiaction" || slot.action.uuid == "com.amansprojects.opendeck.toggleaction") {
+		if (slot.action.uuid == "opendeck.multiaction" || slot.action.uuid == "opendeck.toggleaction") {
 			inspectedParentAction.set(context);
 		} else {
 			inspectedInstance.set(slot.context);

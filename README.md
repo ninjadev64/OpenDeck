@@ -1,6 +1,6 @@
 # OpenDeck
 
-OpenDeck is a desktop application for interfacing between human interface devices with keys or encoders and plugins, which provide actions to be carried out when the user interacts with the device. OpenDeck conforms to the [OpenAction](https://openaction.amansprojects.com/) API, which is cross-compatible with the Stream Deck SDK, allowing a wide range of pre-existing plugins to be used.
+OpenDeck is a desktop application for interfacing between human interface devices with keys or encoders and plugins, which provide actions to be carried out when the user interacts with the device. OpenDeck conforms to the [OpenAction](https://openaction.amankhanna.me/) API, which is cross-compatible with the Stream Deck SDK, allowing a wide range of pre-existing plugins to be used.
 
 OpenDeck supports ProntoKey, Elgato Stream Deck and AKP153 (not AKP153e) hardware on all three major desktop platforms. If you would like to contribute support for additional hardware (e.g. Loupedeck) feel free to reach out on any of the support forums and make a pull request!
 
@@ -49,9 +49,9 @@ To enable automatic launch on startup, the light theme, or to change the languag
 ### Solutions to frequent problems
 
 - Check the OpenDeck log file for any important messages. This file should be included with any support request.
-	- GNU+Linux: `~/config/com.amansprojects.opendeck/logs/`
-	- Windows: `%appdata%\com.amansprojects.opendeck\logs\`
-	- macOS: `~/Library/Application Support/com.amansprojects.opendeck/logs/`
+	- GNU+Linux: `~/.config/opendeck/logs/`
+	- Windows: `%appdata%\opendeck\logs\`
+	- macOS: `~/Library/Application Support/opendeck/logs/`
 - For issues with plugins, you can also check the plugin's logs (in the same folder as above, sometimes as well as a file named `plugin.log` or similar in the plugin's own folder).
 - When trying to run Windows-only plugins (which are the majority of plugins) on GNU+Linux or macOS, please ensure you have the latest version of Wine (and Wine Mono) installed on your system.
 - If your device isn't showing up, ensure you have the correct permissions to access it, and that you have restarted OpenDeck since connecting it.
@@ -59,7 +59,7 @@ To enable automatic launch on startup, the light theme, or to change the languag
 ### Support forums
 
 - [Discord](https://discord.gg/26Nf8rHvaj)
-- [Matrix](https://matrix.to/#/#opendeck:amansprojects.com)
+- [Matrix](https://matrix.to/#/#opendeck:amankhanna.me)
 - [GitHub Issues](https://github.com/ninjadev64/OpenDeck/issues)
 
 ### Building from source / contributing

@@ -48,7 +48,7 @@ pub async fn list_plugins() -> Result<Vec<PluginInfo>, Error> {
 
 #[command]
 pub async fn install_plugin(app: AppHandle, id: String, url: Option<String>) -> Result<(), Error> {
-	let resp = match reqwest::get(url.unwrap_or(format!("https://plugins.amansprojects.com/rezipped/{id}.zip"))).await {
+	let resp = match reqwest::get(url.unwrap_or(format!("https://plugins.amankhanna.me/rezipped/{id}.zip"))).await {
 		Ok(resp) => resp,
 		Err(error) => return Err(anyhow::Error::from(error).into()),
 	};
