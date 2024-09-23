@@ -1,6 +1,6 @@
 [package]
 name = "opendeck"
-version = "2.0.0"
+version = "2.1.0"
 description = "A cross-platform desktop application for ProntoKey and Stream Deck."
 authors = [ "ninjadev64" ]
 license = "GPL-3.0-or-later"
