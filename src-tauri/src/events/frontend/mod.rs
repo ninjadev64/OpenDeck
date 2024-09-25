@@ -47,10 +47,9 @@ pub async fn get_devices() -> HashMap<std::string::String, crate::devices::Devic
 	DEVICES.read().await.clone()
 }
 
-pub async fn update_devices() -> Option<()> {
+pub async fn update_devices() {
 	let app = crate::APP_HANDLE.get().unwrap();
-	let _ = app.get_webview_window("main")?.emit("devices", DEVICES.read().await.clone());
-	Some(())
+	let _ = app.get_webview_window("main").unwrap().emit("devices", DEVICES.read().await.clone());
 }
 
 #[command]

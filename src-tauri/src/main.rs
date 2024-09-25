@@ -28,7 +28,7 @@ static APP_HANDLE: OnceCell<AppHandle> = OnceCell::new();
 async fn main() {
 	log_panics::init();
 
-	let app = match Builder::default()
+	match Builder::default()
 		.invoke_handler(tauri::generate_handler![
 			frontend::get_devices,
 			frontend::rescan_devices,
@@ -56,6 +56,20 @@ async fn main() {
 			frontend::settings::get_build_info
 		])
 		.setup(|app| {
+			APP_HANDLE.set(app.handle().clone()).unwrap();
+
+			if std::env::args().any(|v| v == "--hide") {
+				let _ = app.get_webview_window("main").unwrap().hide();
+			}
+
+			let old = app.path().config_dir().unwrap().join("com.amansprojects.opendeck");
+			if old.exists() {
+				let _ = std::fs::rename(old, app.path().app_config_dir().unwrap());
+			}
+
+			devices::initialise_devices();
+			plugins::initialise_plugins();
+
 			let open = MenuItemBuilder::with_id("open", "Open").build(app)?;
 			let hide = MenuItemBuilder::with_id("hide", "Hide").build(app)?;
 			let quit = MenuItemBuilder::with_id("quit", "Quit").build(app)?;
@@ -99,25 +113,9 @@ async fn main() {
 				api.prevent_close();
 			}
 		})
-		.build(tauri::generate_context!())
+		.run(tauri::generate_context!())
 	{
-		Ok(app) => app,
-		Err(error) => panic!("failed to create Tauri application: {}", error),
+		Ok(_) => (),
+		Err(error) => panic!("failed to run Tauri application: {}", error),
 	};
-
-	if std::env::args().any(|v| v == "--hide") {
-		let _ = app.get_webview_window("main").unwrap().hide();
-	}
-
-	APP_HANDLE.set(app.handle().clone()).unwrap();
-
-	let old = app.path().config_dir().unwrap().join("com.amansprojects.opendeck");
-	if old.exists() {
-		let _ = std::fs::rename(old, app.path().app_config_dir().unwrap());
-	}
-
-	devices::initialise_devices();
-	plugins::initialise_plugins();
-
-	app.run(|_, _| {});
 }
