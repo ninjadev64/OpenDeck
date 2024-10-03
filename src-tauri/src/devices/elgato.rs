@@ -42,7 +42,8 @@ pub(super) async fn init(device: AsyncStreamDeck) {
 		_ => 7,
 	};
 	let _ = device.clear_all_button_images().await;
-	let device_id = format!("sd-{}", device.serial_number().await.unwrap());
+	let mut device_id = format!("sd-{}", device.serial_number().await.unwrap());
+	device_id.retain(|c| c.is_alphanumeric());
 	super::register_device(
 		device_id.clone(),
 		super::DeviceInfo {
