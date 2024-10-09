@@ -37,7 +37,7 @@
 	},
 	"productName": "OpenDeck",
 	"mainBinaryName": "opendeck",
-	"version": "2.1.0",
+	"version": "2.1.1",
 	"identifier": "opendeck",
 	"plugins": {},
 	"app": {
