@@ -8,12 +8,14 @@
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
-		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"tauri": "tauri"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-static": "^3.0",
 		"@sveltejs/kit": "^2.6",
 		"@sveltejs/vite-plugin-svelte": "^3.1",
+		"@tauri-apps/cli": "^2.0",
 		"autoprefixer": "^10.4",
 		"postcss": "^8.4",
 		"svelte": "^4.2",

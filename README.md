@@ -1,8 +1,8 @@
 # OpenDeck
 
-OpenDeck is a desktop application for interfacing between human interface devices with keys or encoders and plugins, which provide actions to be carried out when the user interacts with the device. OpenDeck conforms to the [OpenAction](https://openaction.amankhanna.me/) API, which is cross-compatible with the Stream Deck SDK, allowing a wide range of pre-existing plugins to be used.
+OpenDeck is a desktop application for using stream controller devices like the Elgato Stream Deck. OpenDeck conforms to the [OpenAction](https://openaction.amankhanna.me/) API, which is cross-compatible with the Stream Deck SDK, allowing a wide range of pre-existing plugins to be used.
 
-OpenDeck supports ProntoKey, Elgato Stream Deck and AKP153 (not AKP153e) hardware on all three major desktop platforms. If you would like to contribute support for additional hardware (e.g. Loupedeck) feel free to reach out on any of the support forums and make a pull request!
+OpenDeck supports ProntoKey, Elgato Stream Deck and some Ajazz hardware on all three major desktop platforms. If you would like to contribute support for additional hardware (e.g. Loupedeck) feel free to reach out on any of the support forums and make a pull request!
 
 If you would like to support development of OpenDeck, consider [sponsoring me](https://github.com/sponsors/ninjadev64) on GitHub Sponsors!
 
@@ -64,9 +64,16 @@ To enable automatic launch on startup, the light theme, or to change the languag
 
 ### Building from source / contributing
 
-You'll need to ensure that all of the [prerequisites for building a Tauri application](https://tauri.app/v1/guides/getting-started/prerequisites) are satisfied to build OpenDeck (this includes the Tauri CLI from `cargo install tauri-cli`), as well as [Deno](https://deno.com/). On GNU+Linux, you'll also need `libudev` installed for your distribution. You can then use `cargo tauri dev` and `cargo tauri build` to work with OpenDeck.
+You'll need to ensure that all of the [prerequisites for building a Tauri application](https://tauri.app/v1/guides/getting-started/prerequisites) are satisfied to build OpenDeck, as well as making sure that [Deno](https://deno.com/) is installed. On GNU+Linux, you'll also need `libudev` installed for your distribution. You can then use `deno task tauri dev` and `deno task tauri build` to work with OpenDeck.
 
-When submitting a pull request, ensure that all of your Rust code has been formatted using `cargo fmt`, `cargo clippy` returns no violations, `deno task check` returns no violations, and modified Svelte code sticks to the existing style used as far as possible. Feel free to reach out on the support channels above for guidance when contributing!
+Before each commit, please ensure that all of the following are completed:
+- Rust code has been linted using `cargo clippy` and it discovers no violations
+- Rust code has been formatted using `cargo fmt`
+- TypeScript code has been linted using `deno lint` and it discovers no violations
+- Svelte code has been linted using `deno task check` and it discovers no violations
+- Frontend code has been formatted using `deno fmt`
+
+Feel free to reach out on the support channels above for guidance when contributing!
 
 OpenDeck is licensed under the GNU General Public License version 3.0 or later. For more details, see the LICENSE.md file.
 

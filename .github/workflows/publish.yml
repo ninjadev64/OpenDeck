@@ -27,17 +27,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: cache Deno dependencies
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.DENO_DIR }}
-          key: ${{ hashFiles('deno.lock') }}
-
-      - name: setup Deno
-        uses: denoland/setup-deno@v1
-        with:
-          deno-version: v1.x
-
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -47,6 +36,20 @@ jobs:
         uses: swatinem/rust-cache@v2
         with:
           workspaces: "./src-tauri -> target"
+
+      - name: setup Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v2.x
+
+      - name: cache Deno dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.DENO_DIR }}
+          key: ${{ hashFiles('deno.lock') }}
+
+      - name: install frontend dependencies
+        run: deno install
 
       - name: install dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-22.04'
@@ -58,6 +61,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          tauriScript: deno task tauri
           tagName: v__VERSION__
           releaseName: "OpenDeck v__VERSION__"
           releaseBody: "See the assets to download this version. See the README for installation instructions."
