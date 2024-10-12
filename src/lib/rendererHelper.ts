@@ -20,7 +20,17 @@ export function getImage(image: string | undefined, fallback: string | undefined
 	return image;
 }
 
-export async function renderImage(canvas: HTMLCanvasElement, slotContext: Context, state: ActionState, fallback: string | undefined, showOk: boolean, showAlert: boolean, processImage: boolean, active: boolean, pressed: boolean) {
+export async function renderImage(
+	canvas: HTMLCanvasElement,
+	slotContext: Context,
+	state: ActionState,
+	fallback: string | undefined,
+	showOk: boolean,
+	showAlert: boolean,
+	processImage: boolean,
+	active: boolean,
+	pressed: boolean,
+) {
 	// Create canvas
 	let scale = 1;
 	if (!canvas) {
@@ -52,8 +62,7 @@ export async function renderImage(canvas: HTMLCanvasElement, slotContext: Contex
 	if (state.show) {
 		const size = parseInt(state.size) * 2 * scale;
 		context.textAlign = "center";
-		context.font =
-			(state.style.includes("Bold") ? "bold " : "") + (state.style.includes("Italic") ? "italic " : "") +
+		context.font = (state.style.includes("Bold") ? "bold " : "") + (state.style.includes("Italic") ? "italic " : "") +
 			`${size}px "${state.family}", sans-serif`;
 		context.fillStyle = state.colour;
 		context.strokeStyle = "black";
@@ -62,10 +71,14 @@ export async function renderImage(canvas: HTMLCanvasElement, slotContext: Contex
 		let x = canvas.width / 2;
 		let y = canvas.height / 2 - (size * state.text.split("\n").length * 0.5);
 		switch (state.alignment) {
-			case "top": y = -(size * 0.2); break;
-			case "bottom": y = canvas.height - (size * state.text.split("\n").length) - context.lineWidth; break;
+			case "top":
+				y = -(size * 0.2);
+				break;
+			case "bottom":
+				y = canvas.height - (size * state.text.split("\n").length) - context.lineWidth;
+				break;
 		}
-		for (const [ index, line ] of Object.entries(state.text.split("\n"))) {
+		for (const [index, line] of Object.entries(state.text.split("\n"))) {
 			context.strokeText(line, x, y + (size * parseInt(index)));
 			context.fillText(line, x, y + (size * parseInt(index)));
 			if (state.underline) {
@@ -110,8 +123,10 @@ export async function renderImage(canvas: HTMLCanvasElement, slotContext: Contex
 		if (newContext) {
 			newContext.drawImage(
 				canvas,
-				canvas.width * margin, canvas.height * margin,
-				canvas.width * (1 - (margin * 2)), canvas.height * (1 - (margin * 2))
+				canvas.width * margin,
+				canvas.height * margin,
+				canvas.width * (1 - (margin * 2)),
+				canvas.height * (1 - (margin * 2)),
 			);
 			context.clearRect(0, 0, canvas.width, canvas.height);
 			context.drawImage(smallCanvas, 0, 0);

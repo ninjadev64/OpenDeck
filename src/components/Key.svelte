@@ -36,11 +36,11 @@
 		}
 	}
 
-	listen("update_state", ({ payload }: { payload: { context: string, contents: ActionInstance | null }}) => {
+	listen("update_state", ({ payload }: { payload: { context: string; contents: ActionInstance | null } }) => {
 		if (payload.context == slot?.context) slot = payload.contents;
 	});
 
-	listen("key_moved", ({ payload }: { payload: { context: Context, pressed: boolean }}) => {
+	listen("key_moved", ({ payload }: { payload: { context: Context; pressed: boolean } }) => {
 		if (JSON.stringify(context) == JSON.stringify(payload.context)) pressed = payload.pressed;
 	});
 
@@ -115,20 +115,26 @@
 
 <canvas
 	bind:this={canvas}
-	class="relative -m-2 border-2 dark:border-neutral-700 rounded-md select-none" class:-m-[2.06rem]={size == 192}
-	width={size} height={size}
-	style="scale: {(112 / size) * scale};"
-	on:dragover on:drop
-	draggable={slot != null} on:dragstart
-	role="cell" tabindex="-1"
-	on:click={select} on:keyup={select}
+	class="relative -m-2 border-2 dark:border-neutral-700 rounded-md select-none"
+	class:-m-[2.06rem]={size == 192}
+	width={size}
+	height={size}
+	style={`scale: ${(112 / size) * scale};`}
+	on:dragover
+	on:drop
+	draggable={slot != null}
+	on:dragstart
+	role="cell"
+	tabindex="-1"
+	on:click={select}
+	on:keyup={select}
 	on:contextmenu={contextMenu}
 />
 
 {#if $openContextMenu && $openContextMenu?.context == context}
 	<div
 		class="absolute text-sm font-semibold w-32 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 border-2 dark:border-neutral-600 rounded-lg divide-y z-10"
-		style="left: {$openContextMenu.x}px; top: {$openContextMenu.y}px;"
+		style={`left: ${$openContextMenu.x}px; top: ${$openContextMenu.y}px;`}
 	>
 		{#if !slot}
 			<button
@@ -165,5 +171,5 @@
 {/if}
 
 {#if slot && showEditor}
-	<InstanceEditor bind:instance={slot} bind:showEditor={showEditor} />
+	<InstanceEditor bind:instance={slot} bind:showEditor />
 {/if}

@@ -2,7 +2,7 @@
 	import type { Action } from "$lib/Action";
 
 	export let action: Action;
-	export let localisation: { name: string, tooltip: string };
+	export let localisation: { name: string; tooltip: string };
 
 	function handleDragStart(event: DragEvent) {
 		event.dataTransfer?.setData("action", JSON.stringify(action));

@@ -41,10 +41,10 @@
 	}
 
 	type GitHubPlugin = {
-		name: string,
-		author: string,
-		repository: string,
-		download_url: string | undefined
+		name: string;
+		author: string;
+		repository: string;
+		download_url: string | undefined;
 	};
 	async function installPluginGitHub(id: string, plugin: GitHubPlugin) {
 		if (plugin.download_url) {
@@ -107,7 +107,7 @@
 			try {
 				await installPluginGitHub(
 					"com.amansprojects.starterpack",
-					{ repository: "https://github.com/ninjadev64/opendeck-starterpack" } as GitHubPlugin
+					{ repository: "https://github.com/ninjadev64/opendeck-starterpack" } as GitHubPlugin,
 				);
 			} catch {}
 			// @ts-expect-error
@@ -117,7 +117,7 @@
 		}
 	})();
 
-	let plugins: { [ id: string ]: GitHubPlugin };
+	let plugins: { [id: string]: GitHubPlugin };
 	(async () => plugins = await (await fetch("https://ninjadev64.github.io/openaction-plugins/catalogue.json")).json())();
 
 	let search: string = "";
@@ -131,10 +131,10 @@
 </button>
 
 <Popup show={showPopup}>
-	<button class="mr-2 my-1 float-right text-xl dark:text-neutral-300" on:click={() => showPopup = false}> ✕ </button>
-	<h2 class="m-2 font-semibold text-xl dark:text-neutral-300"> Manage plugins </h2>
+	<button class="mr-2 my-1 float-right text-xl dark:text-neutral-300" on:click={() => showPopup = false}>✕</button>
+	<h2 class="m-2 font-semibold text-xl dark:text-neutral-300">Manage plugins</h2>
 
-	<h2 class="mx-2 mt-6 mb-2 text-lg dark:text-neutral-400"> Installed plugins </h2>
+	<h2 class="mx-2 mt-6 mb-2 text-lg dark:text-neutral-400">Installed plugins</h2>
 	<div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 		{#each installed as plugin}
 			<ListedPlugin
@@ -161,7 +161,7 @@
 		{/each}
 	</div>
 
-	<h2 class="mx-2 mt-6 mb-2 text-lg dark:text-neutral-400"> Plugin store </h2>
+	<h2 class="mx-2 mt-6 mb-2 text-lg dark:text-neutral-400">Plugin store</h2>
 	<div class="flex flex-row m-2">
 		<input
 			bind:value={search}
@@ -173,14 +173,14 @@
 	</div>
 
 	{#if !plugins}
-		<h2 class="mx-2 mt-6 mb-2 text-md dark:text-neutral-400"> Loading open-source plugin list... </h2>
+		<h2 class="mx-2 mt-6 mb-2 text-md dark:text-neutral-400">Loading open-source plugin list...</h2>
 	{:else}
 		<div class="flex flex-row items-center mt-6 mb-2">
-			<h2 class="mx-2 font-semibold text-md dark:text-neutral-400"> Open-source plugins </h2>
+			<h2 class="mx-2 font-semibold text-md dark:text-neutral-400">Open-source plugins</h2>
 			<Tooltip> Open-source plugins downloaded from the author's releases. </Tooltip>
 		</div>
 		<div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-			{#each Object.entries(plugins) as [ id, plugin ]}
+			{#each Object.entries(plugins) as [id, plugin]}
 				<ListedPlugin
 					icon="https://ninjadev64.github.io/openaction-plugins/icons/{id}.png"
 					name={plugin.name}
@@ -198,12 +198,14 @@
 	{/if}
 
 	{#if choices}
-		<div class="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 mt-2 p-2 w-96 text-xs dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 border-2 dark:border-neutral-600 rounded-lg z-40">
-			<h3 class="mb-2 font-semibold text-lg text-center"> Choose a release asset </h3>
+		<div
+			class="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 mt-2 p-2 w-96 text-xs dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 border-2 dark:border-neutral-600 rounded-lg z-40"
+		>
+			<h3 class="mb-2 font-semibold text-lg text-center">Choose a release asset</h3>
 			<div class="select-wrapper">
 				<select class="w-full" bind:value={choice}>
 					{#each choices as choice, i}
-						<option value={i}> {choice.name} </option>
+						<option value={i}>{choice.name}</option>
 					{/each}
 				</select>
 			</div>
@@ -217,11 +219,11 @@
 	{/if}
 
 	{#await fetch("https://plugins.amankhanna.me/catalogue.json")}
-		<h2 class="mx-2 mt-6 mb-2 text-md dark:text-neutral-400"> Loading plugin list... </h2>
+		<h2 class="mx-2 mt-6 mb-2 text-md dark:text-neutral-400">Loading plugin list...</h2>
 	{:then res}
 		{#await res.json() then entries}
 			<div class="flex flex-row items-center mt-6 mb-2">
-				<h2 class="mx-2 font-semibold text-md dark:text-neutral-400"> Elgato App Store archive </h2>
+				<h2 class="mx-2 font-semibold text-md dark:text-neutral-400">Elgato App Store archive</h2>
 				<Tooltip> Plugins archived from the now deprecated Elgato App Store. </Tooltip>
 			</div>
 			<div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

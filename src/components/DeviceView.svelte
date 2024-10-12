@@ -7,8 +7,8 @@
 	import Key from "./Key.svelte";
 	import Slider from "./Slider.svelte";
 
-    import { inspectedParentAction } from "$lib/propertyInspector";
-    import { invoke } from "@tauri-apps/api/core";
+	import { inspectedParentAction } from "$lib/propertyInspector";
+	import { invoke } from "@tauri-apps/api/core";
 
 	export let device: DeviceInfo;
 	export let profile: Profile;
@@ -36,7 +36,7 @@
 			let response: ActionInstance = await invoke("move_instance", {
 				source: { device: device.id, profile: profile.id, controller: dataTransfer?.getData("controller"), position: oldPosition },
 				destination: context,
-				retain: false
+				retain: false,
 			});
 			if (response) {
 				array[position] = response;

@@ -13,7 +13,7 @@
 	let registered: string[] = [];
 	$: {
 		if (!value || !devices[value]) value = Object.keys(devices).sort()[0];
-		for (const [ id, device ] of Object.entries(devices)) {
+		for (const [id, device] of Object.entries(devices)) {
 			if (!registered.includes(id)) {
 				(async () => {
 					let profile: Profile = await invoke("get_selected_profile", { device: device.id });
@@ -30,7 +30,7 @@
 	}
 
 	export let profileSelector: () => ProfileSelector;
-	listen("switch_profile", async ({ payload }: { payload: { device: string, profile: string }}) => {
+	listen("switch_profile", async ({ payload }: { payload: { device: string; profile: string } }) => {
 		if (payload.device == value) {
 			profileSelector().setProfile(payload.profile);
 		} else {
@@ -40,15 +40,15 @@
 	});
 
 	(async () => devices = await invoke("get_devices"))();
-	listen("devices", ({ payload }: { payload: { [id: string]: DeviceInfo }}) => devices = payload);
+	listen("devices", ({ payload }: { payload: { [id: string]: DeviceInfo } }) => devices = payload);
 </script>
 
 <div class="select-wrapper">
 	<select bind:value class="w-full">
-		<option value="" disabled selected> Choose a device... </option>
+		<option value="" disabled selected>Choose a device...</option>
 
-		{#each Object.entries(devices).sort() as [ id, device ]}
-			<option value={id}> {device.name} </option>
+		{#each Object.entries(devices).sort() as [id, device]}
+			<option value={id}>{device.name}</option>
 		{/each}
 	</select>
 </div>

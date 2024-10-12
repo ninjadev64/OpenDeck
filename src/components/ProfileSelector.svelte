@@ -17,7 +17,7 @@
 		for (const id of profiles) {
 			let folder = id.includes("/") ? id.split("/")[0] : "";
 			if (folders[folder]) folders[folder].push(id);
-			else folders[folder] = [ id ];
+			else folders[folder] = [id];
 		}
 		profile = await invoke("get_selected_profile", { device: device.id });
 		value = profile.id;
@@ -40,8 +40,7 @@
 		let folder = id.includes("/") ? id.split("/")[0] : "";
 		if (folders[folder]) {
 			if (!folders[folder].includes(id)) folders[folder].push(id);
-		}
-		else folders[folder] = [ id ];
+		} else folders[folder] = [id];
 		folders = folders;
 	}
 
@@ -69,26 +68,26 @@
 
 <div class="select-wrapper">
 	<select bind:value class="mt-1 w-full">
-		{#each Object.entries(folders) as [ id, profiles ]}
+		{#each Object.entries(folders) as [id, profiles]}
 			{#if id && profiles.length}
 				<optgroup label={id}>
 					{#each profiles as profile}
-						<option value={profile}> {profile.split("/")[1]} </option>
+						<option value={profile}>{profile.split("/")[1]}</option>
 					{/each}
 				</optgroup>
 			{:else}
 				{#each profiles as profile}
-					<option value={profile}> {profile} </option>
+					<option value={profile}>{profile}</option>
 				{/each}
 			{/if}
 		{/each}
-		<option value="opendeck_edit_profiles"> Edit... </option>
+		<option value="opendeck_edit_profiles">Edit...</option>
 	</select>
 </div>
 
 <Popup show={showPopup}>
-	<button class="mr-1 float-right text-xl dark:text-neutral-300" on:click={() => showPopup = false}> ✕ </button>
-	<h2 class="text-xl font-semibold dark:text-neutral-300"> {device.name} </h2>
+	<button class="mr-1 float-right text-xl dark:text-neutral-300" on:click={() => showPopup = false}>✕</button>
+	<h2 class="text-xl font-semibold dark:text-neutral-300">{device.name}</h2>
 
 	<div class="flex flex-row mt-2 mb-1">
 		<input
@@ -113,13 +112,13 @@
 	</div>
 
 	<div class="divide-y">
-		{#each Object.entries(folders) as [ id, profiles ]}
+		{#each Object.entries(folders) as [id, profiles]}
 			{#if id && profiles.length}
-				<h4 class="py-2 font-bold text-lg dark:text-neutral-300"> {id} </h4>
+				<h4 class="py-2 font-bold text-lg dark:text-neutral-300">{id}</h4>
 			{/if}
 			{#each profiles as profile}
 				<div class="py-2" class:ml-6={id} class:pl-2={id}>
-					<input type="radio" bind:group={value} value="{profile}" />
+					<input type="radio" bind:group={value} value={profile} />
 					<span class="dark:text-neutral-400"> {id ? profile.split("/")[1] : profile} </span>
 					{#if profile != value}
 						<button

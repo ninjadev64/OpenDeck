@@ -1,307 +1,307 @@
 @font-face {
-    font-family: "Anton";
-    src: url("/fonts/Anton-Regular.ttf");
-    font-weight: normal;
-    font-style: normal;
+	font-family: "Anton";
+	src: url("/fonts/Anton-Regular.ttf");
+	font-weight: normal;
+	font-style: normal;
 }
 
 @font-face {
-    font-family: "Archivo Black";
-    src: url("/fonts/ArchivoBlack-Regular.ttf");
-    font-weight: normal;
-    font-style: normal;
+	font-family: "Archivo Black";
+	src: url("/fonts/ArchivoBlack-Regular.ttf");
+	font-weight: normal;
+	font-style: normal;
 }
 
 @font-face {
-    font-family: "Comic Neue";
-    src: url("/fonts/ComicNeue-Bold.ttf");
-    font-weight: bold;
-    font-style: normal;
+	font-family: "Comic Neue";
+	src: url("/fonts/ComicNeue-Bold.ttf");
+	font-weight: bold;
+	font-style: normal;
 }
 
 @font-face {
-    font-family: "Comic Neue";
-    src: url("/fonts/ComicNeue-BoldItalic.ttf");
-    font-weight: bold;
-    font-style: italic;
+	font-family: "Comic Neue";
+	src: url("/fonts/ComicNeue-BoldItalic.ttf");
+	font-weight: bold;
+	font-style: italic;
 }
 
 @font-face {
-    font-family: "Comic Neue";
-    src: url("/fonts/ComicNeue-Italic.ttf");
-    font-weight: normal;
-    font-style: italic;
+	font-family: "Comic Neue";
+	src: url("/fonts/ComicNeue-Italic.ttf");
+	font-weight: normal;
+	font-style: italic;
 }
 
 @font-face {
-    font-family: "Comic Neue";
-    src: url("/fonts/ComicNeue-Light.ttf");
-    font-weight: normal;
-    font-style: normal;
+	font-family: "Comic Neue";
+	src: url("/fonts/ComicNeue-Light.ttf");
+	font-weight: normal;
+	font-style: normal;
 }
 
 @font-face {
-    font-family: "Comic Neue";
-    src: url("/fonts/ComicNeue-LightItalic.ttf");
-    font-weight: normal;
-    font-style: italic;
+	font-family: "Comic Neue";
+	src: url("/fonts/ComicNeue-LightItalic.ttf");
+	font-weight: normal;
+	font-style: italic;
 }
 
 @font-face {
-    font-family: "Comic Neue";
-    src: url("/fonts/ComicNeue-Regular.ttf");
-    font-weight: normal;
-    font-style: normal;
+	font-family: "Comic Neue";
+	src: url("/fonts/ComicNeue-Regular.ttf");
+	font-weight: normal;
+	font-style: normal;
 }
 
 @font-face {
-    font-family: "Courier Prime";
-    src: url("/fonts/CourierPrime-Bold.ttf");
-    font-weight: bold;
-    font-style: normal;
+	font-family: "Courier Prime";
+	src: url("/fonts/CourierPrime-Bold.ttf");
+	font-weight: bold;
+	font-style: normal;
 }
 
 @font-face {
-    font-family: "Courier Prime";
-    src: url("/fonts/CourierPrime-BoldItalic.ttf");
-    font-weight: bold;
-    font-style: italic;
+	font-family: "Courier Prime";
+	src: url("/fonts/CourierPrime-BoldItalic.ttf");
+	font-weight: bold;
+	font-style: italic;
 }
 
 @font-face {
-    font-family: "Courier Prime";
-    src: url("/fonts/CourierPrime-Italic.ttf");
-    font-weight: normal;
-    font-style: italic;
+	font-family: "Courier Prime";
+	src: url("/fonts/CourierPrime-Italic.ttf");
+	font-weight: normal;
+	font-style: italic;
 }
 
 @font-face {
-    font-family: "Courier Prime";
-    src: url("/fonts/CourierPrime-Regular.ttf");
-    font-weight: normal;
-    font-style: normal;
+	font-family: "Courier Prime";
+	src: url("/fonts/CourierPrime-Regular.ttf");
+	font-weight: normal;
+	font-style: normal;
 }
 
 @font-face {
-    font-family: "Fira Sans";
-    src: url("/fonts/FiraSans-Black.ttf");
-    font-weight: normal;
-    font-style: normal;
+	font-family: "Fira Sans";
+	src: url("/fonts/FiraSans-Black.ttf");
+	font-weight: normal;
+	font-style: normal;
 }
 
 @font-face {
-    font-family: "Fira Sans";
-    src: url("/fonts/FiraSans-BlackItalic.ttf");
-    font-weight: normal;
-    font-style: italic;
+	font-family: "Fira Sans";
+	src: url("/fonts/FiraSans-BlackItalic.ttf");
+	font-weight: normal;
+	font-style: italic;
 }
 
 @font-face {
-    font-family: "Fira Sans";
-    src: url("/fonts/FiraSans-Bold.ttf");
-    font-weight: bold;
-    font-style: normal;
+	font-family: "Fira Sans";
+	src: url("/fonts/FiraSans-Bold.ttf");
+	font-weight: bold;
+	font-style: normal;
 }
 
 @font-face {
-    font-family: "Fira Sans";
-    src: url("/fonts/FiraSans-BoldItalic.ttf");
-    font-weight: bold;
-    font-style: italic;
+	font-family: "Fira Sans";
+	src: url("/fonts/FiraSans-BoldItalic.ttf");
+	font-weight: bold;
+	font-style: italic;
 }
 
 @font-face {
-    font-family: "Fira Sans";
-    src: url("/fonts/FiraSans-ExtraBold.ttf");
-    font-weight: bold;
-    font-style: normal;
+	font-family: "Fira Sans";
+	src: url("/fonts/FiraSans-ExtraBold.ttf");
+	font-weight: bold;
+	font-style: normal;
 }
 
 @font-face {
-    font-family: "Fira Sans";
-    src: url("/fonts/FiraSans-ExtraBoldItalic.ttf");
-    font-weight: bold;
-    font-style: italic;
+	font-family: "Fira Sans";
+	src: url("/fonts/FiraSans-ExtraBoldItalic.ttf");
+	font-weight: bold;
+	font-style: italic;
 }
 
 @font-face {
-    font-family: "Fira Sans";
-    src: url("/fonts/FiraSans-ExtraLight.ttf");
-    font-weight: normal;
-    font-style: normal;
+	font-family: "Fira Sans";
+	src: url("/fonts/FiraSans-ExtraLight.ttf");
+	font-weight: normal;
+	font-style: normal;
 }
 
 @font-face {
-    font-family: "Fira Sans";
-    src: url("/fonts/FiraSans-ExtraLightItalic.ttf");
-    font-weight: normal;
-    font-style: italic;
+	font-family: "Fira Sans";
+	src: url("/fonts/FiraSans-ExtraLightItalic.ttf");
+	font-weight: normal;
+	font-style: italic;
 }
 
 @font-face {
-    font-family: "Fira Sans";
-    src: url("/fonts/FiraSans-Italic.ttf");
-    font-weight: normal;
-    font-style: italic;
+	font-family: "Fira Sans";
+	src: url("/fonts/FiraSans-Italic.ttf");
+	font-weight: normal;
+	font-style: italic;
 }
 
 @font-face {
-    font-family: "Fira Sans";
-    src: url("/fonts/FiraSans-Light.ttf");
-    font-weight: normal;
-    font-style: normal;
+	font-family: "Fira Sans";
+	src: url("/fonts/FiraSans-Light.ttf");
+	font-weight: normal;
+	font-style: normal;
 }
 
 @font-face {
-    font-family: "Fira Sans";
-    src: url("/fonts/FiraSans-LightItalic.ttf");
-    font-weight: normal;
-    font-style: italic;
+	font-family: "Fira Sans";
+	src: url("/fonts/FiraSans-LightItalic.ttf");
+	font-weight: normal;
+	font-style: italic;
 }
 
 @font-face {
-    font-family: "Fira Sans";
-    src: url("/fonts/FiraSans-Medium.ttf");
-    font-weight: normal;
-    font-style: normal;
+	font-family: "Fira Sans";
+	src: url("/fonts/FiraSans-Medium.ttf");
+	font-weight: normal;
+	font-style: normal;
 }
 
 @font-face {
-    font-family: "Fira Sans";
-    src: url("/fonts/FiraSans-MediumItalic.ttf");
-    font-weight: normal;
-    font-style: italic;
+	font-family: "Fira Sans";
+	src: url("/fonts/FiraSans-MediumItalic.ttf");
+	font-weight: normal;
+	font-style: italic;
 }
 
 @font-face {
-    font-family: "Fira Sans";
-    src: url("/fonts/FiraSans-Regular.ttf");
-    font-weight: normal;
-    font-style: normal;
+	font-family: "Fira Sans";
+	src: url("/fonts/FiraSans-Regular.ttf");
+	font-weight: normal;
+	font-style: normal;
 }
 
 @font-face {
-    font-family: "Fira Sans";
-    src: url("/fonts/FiraSans-SemiBold.ttf");
-    font-weight: bold;
-    font-style: normal;
+	font-family: "Fira Sans";
+	src: url("/fonts/FiraSans-SemiBold.ttf");
+	font-weight: bold;
+	font-style: normal;
 }
 
 @font-face {
-    font-family: "Fira Sans";
-    src: url("/fonts/FiraSans-SemiBoldItalic.ttf");
-    font-weight: bold;
-    font-style: italic;
+	font-family: "Fira Sans";
+	src: url("/fonts/FiraSans-SemiBoldItalic.ttf");
+	font-weight: bold;
+	font-style: italic;
 }
 
 @font-face {
-    font-family: "Fira Sans";
-    src: url("/fonts/FiraSans-Thin.ttf");
-    font-weight: normal;
-    font-style: normal;
+	font-family: "Fira Sans";
+	src: url("/fonts/FiraSans-Thin.ttf");
+	font-weight: normal;
+	font-style: normal;
 }
 
 @font-face {
-    font-family: "Fira Sans";
-    src: url("/fonts/FiraSans-ThinItalic.ttf");
-    font-weight: normal;
-    font-style: italic;
+	font-family: "Fira Sans";
+	src: url("/fonts/FiraSans-ThinItalic.ttf");
+	font-weight: normal;
+	font-style: italic;
 }
 
 @font-face {
-    font-family: "Liberation Sans";
-    src: url("/fonts/LiberationSans-Bold.ttf");
-    font-weight: bold;
-    font-style: normal;
+	font-family: "Liberation Sans";
+	src: url("/fonts/LiberationSans-Bold.ttf");
+	font-weight: bold;
+	font-style: normal;
 }
 
 @font-face {
-    font-family: "Liberation Sans";
-    src: url("/fonts/LiberationSans-BoldItalic.ttf");
-    font-weight: bold;
-    font-style: italic;
+	font-family: "Liberation Sans";
+	src: url("/fonts/LiberationSans-BoldItalic.ttf");
+	font-weight: bold;
+	font-style: italic;
 }
 
 @font-face {
-    font-family: "Liberation Sans";
-    src: url("/fonts/LiberationSans-Italic.ttf");
-    font-weight: normal;
-    font-style: italic;
+	font-family: "Liberation Sans";
+	src: url("/fonts/LiberationSans-Italic.ttf");
+	font-weight: normal;
+	font-style: italic;
 }
 
 @font-face {
-    font-family: "Liberation Sans";
-    src: url("/fonts/LiberationSans-Regular.ttf");
-    font-weight: normal;
-    font-style: normal;
+	font-family: "Liberation Sans";
+	src: url("/fonts/LiberationSans-Regular.ttf");
+	font-weight: normal;
+	font-style: normal;
 }
 
 @font-face {
-    font-family: "Liberation Serif";
-    src: url("/fonts/LiberationSerif-Bold.ttf");
-    font-weight: bold;
-    font-style: normal;
+	font-family: "Liberation Serif";
+	src: url("/fonts/LiberationSerif-Bold.ttf");
+	font-weight: bold;
+	font-style: normal;
 }
 
 @font-face {
-    font-family: "Liberation Serif";
-    src: url("/fonts/LiberationSerif-BoldItalic.ttf");
-    font-weight: bold;
-    font-style: italic;
+	font-family: "Liberation Serif";
+	src: url("/fonts/LiberationSerif-BoldItalic.ttf");
+	font-weight: bold;
+	font-style: italic;
 }
 
 @font-face {
-    font-family: "Liberation Serif";
-    src: url("/fonts/LiberationSerif-Italic.ttf");
-    font-weight: normal;
-    font-style: italic;
+	font-family: "Liberation Serif";
+	src: url("/fonts/LiberationSerif-Italic.ttf");
+	font-weight: normal;
+	font-style: italic;
 }
 
 @font-face {
-    font-family: "Liberation Serif";
-    src: url("/fonts/LiberationSerif-Regular.ttf");
-    font-weight: normal;
-    font-style: normal;
+	font-family: "Liberation Serif";
+	src: url("/fonts/LiberationSerif-Regular.ttf");
+	font-weight: normal;
+	font-style: normal;
 }
 
 @font-face {
-    font-family: "Open Sans";
-    src: url("/fonts/OpenSans-Italic-VariableFont_wdth,wght.ttf");
-    font-weight: normal;
-    font-style: italic;
+	font-family: "Open Sans";
+	src: url("/fonts/OpenSans-Italic-VariableFont_wdth,wght.ttf");
+	font-weight: normal;
+	font-style: italic;
 }
 
 @font-face {
-    font-family: "Open Sans";
-    src: url("/fonts/OpenSans-VariableFont_wdth,wght.ttf");
-    font-weight: normal;
-    font-style: normal;
+	font-family: "Open Sans";
+	src: url("/fonts/OpenSans-VariableFont_wdth,wght.ttf");
+	font-weight: normal;
+	font-style: normal;
 }
 
 @font-face {
-    font-family: "Tinos";
-    src: url("/fonts/Tinos-Bold.ttf");
-    font-weight: bold;
-    font-style: normal;
+	font-family: "Tinos";
+	src: url("/fonts/Tinos-Bold.ttf");
+	font-weight: bold;
+	font-style: normal;
 }
 
 @font-face {
-    font-family: "Tinos";
-    src: url("/fonts/Tinos-BoldItalic.ttf");
-    font-weight: bold;
-    font-style: italic;
+	font-family: "Tinos";
+	src: url("/fonts/Tinos-BoldItalic.ttf");
+	font-weight: bold;
+	font-style: italic;
 }
 
 @font-face {
-    font-family: "Tinos";
-    src: url("/fonts/Tinos-Italic.ttf");
-    font-weight: normal;
-    font-style: italic;
+	font-family: "Tinos";
+	src: url("/fonts/Tinos-Italic.ttf");
+	font-weight: normal;
+	font-style: italic;
 }
 
 @font-face {
-    font-family: "Tinos";
-    src: url("/fonts/Tinos-Regular.ttf");
-    font-weight: normal;
-    font-style: normal;
+	font-family: "Tinos";
+	src: url("/fonts/Tinos-Regular.ttf");
+	font-weight: normal;
+	font-style: normal;
 }

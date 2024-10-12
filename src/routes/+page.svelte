@@ -28,9 +28,9 @@
 		<ParentActionView bind:profile={selectedProfiles[selectedDevice]} />
 	{/if}
 	{#if Object.keys(devices).length > 0 && selectedProfiles}
-		{#each Object.entries(devices) as [ id, device ]}
+		{#each Object.entries(devices) as [id, device]}
 			{#if device && selectedProfiles[id]}
-				<DeviceView bind:device={device} bind:profile={selectedProfiles[id]} bind:selectedDevice={selectedDevice} />
+				<DeviceView bind:device bind:profile={selectedProfiles[id]} bind:selectedDevice />
 			{/if}
 		{/each}
 	{:else}
@@ -45,9 +45,9 @@
 <div class="flex flex-col p-2 grow max-w-[18rem] h-full border-l dark:border-neutral-700">
 	{#if !$inspectedParentAction}
 		<DeviceSelector
-			bind:devices={devices}
+			bind:devices
 			bind:value={selectedDevice}
-			bind:selectedProfiles={selectedProfiles}
+			bind:selectedProfiles
 			bind:this={deviceSelector}
 			profileSelector={() => profileSelector}
 		/>

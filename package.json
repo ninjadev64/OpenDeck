@@ -6,8 +6,8 @@
 	"license": "GPL-3.0-or-later",
 	"repository": "https://github.com/ninjadev64/OpenDeck",
 	"scripts": {
-		"dev": "deno run -A npm:vite dev",
-		"build": "deno run -A npm:vite build",
+		"dev": "vite dev",
+		"build": "vite build",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
 	},
 	"devDependencies": {

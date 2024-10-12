@@ -1,13 +1,13 @@
 export type Settings = {
-	language: string,
-	autolaunch: boolean,
-	darktheme: boolean,
-	brightness: number,
-	developer: boolean
+	language: string;
+	autolaunch: boolean;
+	darktheme: boolean;
+	brightness: number;
+	developer: boolean;
 };
 
 import { invoke } from "@tauri-apps/api/core";
-import { writable, type Writable } from "svelte/store";
+import { type Writable, writable } from "svelte/store";
 
 export const settings: Writable<Settings | null> = writable(null);
 (async () => settings.set(await invoke("get_settings")))();

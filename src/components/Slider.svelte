@@ -13,7 +13,7 @@
 
 	$: state = slot ? slot.states[slot.current_state] : undefined;
 
-	listen("update_state", ({ payload }: { payload: { context: string, contents: ActionInstance | null }}) => {
+	listen("update_state", ({ payload }: { payload: { context: string; contents: ActionInstance | null } }) => {
 		if (payload.context == slot?.context) slot = payload.contents;
 	});
 
@@ -60,10 +60,14 @@
 
 <div
 	class="relative flex items-center m-2 w-20 h-144 border-2 dark:border-neutral-700 rounded-md select-none"
-	on:dragover on:drop
-	draggable on:dragstart
-	role="cell" tabindex="-1"
-	on:click={select} on:keyup={select}
+	on:dragover
+	on:drop
+	draggable
+	on:dragstart
+	role="cell"
+	tabindex="-1"
+	on:click={select}
+	on:keyup={select}
 	on:contextmenu={clear}
 >
 	{#if state}
@@ -75,11 +79,11 @@
 		{#if state.show}
 			<div class="absolute flex justify-center w-full aspect-square top-[50%] -translate-y-1/2 left-0 pointer-events-none">
 				<span
-					style="
-						font-size: {state.size}px;
-						color: {state.colour};
+					style={`
+						font-size: ${state.size}px;
+						color: ${state.colour};
 						scale: 0.5;
-					"
+					`}
 					class:self-start={state.alignment == "top"}
 					class:self-center={state.alignment == "middle"}
 					class:self-end={state.alignment == "bottom"}

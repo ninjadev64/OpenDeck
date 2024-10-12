@@ -1,10 +1,10 @@
 <script lang="ts">
-    import type { ActionInstance } from "$lib/ActionInstance";
-    import type { DeviceInfo } from "$lib/DeviceInfo";
-    import type { Profile } from "$lib/Profile";
+	import type { ActionInstance } from "$lib/ActionInstance";
+	import type { DeviceInfo } from "$lib/DeviceInfo";
+	import type { Profile } from "$lib/Profile";
 
-    import { inspectedInstance } from "$lib/propertyInspector";
-    import { invoke } from "@tauri-apps/api/core";
+	import { inspectedInstance } from "$lib/propertyInspector";
+	import { invoke } from "@tauri-apps/api/core";
 
 	let iframes: { [context: string]: HTMLIFrameElement } = {};
 	let iframeContainer: HTMLDivElement;
@@ -18,7 +18,7 @@
 		const iframe = iframes[instance.context];
 		const split = instance.context.split(".");
 
-		let coordinates: { row: number, column: number };
+		let coordinates: { row: number; column: number };
 		if (split[2] == "Encoder") {
 			coordinates = { row: 0, column: parseInt(split[3]) };
 		} else {
@@ -41,10 +41,10 @@
 					device: split[0],
 					payload: {
 						settings: instance.settings,
-						coordinates
-					}
-				})
-			]
+						coordinates,
+					},
+				}),
+			],
 		}, "http://localhost:57118");
 	}
 
@@ -71,7 +71,7 @@
 
 			iframeClosePopup.style.display = "none";
 		}
-	}
+	};
 
 	window.addEventListener("message", ({ data }) => {
 		if (data.event == "windowOpened") {
@@ -100,9 +100,9 @@
 	});
 
 	const nonNull = <T>(o: T | null): o is T => o != null;
-	$: instances = profile.
-		keys.filter(nonNull)
-		.reduce((prev, current) => prev.concat(current.children ? [ current, ...current.children ] : current), [] as ActionInstance[])
+	$: instances = profile
+		.keys.filter(nonNull)
+		.reduce((prev, current) => prev.concat(current.children ? [current, ...current.children] : current), [] as ActionInstance[])
 		.concat(profile.sliders.filter(nonNull));
 </script>
 

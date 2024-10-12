@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { settings } from "$lib/settings";
-    import { invoke } from "@tauri-apps/api/core";
+	import { settings } from "$lib/settings";
+	import { invoke } from "@tauri-apps/api/core";
 
 	import Popup from "./Popup.svelte";
 	import Tooltip from "./Tooltip.svelte";
@@ -30,25 +30,24 @@
 </button>
 
 <Popup show={showPopup}>
-	<button class="mr-2 my-1 float-right text-xl dark:text-neutral-300" on:click={() => showPopup = false}> ✕ </button>
-	<h2 class="m-2 font-semibold text-xl dark:text-neutral-300"> Settings </h2>
+	<button class="mr-2 my-1 float-right text-xl dark:text-neutral-300" on:click={() => showPopup = false}>✕</button>
+	<h2 class="m-2 font-semibold text-xl dark:text-neutral-300">Settings</h2>
 	{#if $settings}
 		<div class="flex flex-row items-center m-2 space-x-2">
 			<span class="dark:text-neutral-400"> Language: </span>
 			<div class="select-wrapper">
 				<select bind:value={$settings.language} class="w-32">
-					<option value="en"> English </option>
-					<option value="es"> Español </option>
-					<option value="zh_CN"> 中文 </option>
-					<option value="fr"> Français </option>
-					<option value="de"> Deutsch </option>
-					<option value="ja"> 日本語 </option>
-					<option value="ko"> 韓国語 </option>
+					<option value="en">English</option>
+					<option value="es">Español</option>
+					<option value="zh_CN">中文</option>
+					<option value="fr">Français</option>
+					<option value="de">Deutsch</option>
+					<option value="ja">日本語</option>
+					<option value="ko">韓国語</option>
 				</select>
 			</div>
 			<Tooltip>
-				OpenDeck itself is not yet translated.
-				Changing this setting will translate the text from installed plugins into your language for those that support it.
+				OpenDeck itself is not yet translated. Changing this setting will translate the text from installed plugins into your language for those that support it.
 			</Tooltip>
 		</div>
 
@@ -71,7 +70,10 @@
 		<div class="flex flex-row items-center m-2 space-x-2">
 			<span class="dark:text-neutral-400"> Developer mode: </span>
 			<input type="checkbox" bind:checked={$settings.developer} />
-			<Tooltip> Enables features that make plugin development and debugging easier. Additionally, this option exposes all file paths on your device on the local webserver to allow symbolic linking of plugins, so you should disable it if it is not in use. </Tooltip>
+			<Tooltip>
+				Enables features that make plugin development and debugging easier. Additionally, this option exposes all file paths on your device on the local webserver to allow symbolic linking of plugins,
+				so you should disable it if it is not in use.
+			</Tooltip>
 		</div>
 	{/if}
 

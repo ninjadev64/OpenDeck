@@ -27,11 +27,11 @@
 		<div class="select-wrapper ml-2 mt-2 mb-1 w-full">
 			<select class="w-full" bind:value={state}>
 				{#each instance.states as _, i}
-					<option value={i}> State {i + 1} </option>
+					<option value={i}>State {i + 1}</option>
 				{/each}
 			</select>
 		</div>
-		<button class="ml-3 mr-2 float-right text-xl dark:text-neutral-300" on:click={() => showEditor = false}> ✕ </button>
+		<button class="ml-3 mr-2 float-right text-xl dark:text-neutral-300" on:click={() => showEditor = false}>✕</button>
 	</div>
 	<div class="flex flex-row">
 		<button
@@ -53,7 +53,9 @@
 		</button>
 		<input
 			bind:this={fileInput}
-			type="file" class="hidden" accept="image/*"
+			type="file"
+			class="hidden"
+			accept="image/*"
 			on:change={async () => {
 				if (!fileInput.files || fileInput.files.length == 0) return;
 				const reader = new FileReader();
@@ -65,7 +67,7 @@
 						if (resized) instance.states[state].image = resized;
 						else instance.states[state].image = result;
 					}
-				}
+				};
 
 				reader.readAsDataURL(fileInput.files[0]);
 			}}
@@ -77,7 +79,7 @@
 				<textarea
 					bind:value={instance.states[state].text}
 					disabled={!instance.action.user_title_enabled}
-					rows=1
+					rows="1"
 					class="w-full px-1 dark:text-neutral-300 dark:bg-neutral-600 rounded-md outline-none resize-none"
 				/>
 			</div>
@@ -100,9 +102,9 @@
 					bind:value={instance.states[state].alignment}
 					class="!px-1 !py-0.5"
 				>
-					<option value="top"> Top </option>
-					<option value="middle"> Middle </option>
-					<option value="bottom"> Bottom </option>
+					<option value="top">Top</option>
+					<option value="middle">Middle</option>
+					<option value="bottom">Bottom</option>
 				</select>
 			</div>
 			<div>
@@ -111,17 +113,17 @@
 					bind:value={instance.states[state].family}
 					placeholder="Font family"
 					class="w-full px-1 dark:text-neutral-300 dark:bg-neutral-600 rounded-md outline-none"
-				>
+				/>
 				<datalist id="families">
-					<option value="Liberation Sans"> Liberation Sans </option>
-					<option value="Archivo Black"> Archivo Black </option>
-					<option value="Comic Neue"> Comic Neue </option>
-					<option value="Courier Prime"> Courier Prime </option>
-					<option value="Tinos"> Tinos </option>
-					<option value="Anton"> Anton </option>
-					<option value="Liberation Serif"> Liberation Serif </option>
-					<option value="Open Sans"> Open Sans </option>
-					<option value="Fira Sans"> Fira Sans </option>
+					<option value="Liberation Sans">Liberation Sans</option>
+					<option value="Archivo Black">Archivo Black</option>
+					<option value="Comic Neue">Comic Neue</option>
+					<option value="Courier Prime">Courier Prime</option>
+					<option value="Tinos">Tinos</option>
+					<option value="Anton">Anton</option>
+					<option value="Liberation Serif">Liberation Serif</option>
+					<option value="Open Sans">Open Sans</option>
+					<option value="Fira Sans">Fira Sans</option>
 				</datalist>
 			</div>
 			<div class="flex flex-row">
@@ -129,7 +131,7 @@
 				<input
 					type="checkbox"
 					bind:checked={bold}
-					on:change={() => instance.states[state].style = (bold && italic ? "Bold Italic" : bold ? "Bold" : italic ? "Italic" : "Regular")}
+					on:change={() => instance.states[state].style = bold && italic ? "Bold Italic" : bold ? "Bold" : italic ? "Italic" : "Regular"}
 					disabled={!instance.action.user_title_enabled}
 					class="mr-4 mt-1 scale-125"
 				/>
@@ -137,7 +139,7 @@
 				<input
 					type="checkbox"
 					bind:checked={italic}
-					on:change={() => instance.states[state].style = (bold && italic ? "Bold Italic" : bold ? "Bold" : italic ? "Italic" : "Regular")}
+					on:change={() => instance.states[state].style = bold && italic ? "Bold Italic" : bold ? "Bold" : italic ? "Italic" : "Regular"}
 					disabled={!instance.action.user_title_enabled}
 					class="mr-4 mt-1 scale-125"
 				/>

@@ -8,7 +8,8 @@
 	class="inline-block cursor-help"
 	on:mouseenter={() => show = true}
 	on:mouseleave={() => show = false}
-	role="cell" tabindex="-1"
+	role="cell"
+	tabindex="-1"
 >
 	<Question size="24" color="#77767B" />
 	{#if show}
