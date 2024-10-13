@@ -68,6 +68,7 @@ where
 #[serde(default)]
 pub struct Settings {
 	pub language: String,
+	pub background: bool,
 	pub autolaunch: bool,
 	pub darktheme: bool,
 	pub brightness: u8,
@@ -78,6 +79,7 @@ impl Default for Settings {
 	fn default() -> Self {
 		Self {
 			language: "en".to_owned(),
+			background: std::env::var("container").is_err(),
 			autolaunch: false,
 			darktheme: true,
 			brightness: 50,
