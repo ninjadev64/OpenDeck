@@ -31,11 +31,10 @@ futures-util = "0.3"
 anyhow = "1.0"
 log = "0.4"
 log-panics = "2.1"
-tauri-plugin-shell = { version = "2.0" }
-tauri-plugin-dialog = { version = "2.0" }
-tauri-plugin-log = { version = "2.0" }
-tauri-plugin-single-instance = { version = "2.0" }
-tauri-plugin-autostart = { version = "2.0" }
+open = "5.3"
+tauri-plugin-log = "2.0"
+tauri-plugin-single-instance = "2.0"
+tauri-plugin-autostart = "2.0"
 serde-inline-default = "0.2"
 serde_with = "3.10"
 os_info = "3.8"
