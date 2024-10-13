@@ -35,14 +35,11 @@ pub async fn set_settings(_app: tauri::AppHandle, settings: crate::store::Settin
 }
 
 #[command]
-pub fn open_config_directory() {
-	#[cfg(target_os = "windows")]
-	let command = "explorer";
-	#[cfg(target_os = "macos")]
-	let command = "open";
-	#[cfg(target_os = "linux")]
-	let command = "xdg-open";
-	std::process::Command::new(command).arg(crate::shared::config_dir()).spawn().unwrap();
+pub fn open_config_directory() -> Result<(), Error> {
+	if let Err(error) = open::that_detached(crate::shared::config_dir()) {
+		return Err(anyhow::Error::from(error).into());
+	}
+	Ok(())
 }
 
 #[command]
