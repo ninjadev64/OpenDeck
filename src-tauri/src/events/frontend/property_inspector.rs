@@ -2,8 +2,7 @@ use super::Error;
 
 use crate::shared::ActionContext;
 
-use tauri::{command, AppHandle};
-use tauri_plugin_shell::ShellExt;
+use tauri::command;
 
 #[command]
 pub async fn make_info(plugin: String) -> Result<crate::plugins::info_param::Info, Error> {
@@ -33,8 +32,8 @@ pub async fn switch_property_inspector(old: Option<ActionContext>, new: Option<A
 }
 
 #[command]
-pub async fn open_url(app: AppHandle, url: String) -> Result<(), Error> {
-	if let Err(error) = app.shell().open(url, None) {
+pub async fn open_url(url: String) -> Result<(), Error> {
+	if let Err(error) = open::that_detached(url) {
 		return Err(anyhow::Error::from(error).into());
 	}
 	Ok(())

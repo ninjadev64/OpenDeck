@@ -6,8 +6,6 @@
 	],
 	"permissions": [
 		"core:default",
-		"shell:allow-execute",
-		"shell:allow-open",
 		"dialog:allow-message",
 		"dialog:allow-confirm"
 	]

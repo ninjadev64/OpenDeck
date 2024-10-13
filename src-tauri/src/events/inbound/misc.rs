@@ -1,7 +1,6 @@
 use super::{ContextAndPayloadEvent, ContextEvent, PayloadEvent};
 
 use tauri::{Emitter, Manager};
-use tauri_plugin_shell::ShellExt;
 
 use serde::Deserialize;
 
@@ -16,9 +15,8 @@ pub struct LogMessageEvent {
 }
 
 pub async fn open_url(event: PayloadEvent<OpenUrlEvent>) -> Result<(), anyhow::Error> {
-	let app_handle = crate::APP_HANDLE.get().unwrap();
 	log::debug!("Opening URL {}", event.payload.url);
-	app_handle.shell().open(event.payload.url, None)?;
+	open::that_detached(event.payload.url)?;
 	Ok(())
 }
 
