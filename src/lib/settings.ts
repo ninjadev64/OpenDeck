@@ -1,5 +1,6 @@
 export type Settings = {
 	language: string;
+	background: boolean;
 	autolaunch: boolean;
 	darktheme: boolean;
 	brightness: number;

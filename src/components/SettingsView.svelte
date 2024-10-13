@@ -52,6 +52,12 @@
 		</div>
 
 		<div class="flex flex-row items-center m-2 space-x-2">
+			<span class="dark:text-neutral-400"> Run in background: </span>
+			<input type="checkbox" bind:checked={$settings.background} />
+			<Tooltip> If this option is enabled, OpenDeck will minimise to the tray and run in the background. </Tooltip>
+		</div>
+
+		<div class="flex flex-row items-center m-2 space-x-2">
 			<span class="dark:text-neutral-400"> Autolaunch: </span>
 			<input type="checkbox" bind:checked={$settings.autolaunch} />
 			<Tooltip> If this option is enabled, OpenDeck will automatically start at login. </Tooltip>
