@@ -142,6 +142,7 @@ pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 	}
 
 	let code_path = code_path.unwrap();
+	let args = ["-port", "57116", "-pluginUUID", plugin_uuid, "-registerEvent", "registerPlugin", "-info"];
 
 	if code_path.to_lowercase().ends_with(".html") || code_path.to_lowercase().ends_with(".htm") || code_path.to_lowercase().ends_with(".xhtml") {
 		// Create a webview window for the plugin and call its registration function.
@@ -177,7 +178,9 @@ pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 		INSTANCES.lock().await.insert(plugin_uuid.to_owned(), PluginInstance::Webview);
 	} else if code_path.to_lowercase().ends_with(".js") || code_path.to_lowercase().ends_with(".mjs") || code_path.to_lowercase().ends_with(".cjs") {
 		// Check for Node.js installation and version in one go.
-		let version_output = Command::new("node").arg("--version").output();
+		let command = if std::env::var("container").is_ok() { "flatpak-spawn" } else { "node" };
+		let extra_args = if std::env::var("container").is_ok() { vec!["--host", "node"] } else { vec![] };
+		let version_output = Command::new(command).args(&extra_args).arg("--version").output();
 		if version_output.is_err() || String::from_utf8(version_output.unwrap().stdout).unwrap().trim() < "v20.0.0" {
 			return Err(anyhow!("Node version 20.0.0 or higher is required, or Node is not installed"));
 		}
@@ -185,45 +188,33 @@ pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 		let info = info_param::make_info(plugin_uuid.to_owned(), manifest.version, true).await;
 		let log_file = fs::File::create(path.parent().unwrap().parent().unwrap().join("logs").join("plugins").join(format!("{plugin_uuid}.log")))?;
 		// Start Node with the appropriate arguments.
-		let child = Command::new("node")
+		let child = Command::new(command)
 			.current_dir(path)
-			.args([
-				code_path,
-				String::from("-port"),
-				57116.to_string(),
-				String::from("-pluginUUID"),
-				plugin_uuid.to_owned(),
-				String::from("-registerEvent"),
-				String::from("registerPlugin"),
-				String::from("-info"),
-				serde_json::to_string(&info)?,
-			])
+			.args(extra_args)
+			.arg(code_path)
+			.args(args)
+			.arg(serde_json::to_string(&info)?)
 			.stdout(Stdio::from(log_file.try_clone()?))
 			.stderr(Stdio::from(log_file))
 			.spawn()?;
 
 		INSTANCES.lock().await.insert(plugin_uuid.to_owned(), PluginInstance::Node(child));
 	} else if use_wine {
-		if Command::new("wine").stdout(Stdio::null()).stderr(Stdio::null()).spawn().is_err() {
+		let command = if std::env::var("container").is_ok() { "flatpak-spawn" } else { "wine" };
+		let extra_args = if std::env::var("container").is_ok() { vec!["--host", "wine"] } else { vec![] };
+		if Command::new(command).stdout(Stdio::null()).stderr(Stdio::null()).spawn().is_err() {
 			return Err(anyhow!("failed to detect an installation of Wine"));
 		}
 
 		let info = info_param::make_info(plugin_uuid.to_owned(), manifest.version, true).await;
 		let log_file = fs::File::create(path.parent().unwrap().parent().unwrap().join("logs").join("plugins").join(format!("{plugin_uuid}.log")))?;
 		// Start Wine with the appropriate arguments.
-		let child = Command::new("wine")
+		let child = Command::new(command)
 			.current_dir(path)
-			.args([
-				&code_path,
-				"-port",
-				"57116",
-				"-pluginUUID",
-				plugin_uuid,
-				"-registerEvent",
-				"registerPlugin",
-				"-info",
-				&serde_json::to_string(&info)?,
-			])
+			.args(extra_args)
+			.arg(code_path)
+			.args(args)
+			.arg(serde_json::to_string(&info)?)
 			.stdout(Stdio::from(log_file.try_clone()?))
 			.stderr(Stdio::from(log_file))
 			.spawn()?;
@@ -236,16 +227,8 @@ pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 		#[cfg(target_os = "windows")]
 		let child = Command::new(path.join(code_path))
 			.current_dir(path)
-			.args([
-				"-port",
-				"57116",
-				"-pluginUUID",
-				plugin_uuid,
-				"-registerEvent",
-				"registerPlugin",
-				"-info",
-				&serde_json::to_string(&info)?,
-			])
+			.args(args)
+			.arg(serde_json::to_string(&info)?)
 			.stdout(Stdio::from(log_file.try_clone()?))
 			.stderr(Stdio::from(log_file))
 			.creation_flags(0x08000000)
@@ -253,16 +236,8 @@ pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 		#[cfg(not(target_os = "windows"))]
 		let child = Command::new(path.join(code_path))
 			.current_dir(path)
-			.args([
-				"-port",
-				"57116",
-				"-pluginUUID",
-				plugin_uuid,
-				"-registerEvent",
-				"registerPlugin",
-				"-info",
-				&serde_json::to_string(&info)?,
-			])
+			.args(args)
+			.arg(serde_json::to_string(&info)?)
 			.stdout(Stdio::from(log_file.try_clone()?))
 			.stderr(Stdio::from(log_file))
 			.spawn()?;

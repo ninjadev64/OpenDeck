@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+	<id>opendeck</id>
+
+	<name>OpenDeck</name>
+	<summary>A cross-platform desktop application for stream controller devices</summary>
+	<developer id="me.amankhanna"><name>Aman Khanna</name></developer>
+
+	<url type="vcs-browser">https://github.com/ninjadev64/OpenDeck</url>
+	<url type="homepage">https://github.com/ninjadev64/OpenDeck</url>
+	<url type="bugtracker">https://github.com/ninjadev64/OpenDeck/issues</url>
+	<url type="faq">https://github.com/ninjadev64/OpenDeck?tab=readme-ov-file#support</url>
+	<url type="contribute">https://github.com/ninjadev64/OpenDeck?tab=readme-ov-file#building-from-source--contributing</url>
+	<url type="donation">https://github.com/sponsors/ninjadev64</url>
+	<url type="contact">https://matrix.to/#/#opendeck:amankhanna.me</url>
+
+	<metadata_license>CC-BY-SA-4.0</metadata_license>
+	<project_license>GPL-3.0-or-later</project_license>
+	<content_rating type="oars-1.1" />
+
+	<description>
+		<p>OpenDeck is a desktop application for using stream controller devices like the Elgato Stream Deck. OpenDeck conforms to the OpenAction API, which is cross-compatible with the Stream Deck SDK, allowing a wide range of pre-existing plugins to be used.</p>
+		<p>OpenDeck supports ProntoKey, Elgato Stream Deck and some Ajazz hardware on all three major desktop platforms. If you would like to contribute support for additional hardware (e.g. Loupedeck) feel free to reach out on any of the support forums and make a pull request!</p>
+		<p>Please note that you may need to install udev subsystem rules for your device to be detected. For more information, see the Installation section of the project README on GitHub.</p>
+	</description>
+
+	<launchable type="desktop-id">opendeck.desktop</launchable>
+	<screenshots>
+		<screenshot type="default">
+			<image>https://github.com/ninjadev64/OpenDeck/raw/2daaf68/.github/readme/mainmenu.png</image>
+		</screenshot>
+		<screenshot>
+			<image>https://github.com/ninjadev64/OpenDeck/raw/2daaf68/.github/readme/multiaction.png</image>
+		</screenshot>
+		<screenshot>
+			<image>https://github.com/ninjadev64/OpenDeck/raw/2daaf68/.github/readme/plugins.png</image>
+		</screenshot>
+	</screenshots>
+
+	<releases>
+		<release version="2.2.0" date="2024-10-14">
+			<url type="details">https://github.com/ninjadev64/OpenDeck/releases/tag/v2.2.0</url>
+			<description>
+				<ul>
+					<li>Preparations for Flatpak release</li>
+					<li>Removal of unnecessary dependencies</li>
+					<li>Internal build system and formatting improvements</li>
+				</ul>
+			</description>
+		</release>
+		<release version="2.1.1" date="2024-10-09">
+			<url type="details">https://github.com/ninjadev64/OpenDeck/release/tag/v2.1.1</url>
+			<description>
+				<ul><li>Bug fix for blank screens</li></ul>
+			</description>
+		</release>
+		<release version="2.1.0" date="2024-10-03">
+			<url type="details">https://github.com/ninjadev64/OpenDeck/releases/tag/v2.1.0</url>
+			<description>
+				<ul>
+					<li>Changed license to the GNU GPL version 3 or later</li>
+					<li>Changed the config directory location</li>
+					<li>Migrated to Tauri v2 to reduce app size, prevent dependency issues, and fix bugs and performance issues</li>
+					<li>Minor bug fixes</li>
+				</ul>
+			</description>
+		</release>
+		<release version="2.0.0" date="2024-09-07">
+			<url type="details">https://github.com/ninjadev64/OpenDeck/release/tag/v2.0.0</url>
+			<description>
+				<p>This is the first stable release of the completely rewritten version of OpenDeck</p>
+			</description>
+		</release>
+	</releases>
+</component>

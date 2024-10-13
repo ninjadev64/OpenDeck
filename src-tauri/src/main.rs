@@ -100,7 +100,7 @@ async fn main() {
 				.filter(|v| {
 					!matches!(
 						v.target(),
-						"tungstenite::handshake::server" | "tungstenite::protocol" | "tracing::span" | "zbus::object_server" | "zbus::handshake" | "zbus::connection"
+						"tungstenite::handshake::server" | "tungstenite::protocol" | "tracing::span" | "zbus::object_server" | "zbus::handshake" | "zbus::connection" | "os_info::imp::lsb_release"
 					)
 				})
 				.build(),
@@ -108,9 +108,16 @@ async fn main() {
 		.plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, Some(vec!["--hide"])))
 		.plugin(tauri_plugin_single_instance::init(|app, _, _| app.get_webview_window("main").unwrap().show().unwrap()))
 		.on_window_event(|window, event| {
+			if window.label() != "main" {
+				return;
+			}
 			if let WindowEvent::CloseRequested { api, .. } = event {
-				window.hide().unwrap();
-				api.prevent_close();
+				if let Ok(true) = store::get_settings().map(|store| store.value.background) {
+					window.hide().unwrap();
+					api.prevent_close();
+				} else {
+					window.app_handle().exit(0);
+				}
 			}
 		})
 		.run(tauri::generate_context!())

@@ -10,21 +10,23 @@
 		"targets": "all",
 		"linux": {
 			"deb": {
-				"desktopTemplate": "opendeck.desktop",
+				"desktopTemplate": "bundle/opendeck.desktop",
 				"files": {
-					"/etc/udev/rules.d/40-streamdeck.rules": "40-streamdeck.rules"
+					"/etc/udev/rules.d/40-streamdeck.rules": "bundle/40-streamdeck.rules",
+					"/usr/share/metainfo/opendeck.metainfo.xml": "bundle/opendeck.metainfo.xml"
 				}
 			},
 			"rpm": {
-				"desktopTemplate": "opendeck.desktop",
+				"desktopTemplate": "bundle/opendeck.desktop",
 				"files": {
-					"/etc/udev/rules.d/40-streamdeck.rules": "40-streamdeck.rules"
+					"/etc/udev/rules.d/40-streamdeck.rules": "bundle/40-streamdeck.rules",
+					"/usr/share/metainfo/opendeck.metainfo.xml": "bundle/opendeck.metainfo.xml"
 				}
 			}
 		},
 		"publisher": "ninjadev64",
-		"shortDescription": "A cross-platform desktop application for ProntoKey and Stream Deck.",
-		"longDescription": "OpenDeck is a cross-platform desktop application that provides functionality for stream controller devices.",
+		"shortDescription": "A cross-platform desktop application for stream controller devices",
+		"longDescription": "OpenDeck is a desktop application for using stream controller devices like the Elgato Stream Deck. OpenDeck conforms to the OpenAction API, which is cross-compatible with the Stream Deck SDK, allowing a wide range of pre-existing plugins to be used.",
 		"category": "Productivity",
 		"icon": [
 			"icons/icon.png",
