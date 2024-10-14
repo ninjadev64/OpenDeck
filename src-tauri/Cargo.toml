@@ -1,6 +1,6 @@
 [package]
 name = "opendeck"
-version = "2.1.1"
+version = "2.2.0"
 description = "A cross-platform desktop application for stream controller devices"
 authors = [ "ninjadev64" ]
 license = "GPL-3.0-or-later"
