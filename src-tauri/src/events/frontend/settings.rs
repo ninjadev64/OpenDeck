@@ -43,6 +43,14 @@ pub fn open_config_directory() -> Result<(), Error> {
 }
 
 #[command]
+pub fn open_log_directory() -> Result<(), Error> {
+	if let Err(error) = open::that_detached(crate::shared::log_dir()) {
+		return Err(anyhow::Error::from(error).into());
+	}
+	Ok(())
+}
+
+#[command]
 pub fn get_build_info() -> String {
 	format!(
 		r#"

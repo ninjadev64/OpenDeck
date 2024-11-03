@@ -53,6 +53,7 @@ async fn main() {
 			frontend::settings::get_settings,
 			frontend::settings::set_settings,
 			frontend::settings::open_config_directory,
+			frontend::settings::open_log_directory,
 			frontend::settings::get_build_info
 		])
 		.setup(|app| {
@@ -96,13 +97,9 @@ async fn main() {
 		.plugin(
 			tauri_plugin_log::Builder::default()
 				.targets([Target::new(TargetKind::LogDir { file_name: None }), Target::new(TargetKind::Stdout)])
-				.level(log::LevelFilter::Debug)
-				.filter(|v| {
-					!matches!(
-						v.target(),
-						"tungstenite::handshake::server" | "tungstenite::protocol" | "tracing::span" | "zbus::object_server" | "zbus::handshake" | "zbus::connection" | "os_info::imp::lsb_release"
-					)
-				})
+				.level(log::LevelFilter::Info)
+				.level_for("opendeck", log::LevelFilter::Trace)
+				.with_colors(Default::default())
 				.build(),
 		)
 		.plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, Some(vec!["--hide"])))

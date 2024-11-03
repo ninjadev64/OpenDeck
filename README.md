@@ -50,17 +50,20 @@ To edit an action's appearance, right-click on it and select "Edit" in the conte
 
 To select another device, or to view or switch profiles, use the dropdowns in the top right corner. You can organise profiles into group-like folders by prefixing the profile name with the folder name and a forward slash.
 
-To enable automatic launch on startup, the light theme, to change the language plugins are localised in, or to modify other options, open Settings. From here, you can also view information about your version of OpenDeck or open the configuration directory. To add or remove plugins, visit the Plugins tab.
+To enable automatic launch on startup, the light theme, to change the language plugins are localised in, or to modify other options, open Settings. From here, you can also view information about your version of OpenDeck or open the configuration and log directories. To add or remove plugins, visit the Plugins tab.
 
 ### Troubleshooting
 
 - Ensure you are running the latest version of OpenDeck, as well as recent versions of related software (e.g. Spotify or OBS, or your operating system and Wine).
 - Check the pinned [GitHub Issues](https://github.com/ninjadev64/OpenDeck/issues) to see if there's a fix for your problem already.
 - Check the OpenDeck log file for any important messages. This file should be included with any support request.
-	- GNU+Linux: `~/.config/opendeck/logs/`
-	- Windows: `%appdata%\opendeck\logs\`
-	- macOS: `~/Library/Application Support/opendeck/logs/`
-- For issues with plugins, you can also check the plugin's logs (in the same folder as above, sometimes as well as a file named `plugin.log` or similar in the plugin's own folder).
+	- You can also run OpenDeck from the terminal to see the logs directly (and colour-coded) if it's easier than finding the log file or if the log file is empty or missing details.
+	- For issues with plugins, you can also check the plugin's logs (in the same folder, sometimes as well as a file named `plugin.log` or similar in the plugin's own folder).
+	- The log directory can be opened from the settings page of OpenDeck, or alternatively located manually at the paths below:
+		- GNU+Linux: `~/.local/share/opendeck/logs/`
+		- Flatpak: `~/.var/app/me.amankhanna.opendeck/data/opendeck/logs/`
+		- Windows: `%appdata%\opendeck\logs\`
+		- macOS: `~/Library/Logs/opendeck/`
 - When trying to run Windows-only plugins (which are the majority of plugins) on GNU+Linux or macOS, please ensure you have the latest version of Wine (and Wine Mono) installed on your system.
 - If your device isn't showing up, ensure you have the correct permissions to access it, and that you have restarted OpenDeck since connecting it.
 

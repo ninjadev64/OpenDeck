@@ -14,6 +14,12 @@ pub fn config_dir() -> std::path::PathBuf {
 	app_handle.path().app_config_dir().unwrap()
 }
 
+/// Get the application log directory.
+pub fn log_dir() -> std::path::PathBuf {
+	let app_handle = crate::APP_HANDLE.get().unwrap();
+	app_handle.path().app_log_dir().unwrap()
+}
+
 /// Convert an icon specified in a plugin manifest to its full path.
 pub fn convert_icon(path: String) -> String {
 	if Path::new(&(path.clone() + ".svg")).exists() {

@@ -2,7 +2,7 @@ pub mod info_param;
 pub mod manifest;
 mod webserver;
 
-use crate::shared::{config_dir, convert_icon, Action, CATEGORIES};
+use crate::shared::{config_dir, convert_icon, log_dir, Action, CATEGORIES};
 use crate::store::get_settings;
 use crate::APP_HANDLE;
 
@@ -186,7 +186,7 @@ pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 		}
 
 		let info = info_param::make_info(plugin_uuid.to_owned(), manifest.version, true).await;
-		let log_file = fs::File::create(path.parent().unwrap().parent().unwrap().join("logs").join("plugins").join(format!("{plugin_uuid}.log")))?;
+		let log_file = fs::File::create(log_dir().join("plugins").join(format!("{plugin_uuid}.log")))?;
 		// Start Node with the appropriate arguments.
 		let child = Command::new(command)
 			.current_dir(path)
@@ -207,7 +207,7 @@ pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 		}
 
 		let info = info_param::make_info(plugin_uuid.to_owned(), manifest.version, true).await;
-		let log_file = fs::File::create(path.parent().unwrap().parent().unwrap().join("logs").join("plugins").join(format!("{plugin_uuid}.log")))?;
+		let log_file = fs::File::create(log_dir().join("plugins").join(format!("{plugin_uuid}.log")))?;
 		// Start Wine with the appropriate arguments.
 		let child = Command::new(command)
 			.current_dir(path)
@@ -222,7 +222,7 @@ pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
 		INSTANCES.lock().await.insert(plugin_uuid.to_owned(), PluginInstance::Wine(child));
 	} else {
 		let info = info_param::make_info(plugin_uuid.to_owned(), manifest.version, false).await;
-		let log_file = fs::File::create(path.parent().unwrap().parent().unwrap().join("logs").join("plugins").join(format!("{plugin_uuid}.log")))?;
+		let log_file = fs::File::create(log_dir().join("plugins").join(format!("{plugin_uuid}.log")))?;
 		// Run the plugin's executable natively.
 		#[cfg(target_os = "windows")]
 		let child = Command::new(path.join(code_path))
@@ -270,7 +270,7 @@ pub fn initialise_plugins() {
 
 	let plugin_dir = config_dir().join("plugins");
 	let _ = fs::create_dir_all(&plugin_dir);
-	let _ = fs::create_dir_all(config_dir().join("logs").join("plugins"));
+	let _ = fs::create_dir_all(log_dir().join("plugins"));
 
 	let entries = match fs::read_dir(&plugin_dir) {
 		Ok(p) => p,
