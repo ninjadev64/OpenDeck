@@ -43,6 +43,16 @@
 	</branding>
 
 	<releases>
+		<release version="2.2.1" date="2024-11-03">
+			<url type="details">https://github.com/ninjadev64/OpenDeck/releases/tag/v2.2.1</url>
+			<description>
+				<ul>
+					<li>Documentation updates</li>
+					<li>Logging improvements</li>
+					<li>Update elgato-streamdeck to 0.8</li>
+				</ul>
+			</description>
+		</release>
 		<release version="2.2.0" date="2024-10-14">
 			<url type="details">https://github.com/ninjadev64/OpenDeck/releases/tag/v2.2.0</url>
 			<description>
