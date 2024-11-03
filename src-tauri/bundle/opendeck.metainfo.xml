@@ -3,8 +3,9 @@
 	<id>opendeck</id>
 
 	<name>OpenDeck</name>
-	<summary>A cross-platform desktop application for stream controller devices</summary>
+	<summary>Use stream controllers</summary>
 	<developer id="me.amankhanna"><name>Aman Khanna</name></developer>
+	<launchable type="desktop-id">opendeck.desktop</launchable>
 
 	<url type="vcs-browser">https://github.com/ninjadev64/OpenDeck</url>
 	<url type="homepage">https://github.com/ninjadev64/OpenDeck</url>
@@ -24,7 +25,6 @@
 		<p>Please note that you may need to install udev subsystem rules for your device to be detected. For more information, see the Installation section of the project README on GitHub.</p>
 	</description>
 
-	<launchable type="desktop-id">opendeck.desktop</launchable>
 	<screenshots>
 		<screenshot type="default">
 			<image>https://github.com/ninjadev64/OpenDeck/raw/2daaf68/.github/readme/mainmenu.png</image>
@@ -36,6 +36,11 @@
 			<image>https://github.com/ninjadev64/OpenDeck/raw/2daaf68/.github/readme/plugins.png</image>
 		</screenshot>
 	</screenshots>
+
+	<branding>
+		<color type="primary" scheme_preference="light">#62a0ea</color>
+		<color type="primary" scheme_preference="dark">#1a5fb4</color>
+	</branding>
 
 	<releases>
 		<release version="2.2.0" date="2024-10-14">
