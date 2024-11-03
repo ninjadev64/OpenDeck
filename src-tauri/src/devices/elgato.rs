@@ -14,6 +14,15 @@ pub async fn update_image(context: &crate::shared::Context, url: &str) -> Result
 		let data = url.split_once(',').unwrap().1;
 		let bytes = base64::engine::general_purpose::STANDARD.decode(data)?;
 		device.set_button_image(context.position, image::load_from_memory(&bytes)?).await?;
+		device.flush().await?;
+	}
+	Ok(())
+}
+
+pub async fn clear_image(context: &crate::shared::Context) -> Result<(), StreamDeckError> {
+	if let Some(device) = ELGATO_DEVICES.read().await.get(&context.device) {
+		device.clear_button_image(context.position).await?;
+		device.flush().await?;
 	}
 	Ok(())
 }
@@ -21,14 +30,8 @@ pub async fn update_image(context: &crate::shared::Context, url: &str) -> Result
 pub async fn set_brightness(brightness: u8) {
 	for (_id, device) in ELGATO_DEVICES.read().await.iter() {
 		let _ = device.set_brightness(brightness.clamp(0, 100)).await;
+		let _ = device.flush().await;
 	}
-}
-
-pub async fn clear_image(context: &crate::shared::Context) -> Result<(), StreamDeckError> {
-	if let Some(device) = ELGATO_DEVICES.read().await.get(&context.device) {
-		device.clear_button_image(context.position).await?;
-	}
-	Ok(())
 }
 
 pub(super) async fn init(device: AsyncStreamDeck) {

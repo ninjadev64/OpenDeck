@@ -1078,11 +1078,10 @@ checksum = "0d6ef0072f8a535281e4876be788938b528e9a1d43900b82c2569af7da799125"
 
 [[package]]
 name = "elgato-streamdeck"
-version = "0.7.2"
+version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "65c24b95ac24a00f01c425b79640e7fc6efadc1d9a30bcd25e483f4be82c98b0"
+checksum = "60621d42e3b98e5b0d91bc3a0bac14c6407852eb17af80c7ae906f5dd13166da"
 dependencies = [
- "async-recursion",
  "hidapi",
  "image",
  "tokio",
@@ -1986,9 +1985,9 @@ dependencies = [
 
 [[package]]
 name = "image"
-version = "0.25.2"
+version = "0.25.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "99314c8a2152b8ddb211f924cdae532d8c5e4c8bb54728e12fff1b0cd5963a10"
+checksum = "bc144d44a31d753b02ce64093d532f55ff8dc4ebf2ffb8a63c0dda691385acae"
 dependencies = [
  "bytemuck",
  "byteorder-lite",
