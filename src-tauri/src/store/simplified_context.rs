@@ -1,8 +1,8 @@
 //! Duplicates of many structs to facilitate saving profiles to disk without having device or profile IDs in context fields.
 
-use crate::shared::{Action, ActionContext, ActionInstance, ActionState, Profile};
+use crate::shared::{config_dir, Action, ActionContext, ActionInstance, ActionState, Profile};
 
-use std::path::Path;
+use std::{fs, path::Path};
 
 use serde::{Deserialize, Serialize};
 
@@ -45,12 +45,7 @@ impl From<ActionContext> for DiskActionContext {
 }
 
 impl DiskActionContext {
-	fn into_action_context(self, path: &Path) -> ActionContext {
-		let config_dir = crate::shared::config_dir();
-		let mut iter = path.strip_prefix(config_dir).unwrap().iter();
-		let device = iter.nth(1).unwrap().to_string_lossy().into_owned();
-		let mut profile = iter.map(|x| x.to_string_lossy()).collect::<Vec<_>>().join("/");
-		profile = profile[..profile.len() - 5].to_owned();
+	fn into_action_context(self, device: String, profile: String) -> ActionContext {
 		ActionContext {
 			device,
 			profile,
@@ -73,10 +68,41 @@ pub struct DiskActionInstance {
 
 impl From<ActionInstance> for DiskActionInstance {
 	fn from(value: ActionInstance) -> Self {
+		let disk_context: DiskActionContext = value.context.clone().into();
+		let image_dir = config_dir().join("images").join(&value.context.device).join(&value.context.profile).join(disk_context.to_string());
+		let mut states = value.states.clone();
+		for (index, state) in states.iter_mut().enumerate() {
+			if state.image.starts_with("data:") {
+				let mut extension = state.image.split_once('/').unwrap().1.split_once(',').unwrap().0;
+				if extension.contains(';') {
+					extension = extension.split_once(';').unwrap().0;
+				}
+				if extension.contains('+') {
+					extension = extension.split_once('+').unwrap().0;
+				}
+
+				let data = if state.image.contains(";base64,") {
+					use base64::Engine;
+					let Ok(data) = base64::engine::general_purpose::STANDARD.decode(state.image.split_once(";base64,").unwrap().1) else {
+						continue;
+					};
+					data
+				} else {
+					state.image.split_once(',').unwrap().1.as_bytes().to_vec()
+				};
+
+				let filename = format!("{}.{}", index, extension);
+				if fs::create_dir_all(&image_dir).is_err() || fs::write(image_dir.join(&filename), data).is_err() {
+					continue;
+				};
+				state.image = filename;
+			}
+		}
+
 		Self {
-			context: value.context.into(),
+			context: disk_context,
 			action: value.action,
-			states: value.states,
+			states,
 			current_state: value.current_state,
 			settings: value.settings,
 			children: value.children.map(|c| c.into_iter().map(|v| v.into()).collect()),
@@ -86,10 +112,30 @@ impl From<ActionInstance> for DiskActionInstance {
 
 impl DiskActionInstance {
 	fn into_action_instance(self, path: &Path) -> ActionInstance {
+		let config_dir = crate::shared::config_dir();
+		let mut iter = path.strip_prefix(&config_dir).unwrap().iter();
+		let device = iter.nth(1).unwrap().to_string_lossy().into_owned();
+		let mut profile = iter.map(|x| x.to_string_lossy()).collect::<Vec<_>>().join("/");
+		profile = profile[..profile.len() - 5].to_owned();
+
+		let mut states = self.states.clone();
+		for state in states.iter_mut() {
+			if let Some(true) = state.image.chars().next().map(|v| v.is_numeric()) {
+				state.image = config_dir
+					.join("images")
+					.join(&device)
+					.join(&profile)
+					.join(self.context.to_string())
+					.join(&state.image)
+					.to_string_lossy()
+					.into_owned();
+			}
+		}
+
 		ActionInstance {
-			context: self.context.into_action_context(path),
+			context: self.context.into_action_context(device, profile),
 			action: self.action,
-			states: self.states,
+			states,
 			current_state: self.current_state,
 			settings: self.settings,
 			children: self.children.map(|c| c.into_iter().map(|v| v.into_action_instance(path)).collect()),

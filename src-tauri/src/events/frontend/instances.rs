@@ -1,9 +1,10 @@
 use super::Error;
 
-use crate::shared::{Action, ActionContext, ActionInstance, Context};
+use crate::shared::{config_dir, Action, ActionContext, ActionInstance, Context};
 use crate::store::profiles::{acquire_locks_mut, get_instance_mut, get_slot_mut, save_profile, LocksMut};
 
 use tauri::{command, AppHandle, Emitter, Manager};
+use tokio::fs::remove_dir_all;
 
 #[command]
 pub async fn create_instance(app: AppHandle, action: Action, context: Context) -> Result<Option<ActionInstance>, Error> {
@@ -67,6 +68,14 @@ pub async fn create_instance(app: AppHandle, action: Action, context: Context) -
 	}
 }
 
+fn instance_images_dir(instance: &ActionInstance) -> std::path::PathBuf {
+	config_dir()
+		.join("images")
+		.join(&instance.context.device)
+		.join(&instance.context.profile)
+		.join(format!("{}.{}.{}", instance.context.controller, instance.context.position, instance.context.index))
+}
+
 #[command]
 pub async fn move_instance(source: Context, destination: Context, retain: bool) -> Result<Option<ActionInstance>, Error> {
 	if source.controller != destination.controller {
@@ -86,6 +95,13 @@ pub async fn move_instance(source: Context, destination: Context, retain: bool) 
 		}
 	}
 
+	if let Ok(files) = instance_images_dir(&src.clone().unwrap()).read_dir() {
+		let new_dir = instance_images_dir(&new);
+		for file in files.flatten() {
+			let _ = tokio::fs::copy(file.path(), new_dir.join(file.file_name())).await;
+		}
+	}
+
 	let dst = get_slot_mut(&destination, &mut locks).await?;
 	if dst.is_some() {
 		return Ok(None);
@@ -96,6 +112,7 @@ pub async fn move_instance(source: Context, destination: Context, retain: bool) 
 		let src = get_slot_mut(&source, &mut locks).await?;
 		if let Some(old) = src {
 			let _ = crate::events::outbound::will_appear::will_disappear(old, false).await;
+			let _ = remove_dir_all(instance_images_dir(old)).await;
 		}
 		*src = None;
 	}
@@ -120,14 +137,17 @@ pub async fn remove_instance(context: ActionContext) -> Result<(), Error> {
 		if let Some(children) = &instance.children {
 			for child in children {
 				let _ = crate::events::outbound::will_appear::will_disappear(child, false).await;
+				let _ = remove_dir_all(instance_images_dir(child)).await;
 			}
 		}
+		let _ = remove_dir_all(instance_images_dir(instance)).await;
 		*slot = None;
 	} else {
 		let children = instance.children.as_mut().unwrap();
 		for (index, instance) in children.iter().enumerate() {
 			if instance.context == context {
 				let _ = crate::events::outbound::will_appear::will_disappear(instance, true).await;
+				let _ = remove_dir_all(instance_images_dir(instance)).await;
 				children.remove(index);
 				break;
 			}

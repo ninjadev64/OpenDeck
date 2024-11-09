@@ -76,6 +76,8 @@ impl ProfileStores {
 		let _ = fs::remove_file(&path);
 		// This is safe as `remove_dir` errors if the directory is not empty.
 		let _ = fs::remove_dir(path.parent().unwrap());
+		let images_path = config_dir.join("images").join(device).join(id);
+		let _ = fs::remove_dir_all(images_path);
 	}
 
 	pub fn all_from_plugin(&self, plugin: &str) -> Vec<crate::shared::ActionContext> {
