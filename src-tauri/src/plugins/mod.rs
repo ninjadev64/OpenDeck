@@ -17,7 +17,7 @@ use tauri::{AppHandle, Manager};
 use futures_util::StreamExt;
 use tokio::net::{TcpListener, TcpStream};
 
-use anyhow::{anyhow, Context};
+use anyhow::anyhow;
 use log::{error, warn};
 use once_cell::sync::Lazy;
 use tokio::sync::Mutex;
@@ -32,12 +32,10 @@ enum PluginInstance {
 static INSTANCES: Lazy<Mutex<HashMap<String, PluginInstance>>> = Lazy::new(|| Mutex::new(HashMap::new()));
 
 /// Initialise a plugin from a given directory.
-pub async fn initialise_plugin(path: &path::PathBuf) -> anyhow::Result<()> {
+pub async fn initialise_plugin(path: &path::Path) -> anyhow::Result<()> {
 	let plugin_uuid = path.file_name().unwrap().to_str().unwrap();
-	let manifest_path = path.join("manifest.json");
 
-	let manifest = fs::read(&manifest_path).context("failed to read manifest")?;
-	let mut manifest: manifest::PluginManifest = serde_json::from_slice(&manifest).context("failed to parse manifest")?;
+	let mut manifest = manifest::read_manifest(path)?;
 
 	for action in &mut manifest.actions {
 		plugin_uuid.clone_into(&mut action.plugin);

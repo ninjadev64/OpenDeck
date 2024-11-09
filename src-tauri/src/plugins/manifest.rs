@@ -50,3 +50,19 @@ pub struct PluginManifest {
 	#[serde(alias = "PropertyInspectorPath")]
 	pub property_inspector_path: Option<String>,
 }
+
+pub fn read_manifest(base_path: &std::path::Path) -> Result<PluginManifest, anyhow::Error> {
+	use anyhow::Context;
+
+	let manifest = std::fs::read(base_path.join("manifest.json")).context("failed to read manifest")?;
+	let mut manifest: serde_json::Value = serde_json::from_slice(&manifest).context("failed to parse manifest")?;
+
+	let platform_overrides_path = base_path.join(format!("manifest.{}.json", std::env::consts::OS));
+	if platform_overrides_path.exists() {
+		if let Ok(Ok(platform_overrides)) = std::fs::read(platform_overrides_path).map(|v| serde_json::from_slice(&v)) {
+			json_patch::merge(&mut manifest, &platform_overrides);
+		}
+	}
+
+	serde_json::from_value(manifest).context("failed to parse manifest")
+}

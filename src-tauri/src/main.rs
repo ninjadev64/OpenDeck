@@ -99,7 +99,6 @@ async fn main() {
 				.targets([Target::new(TargetKind::LogDir { file_name: None }), Target::new(TargetKind::Stdout)])
 				.level(log::LevelFilter::Info)
 				.level_for("opendeck", log::LevelFilter::Trace)
-				.with_colors(Default::default())
 				.build(),
 		)
 		.plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, Some(vec!["--hide"])))

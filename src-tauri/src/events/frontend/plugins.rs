@@ -29,8 +29,7 @@ pub async fn list_plugins() -> Result<Vec<PluginInfo>, Error> {
 		};
 		let metadata = tokio::fs::metadata(&path).await.unwrap();
 		if metadata.is_dir() {
-			let Ok(manifest) = tokio::fs::read(path.join("manifest.json")).await else { continue };
-			let Ok(manifest): Result<crate::plugins::manifest::PluginManifest, _> = serde_json::from_slice(&manifest) else {
+			let Ok(manifest) = crate::plugins::manifest::read_manifest(&path) else {
 				continue;
 			};
 			plugins.push(PluginInfo {

@@ -223,8 +223,8 @@ pub static CATEGORIES: Lazy<RwLock<HashMap<String, Vec<Action>>>> = Lazy::new(||
 	hashmap.insert(
 		"OpenDeck".to_owned(),
 		vec![
-			serde_json::from_str(
-				r#"{
+			serde_json::from_value(serde_json::json!(
+				{
 					"name": "Multi Action",
 					"icon": "opendeck/multi-action.png",
 					"plugin": "opendeck",
@@ -233,11 +233,11 @@ pub static CATEGORIES: Lazy<RwLock<HashMap<String, Vec<Action>>>> = Lazy::new(||
 					"controllers": [ "Keypad" ],
 					"states": [ { "image": "opendeck/multi-action.png" } ],
 					"supported_in_multi_actions": false
-				}"#,
-			)
+				}
+			))
 			.unwrap(),
-			serde_json::from_str(
-				r#"{
+			serde_json::from_value(serde_json::json!(
+				{
 					"name": "Toggle Action",
 					"icon": "opendeck/toggle-action.png",
 					"plugin": "opendeck",
@@ -246,8 +246,8 @@ pub static CATEGORIES: Lazy<RwLock<HashMap<String, Vec<Action>>>> = Lazy::new(||
 					"controllers": [ "Keypad" ],
 					"states": [ { "image": "opendeck/toggle-action.png" } ],
 					"supported_in_multi_actions": false
-				}"#,
-			)
+				}
+			))
 			.unwrap(),
 		],
 	);

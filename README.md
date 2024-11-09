@@ -57,7 +57,7 @@ To enable automatic launch on startup, the light theme, to change the language p
 - Ensure you are running the latest version of OpenDeck, as well as recent versions of related software (e.g. Spotify or OBS, or your operating system and Wine).
 - Check the pinned [GitHub Issues](https://github.com/ninjadev64/OpenDeck/issues) to see if there's a fix for your problem already.
 - Check the OpenDeck log file for any important messages. This file should be included with any support request.
-	- You can also run OpenDeck from the terminal to see the logs directly (and colour-coded) if it's easier than finding the log file or if the log file is empty or missing details.
+	- You can also run OpenDeck from the terminal to see the logs directly if it's easier than finding the log file or if the log file is empty or missing details.
 	- For issues with plugins, you can also check the plugin's logs (in the same folder, sometimes as well as a file named `plugin.log` or similar in the plugin's own folder).
 	- The log directory can be opened from the settings page of OpenDeck, or alternatively located manually at the paths below:
 		- GNU+Linux: `~/.local/share/opendeck/logs/`

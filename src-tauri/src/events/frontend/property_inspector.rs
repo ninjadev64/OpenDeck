@@ -6,18 +6,7 @@ use tauri::command;
 
 #[command]
 pub async fn make_info(plugin: String) -> Result<crate::plugins::info_param::Info, Error> {
-	let mut path = crate::shared::config_dir();
-	path.push("plugins");
-	path.push(&plugin);
-	path.push("manifest.json");
-
-	let manifest = match tokio::fs::read(&path).await {
-		Ok(data) => data,
-		Err(error) => return Err(anyhow::Error::from(error).into()),
-	};
-
-	let manifest: crate::plugins::manifest::PluginManifest = serde_json::from_slice(&manifest)?;
-
+	let manifest = crate::plugins::manifest::read_manifest(&crate::shared::config_dir().join("plugins").join(&plugin))?;
 	Ok(crate::plugins::info_param::make_info(plugin, manifest.version, false).await)
 }
 
