@@ -10,7 +10,7 @@
 	import NoDevicesDetected from "../components/NoDevicesDetected.svelte";
 	import ParentActionView from "../components/ParentActionView.svelte";
 	import PluginManager from "../components/PluginManager.svelte";
-	import ProfileSelector from "../components/ProfileSelector.svelte";
+	import ProfileManager from "../components/ProfileManager.svelte";
 	import PropertyInspectorView from "../components/PropertyInspectorView.svelte";
 	import SettingsView from "../components/SettingsView.svelte";
 
@@ -20,7 +20,7 @@
 
 	let actionList: ActionList;
 	let deviceSelector: DeviceSelector;
-	let profileSelector: ProfileSelector;
+	let profileManager: ProfileManager;
 </script>
 
 <div class="flex flex-col grow">
@@ -49,14 +49,14 @@
 			bind:value={selectedDevice}
 			bind:selectedProfiles
 			bind:this={deviceSelector}
-			profileSelector={() => profileSelector}
+			profileManager={() => profileManager}
 		/>
 		{#key selectedDevice}
 			{#if selectedDevice && devices[selectedDevice]}
-				<ProfileSelector
+				<ProfileManager
 					bind:device={devices[selectedDevice]}
 					bind:profile={selectedProfiles[selectedDevice]}
-					bind:this={profileSelector}
+					bind:this={profileManager}
 				/>
 			{/if}
 		{/key}

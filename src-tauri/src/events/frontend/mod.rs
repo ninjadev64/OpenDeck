@@ -43,7 +43,7 @@ impl From<anyhow::Error> for Error {
 }
 
 #[command]
-pub async fn get_devices() -> HashMap<std::string::String, crate::devices::DeviceInfo> {
+pub async fn get_devices() -> HashMap<String, crate::devices::DeviceInfo> {
 	DEVICES.read().await.clone()
 }
 
@@ -62,7 +62,7 @@ pub async fn rescan_devices() {
 }
 
 #[command]
-pub async fn get_categories() -> HashMap<std::string::String, Vec<Action>> {
+pub async fn get_categories() -> HashMap<String, Vec<Action>> {
 	CATEGORIES.read().await.clone()
 }
 
@@ -91,4 +91,21 @@ pub async fn get_localisations(locale: &str) -> Result<HashMap<String, serde_jso
 	}
 
 	Ok(localisations)
+}
+
+#[command]
+pub async fn get_applications() -> Vec<String> {
+	crate::application_watcher::APPLICATIONS.read().await.clone()
+}
+
+#[command]
+pub async fn get_application_profiles() -> crate::application_watcher::ApplicationProfiles {
+	crate::application_watcher::APPLICATION_PROFILES.read().await.value.clone()
+}
+
+#[command]
+pub async fn set_application_profiles(value: crate::application_watcher::ApplicationProfiles) -> Result<(), Error> {
+	let mut store = crate::application_watcher::APPLICATION_PROFILES.write().await;
+	store.value = value;
+	Ok(store.save()?)
 }

@@ -43,6 +43,7 @@ urlencoding = "2.1"
 base64 = "0.22"
 reqwest = "0.12"
 zip = { version = "2.2", default-features = false, features = [ "deflate", "zstd" ] }
+active-win-pos-rs = "0.8"
 
 [features]
 custom-protocol = [ "tauri/custom-protocol" ]

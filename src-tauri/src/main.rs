@@ -1,6 +1,7 @@
 // Prevents additional console window on Windows in release.
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod application_watcher;
 mod devices;
 mod events;
 mod plugins;
@@ -34,6 +35,9 @@ async fn main() {
 			frontend::rescan_devices,
 			frontend::get_categories,
 			frontend::get_localisations,
+			frontend::get_applications,
+			frontend::get_application_profiles,
+			frontend::set_application_profiles,
 			frontend::instances::create_instance,
 			frontend::instances::move_instance,
 			frontend::instances::remove_instance,
@@ -70,6 +74,7 @@ async fn main() {
 
 			devices::initialise_devices();
 			plugins::initialise_plugins();
+			application_watcher::init_application_watcher();
 
 			let open = MenuItemBuilder::with_id("open", "Open").build(app)?;
 			let hide = MenuItemBuilder::with_id("hide", "Hide").build(app)?;
