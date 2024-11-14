@@ -97,6 +97,13 @@ async fn main() {
 					};
 				})
 				.build(app)?;
+
+			#[cfg(any(target_os = "linux", all(debug_assertions, windows)))]
+			{
+				use tauri_plugin_deep_link::DeepLinkExt;
+				app.deep_link().register_all()?;
+			}
+
 			Ok(())
 		})
 		.plugin(
@@ -108,6 +115,7 @@ async fn main() {
 		)
 		.plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, Some(vec!["--hide"])))
 		.plugin(tauri_plugin_single_instance::init(|app, _, _| app.get_webview_window("main").unwrap().show().unwrap()))
+		.plugin(tauri_plugin_deep_link::init())
 		.on_window_event(|window, event| {
 			if window.label() != "main" {
 				return;

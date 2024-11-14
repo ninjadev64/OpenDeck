@@ -41,7 +41,13 @@
 	"mainBinaryName": "opendeck",
 	"version": "2.2.1",
 	"identifier": "opendeck",
-	"plugins": {},
+	"plugins": {
+		"deep-link": {
+			"desktop": {
+				"schemes": [ "opendeck" ]
+			}
+		}
+	},
 	"app": {
 		"windows": [
 			{
