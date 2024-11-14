@@ -13,6 +13,7 @@
 
 	import { invoke } from "@tauri-apps/api/core";
 	import { onOpenUrl } from "@tauri-apps/plugin-deep-link";
+    import { get } from "svelte/store";
 
 	export let actionList: () => ActionList;
 	export let deviceSelector: () => DeviceSelector;
@@ -124,7 +125,9 @@
 	let search: string = "";
 
 	onOpenUrl((urls: any) => {
+		if (!urls[0].includes("installPlugin/")) {return null}
 		let id = urls[0].split("installPlugin/")[1];
+		if (!plugins[id]) {return null};
 		installPluginGitHub(id, plugins[id]);
 	});
 </script>
