@@ -1,6 +1,11 @@
 {
 	"identifier": "main",
 	"local": true,
-	"windows": ["main"],
-	"permissions": ["core:default"]
+	"windows": [
+		"main"
+	],
+	"permissions": [
+		"core:default",
+		"deep-link:default"
+	]
 }

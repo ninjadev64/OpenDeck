@@ -6,6 +6,7 @@
     "npm:@sveltejs/vite-plugin-svelte@^3.1.0": "3.1.2_svelte@4.2.19_vite@5.4.8",
     "npm:@tauri-apps/api@2": "2.0.2",
     "npm:@tauri-apps/cli@2": "2.0.3",
+    "npm:@tauri-apps/plugin-deep-link@2": "2.0.0",
     "npm:autoprefixer@^10.4.0": "10.4.20_postcss@8.4.47",
     "npm:phosphor-svelte@2": "2.0.1_svelte@4.2.19",
     "npm:postcss@^8.4.0": "8.4.47",
@@ -297,6 +298,12 @@
         "@tauri-apps/cli-win32-arm64-msvc",
         "@tauri-apps/cli-win32-ia32-msvc",
         "@tauri-apps/cli-win32-x64-msvc"
+      ]
+    },
+    "@tauri-apps/plugin-deep-link@2.0.0": {
+      "integrity": "sha512-cDa2k1OrRU5DoKc0IXl1Y8RlFOU107u2phdZfT7FkApsC6TL/VAPs3YOUTT8p9/PZ50EjOKP104HFMqVqnQ0bw==",
+      "dependencies": [
+        "@tauri-apps/api"
       ]
     },
     "@types/cookie@0.6.0": {
@@ -1110,6 +1117,7 @@
         "npm:@sveltejs/vite-plugin-svelte@^3.1.0",
         "npm:@tauri-apps/api@2",
         "npm:@tauri-apps/cli@2",
+        "npm:@tauri-apps/plugin-deep-link@2",
         "npm:autoprefixer@^10.4.0",
         "npm:phosphor-svelte@2",
         "npm:postcss@^8.4.0",

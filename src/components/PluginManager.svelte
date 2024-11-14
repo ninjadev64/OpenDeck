@@ -12,6 +12,7 @@
 	import { localisations, settings } from "$lib/settings";
 
 	import { invoke } from "@tauri-apps/api/core";
+	import { onOpenUrl } from "@tauri-apps/plugin-deep-link";
 
 	export let actionList: () => ActionList;
 	export let deviceSelector: () => DeviceSelector;
@@ -121,6 +122,13 @@
 	(async () => plugins = await (await fetch("https://ninjadev64.github.io/openaction-plugins/catalogue.json")).json())();
 
 	let search: string = "";
+
+	onOpenUrl((urls: string[]) => {
+		if (!urls[0].includes("installPlugin/")) return;
+		let id = urls[0].split("installPlugin/")[1];
+		if (!plugins[id]) return;
+		installPluginGitHub(id, plugins[id]);
+	});
 </script>
 
 <button
