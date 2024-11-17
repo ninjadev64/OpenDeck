@@ -2,6 +2,8 @@
 	import { settings } from "$lib/settings";
 	import { invoke } from "@tauri-apps/api/core";
 
+	import Heart from "phosphor-svelte/lib/Heart";
+	import Star from "phosphor-svelte/lib/Star";
 	import Popup from "./Popup.svelte";
 	import Tooltip from "./Tooltip.svelte";
 
@@ -99,5 +101,18 @@
 		<span class="text-xs dark:text-neutral-400">
 			{@html buildInfo}
 		</span>
+		<div class="absolute bottom-6 flex flex-row items-center text-sm dark:text-neutral-400">
+			<span class="mr-1">
+				Please leave a
+				<button on:click={() => invoke("open_url", { url: "https://github.com/ninjadev64/OpenDeck" })} class="underline">star on GitHub</button>
+			</span>
+			<Star weight="fill" fill="yellow" />
+			<span class="mx-1">
+				or
+				<button on:click={() => invoke("open_url", { url: "https://github.com/sponsors/ninjadev64" })} class="underline">sponsor me</button>
+			</span>
+			<Heart weight="fill" fill="fuchsia" />
+			<span class="ml-1">for my work :)</span>
+		</div>
 	</div>
 </Popup>
