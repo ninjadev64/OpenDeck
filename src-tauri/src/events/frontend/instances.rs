@@ -111,7 +111,7 @@ pub async fn move_instance(source: Context, destination: Context, retain: bool) 
 	if !retain {
 		let src = get_slot_mut(&source, &mut locks).await?;
 		if let Some(old) = src {
-			let _ = crate::events::outbound::will_appear::will_disappear(old, false).await;
+			let _ = crate::events::outbound::will_appear::will_disappear(old, false, true).await;
 			let _ = remove_dir_all(instance_images_dir(old)).await;
 		}
 		*src = None;
@@ -133,10 +133,10 @@ pub async fn remove_instance(context: ActionContext) -> Result<(), Error> {
 	};
 
 	if instance.context == context {
-		let _ = crate::events::outbound::will_appear::will_disappear(instance, false).await;
+		let _ = crate::events::outbound::will_appear::will_disappear(instance, false, true).await;
 		if let Some(children) = &instance.children {
 			for child in children {
-				let _ = crate::events::outbound::will_appear::will_disappear(child, false).await;
+				let _ = crate::events::outbound::will_appear::will_disappear(child, false, true).await;
 				let _ = remove_dir_all(instance_images_dir(child)).await;
 			}
 		}
@@ -146,7 +146,7 @@ pub async fn remove_instance(context: ActionContext) -> Result<(), Error> {
 		let children = instance.children.as_mut().unwrap();
 		for (index, instance) in children.iter().enumerate() {
 			if instance.context == context {
-				let _ = crate::events::outbound::will_appear::will_disappear(instance, true).await;
+				let _ = crate::events::outbound::will_appear::will_disappear(instance, true, true).await;
 				let _ = remove_dir_all(instance_images_dir(instance)).await;
 				children.remove(index);
 				break;
@@ -198,10 +198,12 @@ pub async fn set_state(instance: ActionInstance, state: u16) -> Result<(), Error
 
 #[command]
 pub async fn update_image(context: Context, image: String) {
-	if context.device.starts_with("sd-") {
-		if let Err(error) = crate::devices::elgato::update_image(&context, &image).await {
-			log::warn!("Failed to update device image: {}", error);
-		}
+	if Some(&context.profile) != crate::store::profiles::DEVICE_STORES.write().await.get_selected_profile(&context.device).ok().as_ref() {
+		return;
+	}
+
+	if let Err(error) = crate::events::outbound::devices::update_image(context, Some(image)).await {
+		log::warn!("Failed to update device image: {}", error);
 	}
 }
 

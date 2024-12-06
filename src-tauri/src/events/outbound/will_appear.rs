@@ -25,7 +25,7 @@ pub async fn will_appear(instance: &ActionInstance, multi_action: bool) -> Resul
 	.await
 }
 
-pub async fn will_disappear(instance: &ActionInstance, multi_action: bool) -> Result<(), anyhow::Error> {
+pub async fn will_disappear(instance: &ActionInstance, multi_action: bool, clear_on_device: bool) -> Result<(), anyhow::Error> {
 	send_to_plugin(
 		&instance.action.plugin,
 		&AppearEvent {
@@ -38,9 +38,9 @@ pub async fn will_disappear(instance: &ActionInstance, multi_action: bool) -> Re
 	)
 	.await?;
 
-	if instance.context.device.starts_with("sd-") {
-		if let Err(error) = crate::devices::elgato::clear_image(&(&instance.context).into()).await {
-			log::warn!("Failed to clear device image at context {}: {}", instance.context, error);
+	if clear_on_device {
+		if let Err(error) = crate::events::outbound::devices::update_image((&instance.context).into(), None).await {
+			log::warn!("Failed to clear device image: {}", error);
 		}
 	}
 

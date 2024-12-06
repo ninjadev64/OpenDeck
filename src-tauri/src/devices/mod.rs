@@ -1,40 +1,35 @@
 pub mod elgato;
-mod prontokey;
 
 use crate::store::profiles::get_device_profiles;
 
 use std::collections::HashMap;
 
 use once_cell::sync::Lazy;
+use serde_inline_default::serde_inline_default;
 use tokio::sync::RwLock;
 
 use log::{error, warn};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 /// Metadata of a device.
-#[derive(Clone, Serialize)]
+#[serde_inline_default]
+#[derive(Clone, Deserialize, Serialize)]
 pub struct DeviceInfo {
 	pub id: String,
+	#[serde_inline_default(String::new())]
+	pub plugin: String,
 	pub name: String,
 	pub rows: u8,
 	pub columns: u8,
-	pub sliders: u8,
+	pub encoders: u8,
 	pub r#type: u8,
 }
 
 pub static DEVICES: Lazy<RwLock<HashMap<String, DeviceInfo>>> = Lazy::new(|| RwLock::new(HashMap::new()));
+pub static DEVICE_NAMESPACES: Lazy<RwLock<HashMap<String, String>>> = Lazy::new(|| RwLock::new(HashMap::new()));
 
 /// Attempt to initialise all connected devices.
 pub fn initialise_devices() {
-	// Iterate through available serial ports and attempt to register them as ProntoKey devices.
-	for port in serialport::available_ports().unwrap_or_default() {
-		if let serialport::SerialPortType::UsbPort(info) = port.port_type {
-			if info.vid == 0x10c4 && info.pid == 0xea60 {
-				tokio::spawn(prontokey::init(port.port_name));
-			}
-		}
-	}
-
 	// Iterate through detected Elgato devices and attempt to register them.
 	match elgato_streamdeck::new_hidapi() {
 		Ok(hid) => {
@@ -55,17 +50,18 @@ pub fn initialise_devices() {
 	tokio::spawn(async move {
 		let device = DeviceInfo {
 			id: "virtual".to_owned(),
+			plugin: String::new(),
 			name: "Virtual device".to_owned(),
 			rows: 3,
 			columns: 5,
-			sliders: 0,
+			encoders: 0,
 			r#type: 0,
 		};
-		register_device("virtual".to_owned(), device).await;
+		register_device(device).await;
 	});
 }
 
-async fn register_device(id: String, device: DeviceInfo) {
+pub async fn register_device(device: DeviceInfo) {
 	if let Ok(profiles) = get_device_profiles(&device.id) {
 		let mut profile_stores = crate::store::profiles::PROFILE_STORES.write().await;
 		for profile in profiles {
@@ -75,12 +71,12 @@ async fn register_device(id: String, device: DeviceInfo) {
 			}
 		}
 	}
-	crate::events::outbound::devices::device_did_connect(&id, (&device).into()).await.ok();
-	DEVICES.write().await.insert(id, device);
+	crate::events::outbound::devices::device_did_connect(&device.id, (&device).into()).await.ok();
+	DEVICES.write().await.insert(device.id.clone(), device);
 	crate::events::frontend::update_devices().await;
 }
 
-async fn unregister_device(id: String) {
+pub async fn unregister_device(id: String) {
 	crate::events::outbound::devices::device_did_disconnect(&id).await.ok();
 	DEVICES.write().await.remove(&id);
 	crate::events::frontend::update_devices().await;

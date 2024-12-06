@@ -34,6 +34,7 @@ pub async fn register_plugin(event: RegisterEvent, stream: WebSocketStream<TcpSt
 			tokio::spawn(async move {
 				let uuid = uuid;
 				write.for_each(|event| inbound::process_incoming_message(event, &uuid)).await;
+				PLUGIN_SOCKETS.lock().await.remove(&uuid);
 			});
 		}
 		RegisterEvent::RegisterPropertyInspector { uuid } => {
@@ -47,6 +48,7 @@ pub async fn register_plugin(event: RegisterEvent, stream: WebSocketStream<TcpSt
 			tokio::spawn(async move {
 				let uuid = uuid;
 				write.for_each(|event| inbound::process_incoming_message_pi(event, &uuid)).await;
+				PROPERTY_INSPECTOR_SOCKETS.lock().await.remove(&uuid);
 			});
 		}
 	};

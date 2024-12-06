@@ -49,6 +49,9 @@ pub struct PluginManifest {
 
 	#[serde(alias = "PropertyInspectorPath")]
 	pub property_inspector_path: Option<String>,
+
+	#[serde(alias = "DeviceNamespace")]
+	pub device_namespace: Option<String>,
 }
 
 pub fn read_manifest(base_path: &std::path::Path) -> Result<PluginManifest, anyhow::Error> {

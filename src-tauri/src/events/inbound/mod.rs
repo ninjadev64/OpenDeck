@@ -1,3 +1,4 @@
+mod devices;
 mod misc;
 mod settings;
 mod states;
@@ -40,6 +41,12 @@ pub struct ContextAndPayloadEvent<T, C = ActionContext> {
 #[serde(tag = "event")]
 #[serde(rename_all = "camelCase")]
 pub enum InboundEventType {
+	RegisterDevice(PayloadEvent<crate::devices::DeviceInfo>),
+	KeyDown(PayloadEvent<devices::PressPayload>),
+	KeyUp(PayloadEvent<devices::PressPayload>),
+	EncoderChange(PayloadEvent<devices::TicksPayload>),
+	EncoderDown(PayloadEvent<devices::PressPayload>),
+	EncoderUp(PayloadEvent<devices::PressPayload>),
 	SetSettings(ContextAndPayloadEvent<serde_json::Value>),
 	GetSettings(ContextEvent),
 	SetGlobalSettings(ContextAndPayloadEvent<serde_json::Value, String>),
@@ -90,6 +97,12 @@ pub async fn process_incoming_message(data: Result<Message, Error>, uuid: &str) 
 		}
 
 		if let Err(error) = match decoded {
+			InboundEventType::RegisterDevice(event) => devices::register_device(uuid, event).await,
+			InboundEventType::KeyDown(event) => devices::key_down(event).await,
+			InboundEventType::KeyUp(event) => devices::key_up(event).await,
+			InboundEventType::EncoderChange(event) => devices::encoder_change(event).await,
+			InboundEventType::EncoderDown(event) => devices::encoder_down(event).await,
+			InboundEventType::EncoderUp(event) => devices::encoder_up(event).await,
 			InboundEventType::SetSettings(event) => settings::set_settings(event, false).await,
 			InboundEventType::GetSettings(event) => settings::get_settings(event, false).await,
 			InboundEventType::SetGlobalSettings(event) => settings::set_global_settings(event, false).await,

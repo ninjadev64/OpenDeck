@@ -89,6 +89,10 @@ pub async fn initialise_plugin(path: &path::Path) -> anyhow::Result<()> {
 		categories.insert(manifest.category, category);
 	}
 
+	if let Some(namespace) = manifest.device_namespace {
+		crate::devices::DEVICE_NAMESPACES.write().await.insert(namespace, plugin_uuid.to_owned());
+	}
+
 	#[cfg(target_os = "windows")]
 	let platform = "windows";
 	#[cfg(target_os = "macos")]

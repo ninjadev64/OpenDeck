@@ -3,25 +3,29 @@ use crate::events::outbound::{encoder, keypad};
 use std::collections::HashMap;
 
 use base64::Engine as _;
-use elgato_streamdeck::{info, AsyncStreamDeck, DeviceStateUpdate, StreamDeckError};
+use elgato_streamdeck::{info, AsyncStreamDeck, DeviceStateUpdate};
 use once_cell::sync::Lazy;
 use tokio::sync::RwLock;
 
 static ELGATO_DEVICES: Lazy<RwLock<HashMap<String, AsyncStreamDeck>>> = Lazy::new(|| RwLock::new(HashMap::new()));
 
-pub async fn update_image(context: &crate::shared::Context, url: &str) -> Result<(), anyhow::Error> {
+pub async fn update_image(context: &crate::shared::Context, image: Option<&str>) -> Result<(), anyhow::Error> {
 	if let Some(device) = ELGATO_DEVICES.read().await.get(&context.device) {
-		let data = url.split_once(',').unwrap().1;
-		let bytes = base64::engine::general_purpose::STANDARD.decode(data)?;
-		device.set_button_image(context.position, image::load_from_memory(&bytes)?).await?;
+		if let Some(image) = image {
+			let data = image.split_once(',').unwrap().1;
+			let bytes = base64::engine::general_purpose::STANDARD.decode(data)?;
+			device.set_button_image(context.position, image::load_from_memory(&bytes)?).await?;
+		} else {
+			device.clear_button_image(context.position).await?;
+		}
 		device.flush().await?;
 	}
 	Ok(())
 }
 
-pub async fn clear_image(context: &crate::shared::Context) -> Result<(), StreamDeckError> {
-	if let Some(device) = ELGATO_DEVICES.read().await.get(&context.device) {
-		device.clear_button_image(context.position).await?;
+pub async fn clear_screen(id: &str) -> Result<(), anyhow::Error> {
+	if let Some(device) = ELGATO_DEVICES.read().await.get(id) {
+		device.clear_all_button_images().await?;
 		device.flush().await?;
 	}
 	Ok(())
@@ -46,17 +50,15 @@ pub(super) async fn init(device: AsyncStreamDeck) {
 	};
 	let _ = device.clear_all_button_images().await;
 	let device_id = format!("sd-{}", device.serial_number().await.unwrap().chars().filter(|c| c.is_alphanumeric()).collect::<String>());
-	super::register_device(
-		device_id.clone(),
-		super::DeviceInfo {
-			id: device_id.clone(),
-			name: device.product().await.unwrap(),
-			rows: kind.row_count(),
-			columns: kind.column_count(),
-			sliders: kind.encoder_count(),
-			r#type: device_type,
-		},
-	)
+	super::register_device(super::DeviceInfo {
+		id: device_id.clone(),
+		plugin: String::new(),
+		name: device.product().await.unwrap(),
+		rows: kind.row_count(),
+		columns: kind.column_count(),
+		encoders: kind.encoder_count(),
+		r#type: device_type,
+	})
 	.await;
 
 	let reader = device.get_reader();

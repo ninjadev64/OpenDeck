@@ -23,7 +23,7 @@ pub async fn set_settings(_app: tauri::AppHandle, settings: crate::store::Settin
 		false => _app.autolaunch().disable(),
 	};
 
-	crate::devices::elgato::set_brightness(settings.brightness).await;
+	crate::events::outbound::devices::set_brightness(settings.brightness).await?;
 	let mut store = match crate::store::get_settings() {
 		Ok(store) => store,
 		Err(error) => return Err(error.into()),

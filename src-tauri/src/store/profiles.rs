@@ -44,7 +44,7 @@ impl ProfileStores {
 			let default = Profile {
 				id: id.to_owned(),
 				keys: vec![None; (device.rows * device.columns) as usize],
-				sliders: vec![None; device.sliders as usize],
+				sliders: vec![None; device.encoders as usize],
 			};
 
 			let mut store = Store::new(path, &config_dir(), default).context(format!("Failed to create store for profile {}", path))?;
