@@ -1,4 +1,5 @@
 export type Settings = {
+	version: string;
 	language: string;
 	background: boolean;
 	autolaunch: boolean;

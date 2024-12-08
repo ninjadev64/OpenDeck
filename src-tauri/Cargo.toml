@@ -34,6 +34,7 @@ open = "5.3"
 tauri-plugin-log = "2.0"
 tauri-plugin-single-instance = { version = "2.0", features = ["deep-link"] }
 tauri-plugin-autostart = "2.0"
+tauri-plugin-dialog = "2.0"
 tauri-plugin-deep-link = "2.0"
 serde-inline-default = "0.2"
 serde_with = "3.11"
@@ -44,6 +45,7 @@ base64 = "0.22"
 reqwest = "0.12"
 zip = { version = "2.2", default-features = false, features = ["deflate", "zstd"] }
 active-win-pos-rs = "0.8"
+semver = "1.0"
 
 [features]
 custom-protocol = ["tauri/custom-protocol"]

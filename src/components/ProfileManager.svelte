@@ -116,6 +116,15 @@
 	</select>
 </div>
 
+<svelte:window
+	on:keydown={(event) => {
+		if (event.key == "Escape") {
+			if (showApplicationManager) showApplicationManager = false;
+			else showPopup = false;
+		}
+	}}
+/>
+
 <Popup show={showPopup}>
 	<button class="mr-1 float-right text-xl dark:text-neutral-300" on:click={() => showPopup = false}>✕</button>
 	<h2 class="text-xl font-semibold dark:text-neutral-300">{device.name}</h2>
@@ -142,7 +151,7 @@
 		</button>
 
 		<button
-			class="ml-2 px-4 flex items-center dark:text-neutral-300 bg-neutral-200 dark:bg-neutral-900 rounded-md"
+			class="ml-2 px-4 flex items-center dark:text-neutral-300 bg-neutral-200 dark:bg-neutral-900 rounded-md outline-none"
 			on:click={() => showApplicationManager = true}
 		>
 			<Browsers size={24} />
