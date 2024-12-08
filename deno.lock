@@ -7,6 +7,7 @@
     "npm:@tauri-apps/api@2": "2.0.2",
     "npm:@tauri-apps/cli@2": "2.0.3",
     "npm:@tauri-apps/plugin-deep-link@2": "2.0.0",
+    "npm:@tauri-apps/plugin-dialog@2": "2.0.1",
     "npm:autoprefixer@^10.4.0": "10.4.20_postcss@8.4.47",
     "npm:phosphor-svelte@2": "2.0.1_svelte@4.2.19",
     "npm:postcss@^8.4.0": "8.4.47",
@@ -302,6 +303,12 @@
     },
     "@tauri-apps/plugin-deep-link@2.0.0": {
       "integrity": "sha512-cDa2k1OrRU5DoKc0IXl1Y8RlFOU107u2phdZfT7FkApsC6TL/VAPs3YOUTT8p9/PZ50EjOKP104HFMqVqnQ0bw==",
+      "dependencies": [
+        "@tauri-apps/api"
+      ]
+    },
+    "@tauri-apps/plugin-dialog@2.0.1": {
+      "integrity": "sha512-fnUrNr6EfvTqdls/ufusU7h6UbNFzLKvHk/zTuOiBq01R3dTODqwctZlzakdbfSp/7pNwTKvgKTAgl/NAP/Z0Q==",
       "dependencies": [
         "@tauri-apps/api"
       ]
@@ -1118,6 +1125,7 @@
         "npm:@tauri-apps/api@2",
         "npm:@tauri-apps/cli@2",
         "npm:@tauri-apps/plugin-deep-link@2",
+        "npm:@tauri-apps/plugin-dialog@2",
         "npm:autoprefixer@^10.4.0",
         "npm:phosphor-svelte@2",
         "npm:postcss@^8.4.0",

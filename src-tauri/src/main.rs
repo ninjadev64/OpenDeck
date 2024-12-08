@@ -72,6 +72,30 @@ async fn main() {
 				let _ = std::fs::rename(old, app.path().app_config_dir().unwrap());
 			}
 
+			let mut settings = store::get_settings()?;
+			use std::cmp::Ordering;
+			match semver::Version::parse(built_info::PKG_VERSION)?.cmp(&semver::Version::parse(&settings.value.version)?) {
+				Ordering::Less => {
+					use tauri_plugin_dialog::{DialogExt, MessageDialogKind};
+					app.get_webview_window("main").unwrap().close().unwrap();
+					app.dialog()
+						.message(format!(
+							"A newer version of OpenDeck created configuration files on this device. This version is v{}; please upgrade to v{} or newer.",
+							built_info::PKG_VERSION,
+							settings.value.version
+						))
+						.title("Upgrade required")
+						.kind(MessageDialogKind::Error)
+						.show(|_| APP_HANDLE.get().unwrap().exit(1));
+					return Ok(());
+				}
+				Ordering::Greater => {
+					settings.value.version = built_info::PKG_VERSION.to_owned();
+					settings.save()?;
+				}
+				Ordering::Equal => (),
+			}
+
 			elgato::initialise_devices();
 			plugins::initialise_plugins();
 			application_watcher::init_application_watcher();
@@ -115,6 +139,7 @@ async fn main() {
 		)
 		.plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, Some(vec!["--hide"])))
 		.plugin(tauri_plugin_single_instance::init(|app, _, _| app.get_webview_window("main").unwrap().show().unwrap()))
+		.plugin(tauri_plugin_dialog::init())
 		.plugin(tauri_plugin_deep_link::init())
 		.on_window_event(|window, event| {
 			if window.label() != "main" {

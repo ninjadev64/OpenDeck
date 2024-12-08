@@ -28,6 +28,7 @@
 	"type": "module",
 	"dependencies": {
 		"@tauri-apps/api": "^2.0",
+		"@tauri-apps/plugin-dialog": "^2.0",
 		"@tauri-apps/plugin-deep-link": "^2.0",
 		"phosphor-svelte": "^2.0"
 	}

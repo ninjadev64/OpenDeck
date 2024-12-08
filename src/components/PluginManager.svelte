@@ -13,6 +13,7 @@
 
 	import { invoke } from "@tauri-apps/api/core";
 	import { onOpenUrl } from "@tauri-apps/plugin-deep-link";
+	import { ask, message } from "@tauri-apps/plugin-dialog";
 
 	export let actionList: () => ActionList;
 	export let deviceSelector: () => DeviceSelector;
@@ -20,14 +21,14 @@
 	let showPopup: boolean;
 
 	async function installPlugin(id: string, name: string, url: string | undefined = undefined) {
-		if (!await confirm(`Install "${name}"? It may take a while to download the plugin.`)) return;
+		if (!await ask(`Install "${name}"? It may take a while to download the plugin.`, { title: `Install "${name}"?` })) return;
 		try {
 			await invoke("install_plugin", { id, url });
-			alert(`Successfully installed "${name}".`);
+			message(`Successfully installed "${name}".`, { title: `Installed "${name}"` });
 			actionList().reload();
 			installed = await invoke("list_plugins");
 		} catch (error: any) {
-			alert(`Failed to install ${name}: ${error}`);
+			message(`Failed to install "${name}": ${error}`, { title: `Failed to install "${name}"` });
 		}
 	}
 
@@ -61,7 +62,7 @@
 		try {
 			res = await (await fetch(endpoint)).json();
 		} catch (error: any) {
-			alert(`Failed to install ${plugin.name}: ${error}`);
+			message(`Failed to install "${plugin.name}": ${error}`, { title: `Failed to install "${plugin.name}"` });
 			return;
 		}
 
@@ -83,15 +84,15 @@
 	}
 
 	async function removePlugin(plugin: any) {
-		if (!await confirm(`Are you sure you want to remove "${plugin.name}"?`)) return;
+		if (!await ask(`Are you sure you want to remove "${plugin.name}"?`, { title: `Remove "${plugin.name}"?` })) return;
 		try {
 			await invoke("remove_plugin", { id: plugin.id });
-			alert(`Successfully removed "${plugin.name}".`);
+			message(`Successfully removed "${plugin.name}".`, { title: `Removed "${plugin.name}"` });
 			actionList().reload();
 			deviceSelector().reloadProfiles();
 			installed = await invoke("list_plugins");
 		} catch (error: any) {
-			alert(`Failed to remove ${plugin.name}: ${error}`);
+			message(`Failed to remove "${plugin.name}": ${error}`, { title: `Failed to remove "${plugin.name}"` });
 		}
 	}
 
@@ -99,22 +100,10 @@
 	(async () => {
 		installed = await invoke("list_plugins");
 		if (!installed.some((v) => v.id == "com.amansprojects.starterpack.sdPlugin")) {
-			let tempConfirm = confirm;
-			let tempAlert = alert;
-			// @ts-expect-error
-			confirm = () => true;
-			// @ts-expect-error
-			alert = () => {};
-			try {
-				await installPluginGitHub(
-					"com.amansprojects.starterpack",
-					{ repository: "https://github.com/ninjadev64/opendeck-starterpack" } as GitHubPlugin,
-				);
-			} catch {}
-			// @ts-expect-error
-			confirm = tempConfirm;
-			// @ts-expect-error
-			alert = tempAlert;
+			await installPluginGitHub(
+				"com.amansprojects.starterpack",
+				{ name: "OpenDeck Starter Pack", repository: "https://github.com/ninjadev64/opendeck-starterpack" } as GitHubPlugin,
+			);
 		}
 	})();
 
@@ -132,11 +121,17 @@
 </script>
 
 <button
-	class="mt-2 p-1 w-1/2 text-sm text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 border dark:border-neutral-600 rounded-lg"
+	class="mt-2 p-1 w-1/2 text-sm text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 border dark:border-neutral-600 rounded-lg outline-none"
 	on:click={() => showPopup = true}
 >
 	Plugins
 </button>
+
+<svelte:window
+	on:keydown={(event) => {
+		if (event.key == "Escape") showPopup = false;
+	}}
+/>
 
 <Popup show={showPopup}>
 	<button class="mr-2 my-1 float-right text-xl dark:text-neutral-300" on:click={() => showPopup = false}>✕</button>

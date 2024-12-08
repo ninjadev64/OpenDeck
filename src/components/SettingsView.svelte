@@ -25,11 +25,17 @@
 </script>
 
 <button
-	class="ml-2 mt-2 p-1 w-1/2 text-sm text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 border dark:border-neutral-600 rounded-lg"
+	class="ml-2 mt-2 p-1 w-1/2 text-sm text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 border dark:border-neutral-600 rounded-lg outline-none"
 	on:click={() => showPopup = true}
 >
 	Settings
 </button>
+
+<svelte:window
+	on:keydown={(event) => {
+		if (event.key == "Escape") showPopup = false;
+	}}
+/>
 
 <Popup show={showPopup}>
 	<button class="mr-2 my-1 float-right text-xl dark:text-neutral-300" on:click={() => showPopup = false}>✕</button>

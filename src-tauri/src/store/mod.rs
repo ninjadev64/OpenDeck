@@ -67,6 +67,7 @@ where
 #[derive(Serialize, Deserialize)]
 #[serde(default)]
 pub struct Settings {
+	pub version: String,
 	pub language: String,
 	pub background: bool,
 	pub autolaunch: bool,
@@ -78,6 +79,7 @@ pub struct Settings {
 impl Default for Settings {
 	fn default() -> Self {
 		Self {
+			version: crate::built_info::PKG_VERSION.to_owned(),
 			language: "en".to_owned(),
 			background: std::env::var("container").is_err(),
 			autolaunch: false,
