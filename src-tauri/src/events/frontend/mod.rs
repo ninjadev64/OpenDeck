@@ -4,8 +4,7 @@ pub mod profiles;
 pub mod property_inspector;
 pub mod settings;
 
-use crate::devices::DEVICES;
-use crate::shared::{Action, CATEGORIES};
+use crate::shared::{Action, DeviceInfo, CATEGORIES, DEVICES};
 
 use std::collections::HashMap;
 
@@ -43,22 +42,18 @@ impl From<anyhow::Error> for Error {
 }
 
 #[command]
-pub async fn get_devices() -> HashMap<String, crate::devices::DeviceInfo> {
+pub async fn restart(app: tauri::AppHandle) {
+	app.restart();
+}
+
+#[command]
+pub async fn get_devices() -> HashMap<String, DeviceInfo> {
 	DEVICES.read().await.clone()
 }
 
 pub async fn update_devices() {
 	let app = crate::APP_HANDLE.get().unwrap();
 	let _ = app.get_webview_window("main").unwrap().emit("devices", DEVICES.read().await.clone());
-}
-
-#[command]
-pub async fn rescan_devices() {
-	let devices = DEVICES.read().await;
-	if devices.len() > 0 {
-		return;
-	}
-	crate::devices::initialise_devices();
 }
 
 #[command]

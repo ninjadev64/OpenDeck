@@ -1,6 +1,6 @@
 use super::{send_to_all_plugins, send_to_plugin};
 
-use crate::plugins::info_param::DeviceInfo;
+use crate::plugins::{info_param::DeviceInfo, DEVICE_NAMESPACES};
 
 use serde::Serialize;
 
@@ -44,7 +44,7 @@ struct SetImageEvent {
 }
 
 pub async fn update_image(context: crate::shared::Context, image: Option<String>) -> Result<(), anyhow::Error> {
-	if let Some(plugin) = crate::devices::DEVICE_NAMESPACES.read().await.get(&context.device[..2]) {
+	if let Some(plugin) = DEVICE_NAMESPACES.read().await.get(&context.device[..2]) {
 		send_to_plugin(
 			plugin,
 			&SetImageEvent {
@@ -56,14 +56,14 @@ pub async fn update_image(context: crate::shared::Context, image: Option<String>
 		)
 		.await?;
 	} else if context.device.starts_with("sd-") {
-		crate::devices::elgato::update_image(&context, image.as_deref()).await?;
+		crate::elgato::update_image(&context, image.as_deref()).await?;
 	}
 
 	Ok(())
 }
 
 pub async fn clear_screen(device: String) -> Result<(), anyhow::Error> {
-	if let Some(plugin) = crate::devices::DEVICE_NAMESPACES.read().await.get(&device[..2]) {
+	if let Some(plugin) = DEVICE_NAMESPACES.read().await.get(&device[..2]) {
 		send_to_plugin(
 			plugin,
 			&SetImageEvent {
@@ -75,7 +75,7 @@ pub async fn clear_screen(device: String) -> Result<(), anyhow::Error> {
 		)
 		.await?;
 	} else if device.starts_with("sd-") {
-		crate::devices::elgato::clear_screen(&device).await?;
+		crate::elgato::clear_screen(&device).await?;
 	}
 
 	Ok(())
@@ -89,8 +89,8 @@ struct SetBrightnessEvent {
 }
 
 pub async fn set_brightness(brightness: u8) -> Result<(), anyhow::Error> {
-	let devices = crate::devices::DEVICES.read().await;
-	let namespaces = crate::devices::DEVICE_NAMESPACES.read().await;
+	let devices = crate::shared::DEVICES.read().await;
+	let namespaces = DEVICE_NAMESPACES.read().await;
 	for device in devices.values() {
 		if let Some(plugin) = namespaces.get(&device.id[..2]) {
 			send_to_plugin(
@@ -104,7 +104,7 @@ pub async fn set_brightness(brightness: u8) -> Result<(), anyhow::Error> {
 			.await?;
 		}
 	}
-	crate::devices::elgato::set_brightness(brightness).await;
+	crate::elgato::set_brightness(brightness).await;
 
 	Ok(())
 }

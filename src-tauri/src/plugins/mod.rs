@@ -20,7 +20,7 @@ use tokio::net::{TcpListener, TcpStream};
 use anyhow::anyhow;
 use log::{error, warn};
 use once_cell::sync::Lazy;
-use tokio::sync::Mutex;
+use tokio::sync::{Mutex, RwLock};
 
 enum PluginInstance {
 	Webview,
@@ -29,6 +29,7 @@ enum PluginInstance {
 	Node(Child),
 }
 
+pub static DEVICE_NAMESPACES: Lazy<RwLock<HashMap<String, String>>> = Lazy::new(|| RwLock::new(HashMap::new()));
 static INSTANCES: Lazy<Mutex<HashMap<String, PluginInstance>>> = Lazy::new(|| Mutex::new(HashMap::new()));
 
 /// Initialise a plugin from a given directory.
@@ -90,7 +91,7 @@ pub async fn initialise_plugin(path: &path::Path) -> anyhow::Result<()> {
 	}
 
 	if let Some(namespace) = manifest.device_namespace {
-		crate::devices::DEVICE_NAMESPACES.write().await.insert(namespace, plugin_uuid.to_owned());
+		DEVICE_NAMESPACES.write().await.insert(namespace, plugin_uuid.to_owned());
 	}
 
 	#[cfg(target_os = "windows")]
@@ -139,7 +140,7 @@ pub async fn initialise_plugin(path: &path::Path) -> anyhow::Result<()> {
 	}
 
 	let mut devices: Vec<info_param::DeviceInfo> = vec![];
-	for device in crate::devices::DEVICES.read().await.values() {
+	for device in crate::shared::DEVICES.read().await.values() {
 		devices.push(device.into());
 	}
 

@@ -8,6 +8,22 @@ use once_cell::sync::Lazy;
 use tauri::Manager;
 use tokio::sync::RwLock;
 
+/// Metadata of a device.
+#[serde_inline_default]
+#[derive(Clone, Deserialize, Serialize)]
+pub struct DeviceInfo {
+	pub id: String,
+	#[serde_inline_default(String::new())]
+	pub plugin: String,
+	pub name: String,
+	pub rows: u8,
+	pub columns: u8,
+	pub encoders: u8,
+	pub r#type: u8,
+}
+
+pub static DEVICES: Lazy<RwLock<HashMap<String, DeviceInfo>>> = Lazy::new(|| RwLock::new(HashMap::new()));
+
 /// Get the application configuration directory.
 pub fn config_dir() -> std::path::PathBuf {
 	let app_handle = crate::APP_HANDLE.get().unwrap();

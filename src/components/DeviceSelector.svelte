@@ -43,12 +43,14 @@
 	listen("devices", ({ payload }: { payload: { [id: string]: DeviceInfo } }) => devices = payload);
 </script>
 
-<div class="select-wrapper">
-	<select bind:value class="w-full">
-		<option value="" disabled selected>Choose a device...</option>
+{#if Object.keys(devices).length > 0}
+	<div class="select-wrapper">
+		<select bind:value class="w-full">
+			<option value="" disabled selected>Choose a device...</option>
 
-		{#each Object.entries(devices).sort() as [id, device]}
-			<option value={id}>{device.name}</option>
-		{/each}
-	</select>
-</div>
+			{#each Object.entries(devices).sort() as [id, device]}
+				<option value={id}>{device.name}</option>
+			{/each}
+		</select>
+	</div>
+{/if}

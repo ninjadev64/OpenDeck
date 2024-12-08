@@ -43,8 +43,8 @@ pub struct DeviceInfo {
 	pub r#type: u8,
 }
 
-impl From<&crate::devices::DeviceInfo> for DeviceInfo {
-	fn from(device: &crate::devices::DeviceInfo) -> DeviceInfo {
+impl From<&crate::shared::DeviceInfo> for DeviceInfo {
+	fn from(device: &crate::shared::DeviceInfo) -> DeviceInfo {
 		DeviceInfo {
 			id: device.id.clone(),
 			name: device.name.clone(),
@@ -77,7 +77,7 @@ pub async fn make_info(uuid: String, version: String, wine: bool) -> Info {
 	let platform = "linux";
 
 	let mut devices: Vec<DeviceInfo> = vec![];
-	for device in crate::devices::DEVICES.read().await.values() {
+	for device in crate::shared::DEVICES.read().await.values() {
 		devices.push(device.into());
 	}
 

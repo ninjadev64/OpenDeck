@@ -1,4 +1,4 @@
-mod devices;
+pub(crate) mod devices;
 mod misc;
 mod settings;
 mod states;
@@ -41,7 +41,8 @@ pub struct ContextAndPayloadEvent<T, C = ActionContext> {
 #[serde(tag = "event")]
 #[serde(rename_all = "camelCase")]
 pub enum InboundEventType {
-	RegisterDevice(PayloadEvent<crate::devices::DeviceInfo>),
+	RegisterDevice(PayloadEvent<crate::shared::DeviceInfo>),
+	DeregisterDevice(PayloadEvent<String>),
 	KeyDown(PayloadEvent<devices::PressPayload>),
 	KeyUp(PayloadEvent<devices::PressPayload>),
 	EncoderChange(PayloadEvent<devices::TicksPayload>),
@@ -98,6 +99,7 @@ pub async fn process_incoming_message(data: Result<Message, Error>, uuid: &str) 
 
 		if let Err(error) = match decoded {
 			InboundEventType::RegisterDevice(event) => devices::register_device(uuid, event).await,
+			InboundEventType::DeregisterDevice(event) => devices::deregister_device(uuid, event).await,
 			InboundEventType::KeyDown(event) => devices::key_down(event).await,
 			InboundEventType::KeyUp(event) => devices::key_up(event).await,
 			InboundEventType::EncoderChange(event) => devices::encoder_change(event).await,

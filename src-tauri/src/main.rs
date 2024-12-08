@@ -2,7 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod application_watcher;
-mod devices;
+mod elgato;
 mod events;
 mod plugins;
 mod shared;
@@ -32,7 +32,7 @@ async fn main() {
 	match Builder::default()
 		.invoke_handler(tauri::generate_handler![
 			frontend::get_devices,
-			frontend::rescan_devices,
+			frontend::restart,
 			frontend::get_categories,
 			frontend::get_localisations,
 			frontend::get_applications,
@@ -72,7 +72,7 @@ async fn main() {
 				let _ = std::fs::rename(old, app.path().app_config_dir().unwrap());
 			}
 
-			devices::initialise_devices();
+			elgato::initialise_devices();
 			plugins::initialise_plugins();
 			application_watcher::init_application_watcher();
 

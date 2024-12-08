@@ -7,6 +7,11 @@
 	function handleDragStart(event: DragEvent) {
 		event.dataTransfer?.setData("action", JSON.stringify(action));
 	}
+
+	function handleDragOver(event: DragEvent) {
+		event.preventDefault();
+		return true;
+	}
 </script>
 
 <div class="flex flex-row items-center mt-2 mb-2 space-x-2">
@@ -16,6 +21,7 @@
 		class="w-12 h-12 rounded-sm"
 		draggable="true"
 		on:dragstart={handleDragStart}
+		on:dragover={handleDragOver}
 	/>
 	<span class="dark:text-neutral-400"> {localisation.name} </span>
 </div>

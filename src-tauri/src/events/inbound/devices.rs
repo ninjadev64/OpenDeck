@@ -1,14 +1,40 @@
+use crate::plugins::DEVICE_NAMESPACES;
+use crate::shared::DEVICES;
+use crate::store::profiles::get_device_profiles;
+
 use super::PayloadEvent;
 
 use serde::Deserialize;
 
-pub async fn register_device(uuid: &str, mut event: PayloadEvent<crate::devices::DeviceInfo>) -> Result<(), anyhow::Error> {
-	if Some(uuid) == crate::devices::DEVICE_NAMESPACES.read().await.get(&event.payload.id[..2]).map(|x| x.as_str()) {
+pub async fn register_device(uuid: &str, mut event: PayloadEvent<crate::shared::DeviceInfo>) -> Result<(), anyhow::Error> {
+	if uuid.is_empty() || Some(uuid) == DEVICE_NAMESPACES.read().await.get(&event.payload.id[..2]).map(|x| x.as_str()) {
 		event.payload.plugin = uuid.to_owned();
-		crate::devices::register_device(event.payload).await;
+		if let Ok(profiles) = get_device_profiles(&event.payload.id) {
+			let mut profile_stores = crate::store::profiles::PROFILE_STORES.write().await;
+			for profile in profiles {
+				// This is called to initialise the store for each profile when the device is registered.
+				if let Err(e) = profile_stores.get_profile_store_mut(&event.payload, &profile).await {
+					log::error!("{}", e);
+				}
+			}
+		}
+		crate::events::outbound::devices::device_did_connect(&event.payload.id, (&event.payload).into()).await.ok();
+		DEVICES.write().await.insert(event.payload.id.clone(), event.payload);
+		crate::events::frontend::update_devices().await;
 		Ok(())
 	} else {
 		Err(anyhow::anyhow!("plugin {uuid} is not registered for device namespace {}", &event.payload.id[..2]))
+	}
+}
+
+pub async fn deregister_device(uuid: &str, event: PayloadEvent<String>) -> Result<(), anyhow::Error> {
+	if uuid.is_empty() || Some(uuid) == DEVICE_NAMESPACES.read().await.get(&event.payload[..2]).map(|x| x.as_str()) {
+		let _ = crate::events::outbound::devices::device_did_disconnect(&event.payload).await;
+		DEVICES.write().await.remove(&event.payload);
+		crate::events::frontend::update_devices().await;
+		Ok(())
+	} else {
+		Err(anyhow::anyhow!("plugin {uuid} is not registered for device namespace {}", &event.payload[..2]))
 	}
 }
 

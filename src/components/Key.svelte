@@ -120,10 +120,10 @@
 	width={size}
 	height={size}
 	style={`scale: ${(112 / size) * scale};`}
-	on:dragover
-	on:drop
 	draggable={slot != null}
 	on:dragstart
+	on:dragover
+	on:drop
 	role="cell"
 	tabindex="-1"
 	on:click={select}

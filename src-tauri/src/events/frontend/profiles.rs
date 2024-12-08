@@ -1,6 +1,6 @@
 use super::Error;
 
-use crate::devices::DEVICES;
+use crate::shared::DEVICES;
 use crate::store::profiles::{get_device_profiles, DEVICE_STORES, PROFILE_STORES};
 
 use tauri::command;

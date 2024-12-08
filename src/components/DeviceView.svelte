@@ -15,6 +15,11 @@
 
 	export let selectedDevice: string;
 
+	function handleDragStart({ dataTransfer }: DragEvent, controller: string, position: number) {
+		dataTransfer?.setData("controller", controller);
+		dataTransfer?.setData("position", position.toString());
+	}
+
 	function handleDragOver(event: DragEvent) {
 		event.preventDefault();
 		return true;
@@ -44,11 +49,6 @@
 				profile = profile;
 			}
 		}
-	}
-
-	function handleDragStart({ dataTransfer }: DragEvent, controller: string, position: number) {
-		dataTransfer?.setData("controller", controller);
-		dataTransfer?.setData("position", position.toString());
 	}
 
 	async function handlePaste(source: Context, destination: Context) {

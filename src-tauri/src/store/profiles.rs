@@ -2,7 +2,7 @@ use super::{
 	simplified_context::{DiskActionInstance, DiskProfile},
 	Store,
 };
-use crate::shared::{config_dir, Action, ActionInstance, ActionState, Profile};
+use crate::shared::{config_dir, Action, ActionInstance, ActionState, DeviceInfo, Profile, DEVICES};
 
 use std::collections::HashMap;
 use std::fs;
@@ -20,7 +20,7 @@ pub struct ProfileStores {
 }
 
 impl ProfileStores {
-	pub fn get_profile_store(&self, device: &crate::devices::DeviceInfo, id: &str) -> Result<&Store<Profile>, anyhow::Error> {
+	pub fn get_profile_store(&self, device: &DeviceInfo, id: &str) -> Result<&Store<Profile>, anyhow::Error> {
 		let path = PathBuf::from("profiles").join(&device.id).join(id);
 		let path = path.to_str().unwrap();
 
@@ -31,7 +31,7 @@ impl ProfileStores {
 		}
 	}
 
-	pub async fn get_profile_store_mut(&mut self, device: &crate::devices::DeviceInfo, id: &str) -> Result<&mut Store<Profile>, anyhow::Error> {
+	pub async fn get_profile_store_mut(&mut self, device: &DeviceInfo, id: &str) -> Result<&mut Store<Profile>, anyhow::Error> {
 		#[cfg(target_os = "windows")]
 		let path = PathBuf::from("profiles").join(&device.id).join(id.replace('/', "\\"));
 		#[cfg(not(target_os = "windows"))]
@@ -291,13 +291,13 @@ pub static DEVICE_STORES: Lazy<RwLock<DeviceStores>> = Lazy::new(|| RwLock::new(
 pub struct Locks<'a> {
 	#[allow(dead_code)]
 	pub device_stores: RwLockReadGuard<'a, DeviceStores>,
-	pub devices: RwLockReadGuard<'a, HashMap<String, crate::devices::DeviceInfo>>,
+	pub devices: RwLockReadGuard<'a, HashMap<String, DeviceInfo>>,
 	pub profile_stores: RwLockReadGuard<'a, ProfileStores>,
 }
 
 pub async fn acquire_locks() -> Locks<'static> {
 	let device_stores = DEVICE_STORES.read().await;
-	let devices = crate::devices::DEVICES.read().await;
+	let devices = DEVICES.read().await;
 	let profile_stores = PROFILE_STORES.read().await;
 	Locks {
 		device_stores,
@@ -308,13 +308,13 @@ pub async fn acquire_locks() -> Locks<'static> {
 
 pub struct LocksMut<'a> {
 	pub device_stores: RwLockWriteGuard<'a, DeviceStores>,
-	pub devices: RwLockWriteGuard<'a, HashMap<String, crate::devices::DeviceInfo>>,
+	pub devices: RwLockWriteGuard<'a, HashMap<String, DeviceInfo>>,
 	pub profile_stores: RwLockWriteGuard<'a, ProfileStores>,
 }
 
 pub async fn acquire_locks_mut() -> LocksMut<'static> {
 	let device_stores = DEVICE_STORES.write().await;
-	let devices = crate::devices::DEVICES.write().await;
+	let devices = DEVICES.write().await;
 	let profile_stores = PROFILE_STORES.write().await;
 	LocksMut {
 		device_stores,

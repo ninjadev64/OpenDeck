@@ -50,16 +50,22 @@ pub(super) async fn init(device: AsyncStreamDeck) {
 	};
 	let _ = device.clear_all_button_images().await;
 	let device_id = format!("sd-{}", device.serial_number().await.unwrap().chars().filter(|c| c.is_alphanumeric()).collect::<String>());
-	super::register_device(super::DeviceInfo {
-		id: device_id.clone(),
-		plugin: String::new(),
-		name: device.product().await.unwrap(),
-		rows: kind.row_count(),
-		columns: kind.column_count(),
-		encoders: kind.encoder_count(),
-		r#type: device_type,
-	})
-	.await;
+	crate::events::inbound::devices::register_device(
+		"",
+		crate::events::inbound::PayloadEvent {
+			payload: crate::shared::DeviceInfo {
+				id: device_id.clone(),
+				plugin: String::new(),
+				name: device.product().await.unwrap(),
+				rows: kind.row_count(),
+				columns: kind.column_count(),
+				encoders: kind.encoder_count(),
+				r#type: device_type,
+			},
+		},
+	)
+	.await
+	.unwrap();
 
 	let reader = device.get_reader();
 	ELGATO_DEVICES.write().await.insert(device_id.clone(), device);
@@ -83,5 +89,25 @@ pub(super) async fn init(device: AsyncStreamDeck) {
 		}
 	}
 
-	super::unregister_device(device_id).await;
+	crate::events::inbound::devices::deregister_device("", crate::events::inbound::PayloadEvent { payload: device_id })
+		.await
+		.unwrap();
+}
+
+/// Attempt to initialise all connected devices.
+pub fn initialise_devices() {
+	// Iterate through detected Elgato devices and attempt to register them.
+	match elgato_streamdeck::new_hidapi() {
+		Ok(hid) => {
+			for (kind, serial) in elgato_streamdeck::asynchronous::list_devices_async(&hid) {
+				match elgato_streamdeck::AsyncStreamDeck::connect(&hid, kind, &serial) {
+					Ok(device) => {
+						tokio::spawn(init(device));
+					}
+					Err(error) => log::warn!("Failed to connect to Elgato device: {}", error),
+				}
+			}
+		}
+		Err(error) => log::warn!("Failed to initialise hidapi: {}", error),
+	}
 }
