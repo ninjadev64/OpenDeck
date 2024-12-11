@@ -4,6 +4,7 @@
 
 	import ArrowClockwise from "phosphor-svelte/lib/ArrowClockwise";
 	import CloudArrowDown from "phosphor-svelte/lib/CloudArrowDown";
+	import FileArrowUp from "phosphor-svelte/lib/FileArrowUp";
 	import Trash from "phosphor-svelte/lib/Trash";
 	import ListedPlugin from "./ListedPlugin.svelte";
 	import Popup from "./Popup.svelte";
@@ -13,17 +14,17 @@
 
 	import { invoke } from "@tauri-apps/api/core";
 	import { onOpenUrl } from "@tauri-apps/plugin-deep-link";
-	import { ask, message } from "@tauri-apps/plugin-dialog";
+	import { ask, message, open } from "@tauri-apps/plugin-dialog";
 
 	export let actionList: () => ActionList;
 	export let deviceSelector: () => DeviceSelector;
 
 	let showPopup: boolean;
 
-	async function installPlugin(id: string, name: string, url: string | undefined = undefined) {
-		if (!await ask(`Install "${name}"? It may take a while to download the plugin.`, { title: `Install "${name}"?` })) return;
+	async function installPlugin(id: string, name: string, url: string | null = null, file: string | null = null) {
+		if (!file && !await ask(`Install "${name}"? It may take a while to download the plugin.`, { title: `Install "${name}"?` })) return;
 		try {
-			await invoke("install_plugin", { id, url });
+			await invoke("install_plugin", { id, url, file });
 			message(`Successfully installed "${name}".`, { title: `Installed "${name}"` });
 			actionList().reload();
 			installed = await invoke("list_plugins");
@@ -81,6 +82,16 @@
 
 	async function installPluginElgato(plugin: any) {
 		await installPlugin(plugin.id, plugin.name);
+	}
+
+	async function installPluginFile() {
+		const path = await open({ multiple: false, directory: false });
+		const id = prompt("Plugin ID:");
+		if (!id || id.split(".").length < 3) {
+			message("Failed to install plugin from file: invalid plugin ID", { title: "Failed to install" });
+			return;
+		}
+		installPlugin(id, id, null, path);
 	}
 
 	async function removePlugin(plugin: any) {
@@ -156,7 +167,16 @@
 		{/each}
 	</div>
 
-	<h2 class="mx-2 mt-6 mb-2 text-lg dark:text-neutral-400">Plugin store</h2>
+	<div class="flex flex-row justify-between items-center mx-2 mt-6 mb-2">
+		<h2 class="text-lg dark:text-neutral-400">Plugin store</h2>
+		<button
+			class="flex flex-row items-center mt-2 px-1 py-0.5 text-sm text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 border dark:border-neutral-600 rounded-lg outline-none"
+			on:click={installPluginFile}
+		>
+			<FileArrowUp />
+			<span class="ml-1">Install from file</span>
+		</button>
+	</div>
 	<div class="flex flex-row m-2">
 		<input
 			bind:value={search}

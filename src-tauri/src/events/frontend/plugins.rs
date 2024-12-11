@@ -46,14 +46,23 @@ pub async fn list_plugins() -> Result<Vec<PluginInfo>, Error> {
 }
 
 #[command]
-pub async fn install_plugin(app: AppHandle, id: String, url: Option<String>) -> Result<(), Error> {
-	let resp = match reqwest::get(url.unwrap_or(format!("https://plugins.amankhanna.me/rezipped/{id}.zip"))).await {
-		Ok(resp) => resp,
-		Err(error) => return Err(anyhow::Error::from(error).into()),
-	};
-	let bytes = match resp.bytes().await {
-		Ok(bytes) => bytes,
-		Err(error) => return Err(anyhow::Error::from(error).into()),
+pub async fn install_plugin(app: AppHandle, id: String, url: Option<String>, file: Option<String>) -> Result<(), Error> {
+	let bytes = match file {
+		None => {
+			let resp = match reqwest::get(url.unwrap_or(format!("https://plugins.amankhanna.me/rezipped/{id}.zip"))).await {
+				Ok(resp) => resp,
+				Err(error) => return Err(anyhow::Error::from(error).into()),
+			};
+			use std::ops::Deref;
+			match resp.bytes().await {
+				Ok(bytes) => bytes.deref().to_owned(),
+				Err(error) => return Err(anyhow::Error::from(error).into()),
+			}
+		}
+		Some(path) => match std::fs::read(path) {
+			Ok(bytes) => bytes,
+			Err(error) => return Err(anyhow::Error::from(error).into()),
+		},
 	};
 
 	let _ = crate::plugins::deactivate_plugin(&app, &format!("{}.sdPlugin", id)).await;
