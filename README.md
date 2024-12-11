@@ -4,7 +4,7 @@
 
 OpenDeck is a desktop application for using stream controller devices like the Elgato Stream Deck. OpenDeck conforms to the [OpenAction](https://openaction.amankhanna.me/) API, which is cross-compatible with the Stream Deck SDK, allowing a wide range of plugins made for Elgato's first-party Windows and macOS software to be used.
 
-OpenDeck supports ProntoKey, Elgato Stream Deck and some Ajazz hardware on all three major desktop platforms. If you would like to contribute support for additional hardware (e.g. Loupedeck) feel free to reach out on any of the support forums and make a pull request!
+OpenDeck supports Elgato Stream Deck and [some](https://github.com/streamduck-org/elgato-streamdeck?tab=readme-ov-file#supported-devices) Ajazz hardware on all three major desktop platforms, and support for additional hardware can be registered by plugins. If you would like to contribute support for additional hardware (e.g. Loupedeck) feel free to reach out on any of the support forums and make a pull request!
 
 If you would like to support development of OpenDeck, consider [sponsoring me](https://github.com/sponsors/ninjadev64) on GitHub Sponsors!
 
@@ -75,7 +75,7 @@ To enable automatic launch on startup, the light theme, to change the language p
 
 ### Building from source / contributing
 
-You'll need to ensure that all of the [prerequisites for building a Tauri application](https://tauri.app/start/prerequisites) are satisfied to build OpenDeck, as well as making sure that [Deno](https://deno.com/) is installed. On GNU+Linux, you'll also need `libudev` installed for your distribution. You can then use `deno task tauri dev` and `deno task tauri build` to work with OpenDeck.
+When cloning this repository, make sure to pull its submodules with it (`git submodule update --init` after cloning or `git clone <url> --recurse-submodules`). You'll need to ensure that all of the [prerequisites for building a Tauri application](https://tauri.app/start/prerequisites) are satisfied to build OpenDeck, as well as making sure that [Deno](https://deno.com/) is installed. On GNU+Linux, you'll also need `libudev` installed for your distribution. You can then use `deno task tauri dev` and `deno task tauri build` to work with OpenDeck.
 
 Before each commit, please ensure that all of the following are completed:
 1. Rust code has been linted using `cargo clippy` and it discovers no violations
