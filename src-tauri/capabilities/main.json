@@ -6,6 +6,8 @@
 	],
 	"permissions": [
 		"core:default",
+		"core:window:allow-set-min-size",
+		"core:window:allow-set-size",
 		"dialog:default",
 		"deep-link:default"
 	]

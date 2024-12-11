@@ -5,6 +5,7 @@
 
 	import { invoke } from "@tauri-apps/api/core";
 	import { listen } from "@tauri-apps/api/event";
+	import { getCurrentWindow, LogicalSize } from "@tauri-apps/api/window";
 
 	export let devices: { [id: string]: DeviceInfo } = {};
 	export let value: string;
@@ -41,6 +42,20 @@
 
 	(async () => devices = await invoke("get_devices"))();
 	listen("devices", ({ payload }: { payload: { [id: string]: DeviceInfo } }) => devices = payload);
+
+	$: {
+		if (devices[value]) {
+			const width = (devices[value].columns * 128) + 256;
+			const height = (devices[value].rows * 128) + 192;
+			const window = getCurrentWindow();
+			window.setMinSize(new LogicalSize(width, height)).then(async () => {
+				const innerSize = await window.innerSize();
+				if (innerSize.width < width || innerSize.height < height) {
+					await window.setSize(new LogicalSize(width, height));
+				}
+			});
+		}
+	}
 </script>
 
 {#if Object.keys(devices).length > 0}
