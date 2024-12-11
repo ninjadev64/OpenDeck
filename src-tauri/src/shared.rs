@@ -8,6 +8,19 @@ use once_cell::sync::Lazy;
 use tauri::Manager;
 use tokio::sync::RwLock;
 
+pub fn copy_dir(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> Result<(), std::io::Error> {
+	use std::fs;
+	fs::create_dir_all(&dst)?;
+	for entry in fs::read_dir(src)?.flatten() {
+		if entry.file_type()?.is_dir() {
+			copy_dir(entry.path(), dst.as_ref().join(entry.file_name()))?;
+		} else {
+			fs::copy(entry.path(), dst.as_ref().join(entry.file_name()))?;
+		}
+	}
+	Ok(())
+}
+
 /// Metadata of a device.
 #[serde_inline_default]
 #[derive(Clone, Deserialize, Serialize)]

@@ -8,6 +8,7 @@
 	"bundle": {
 		"active": true,
 		"targets": "all",
+		"resources": { "target/plugins/": "plugins/" },
 		"linux": {
 			"deb": {
 				"desktopTemplate": "bundle/opendeck.desktop",
@@ -44,7 +45,7 @@
 	"plugins": {
 		"deep-link": {
 			"desktop": {
-				"schemes": [ "opendeck" ]
+				"schemes": ["opendeck"]
 			}
 		}
 	},
@@ -58,7 +59,8 @@
 				"height": 600,
 				"minWidth": 800,
 				"minHeight": 600,
-				"center": true
+				"center": true,
+				"dragDropEnabled": false
 			}
 		],
 		"security": {

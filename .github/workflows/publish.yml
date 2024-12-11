@@ -26,7 +26,10 @@ jobs:
     env:
       DENO_DIR: deno_cache
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
@@ -63,7 +66,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tauriScript: deno task tauri
-          tagName: v__VERSION__
+          tagName: tv__VERSION__
           releaseName: "OpenDeck v__VERSION__"
           releaseBody: "See the assets to download this version. See the README for installation instructions."
           releaseDraft: true

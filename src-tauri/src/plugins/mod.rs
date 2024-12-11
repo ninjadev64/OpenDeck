@@ -275,6 +275,36 @@ pub fn initialise_plugins() {
 	let _ = fs::create_dir_all(&plugin_dir);
 	let _ = fs::create_dir_all(log_dir().join("plugins"));
 
+	if let Ok(Ok(entries)) = APP_HANDLE.get().unwrap().path().resolve("plugins", tauri::path::BaseDirectory::Resource).map(fs::read_dir) {
+		for entry in entries.flatten() {
+			if let Err(error) = (|| -> Result<(), anyhow::Error> {
+				let builtin_version = semver::Version::parse(&serde_json::from_slice::<manifest::PluginManifest>(&fs::read(entry.path().join("manifest.json"))?)?.version)?;
+				let existing_path = plugin_dir.join(entry.file_name());
+				if (|| -> Result<(), anyhow::Error> {
+					let existing_version = semver::Version::parse(&serde_json::from_slice::<manifest::PluginManifest>(&fs::read(existing_path.join("manifest.json"))?)?.version)?;
+					if existing_version < builtin_version {
+						Err(anyhow::anyhow!("builtin version is newer than existing version"))
+					} else {
+						Ok(())
+					}
+				})()
+				.is_err()
+				{
+					if existing_path.exists() {
+						fs::rename(&existing_path, existing_path.with_extension("old"))?;
+					}
+					if crate::shared::copy_dir(entry.path(), &existing_path).is_err() && existing_path.with_extension("old").exists() {
+						fs::rename(existing_path.with_extension("old"), &existing_path)?;
+					}
+					let _ = fs::remove_dir_all(existing_path.with_extension("old"));
+				}
+				Ok(())
+			})() {
+				error!("Failed to upgrade builtin plugin {}: {}", entry.file_name().to_string_lossy(), error);
+			}
+		}
+	}
+
 	let entries = match fs::read_dir(&plugin_dir) {
 		Ok(p) => p,
 		Err(error) => {
