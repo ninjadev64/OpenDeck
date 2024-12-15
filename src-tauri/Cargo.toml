@@ -36,6 +36,7 @@ tauri-plugin-single-instance = { version = "2.0", features = ["deep-link"] }
 tauri-plugin-autostart = "2.0"
 tauri-plugin-dialog = "2.0"
 tauri-plugin-deep-link = "2.0"
+tauri-plugin-aptabase = { git = "https://github.com/ninjadev64/tauri-plugin-aptabase.git", branch = "v2" }
 serde-inline-default = "0.2"
 serde_with = "3.11"
 json-patch = "3.0"

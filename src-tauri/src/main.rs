@@ -74,9 +74,9 @@ async fn main() {
 
 			let mut settings = store::get_settings()?;
 			use std::cmp::Ordering;
+			use tauri_plugin_dialog::{DialogExt, MessageDialogKind};
 			match semver::Version::parse(built_info::PKG_VERSION)?.cmp(&semver::Version::parse(&settings.value.version)?) {
 				Ordering::Less => {
-					use tauri_plugin_dialog::{DialogExt, MessageDialogKind};
 					app.get_webview_window("main").unwrap().close().unwrap();
 					app.dialog()
 						.message(format!(
@@ -90,10 +90,38 @@ async fn main() {
 					return Ok(());
 				}
 				Ordering::Greater => {
+					let old_version = settings.value.version.clone();
 					settings.value.version = built_info::PKG_VERSION.to_owned();
 					settings.save()?;
+					if old_version == "0.0.0" {
+						app.dialog()
+							.message(
+								r#"Thanks for installing OpenDeck!
+If you have any issues, please reach out on any of the support channels listed on GitHub (and make sure to star the project while you're there!).
+
+Some minimal statistics (such as operating system and plugins installed) will be collected from the next time the app starts.
+If you do not wish to support development in this way, please disable statistics in the settings.
+
+Enjoy!"#,
+							)
+							.title("OpenDeck has successfully been installed")
+							.kind(MessageDialogKind::Info)
+							.show(|_| ());
+						settings.value.statistics = false;
+					}
 				}
-				Ordering::Equal => (),
+				Ordering::Equal => {
+					use tauri_plugin_aptabase::{Builder, EventTracker, InitOptions};
+					app.handle().plugin(
+						Builder::new(if settings.value.statistics { "A-SH-3841489320" } else { "" })
+							.with_options(InitOptions {
+								host: Some("https://aptabase.amankhanna.me".to_owned()),
+								flush_interval: None,
+							})
+							.build(),
+					)?;
+					let _ = app.track_event("app_started", None);
+				}
 			}
 
 			elgato::initialise_devices();

@@ -83,6 +83,9 @@ pub async fn install_plugin(app: AppHandle, id: String, url: Option<String>, fil
 	let _ = crate::plugins::initialise_plugin(&actual).await;
 	let _ = tokio::fs::remove_dir_all(temp).await;
 
+	use tauri_plugin_aptabase::EventTracker;
+	let _ = app.track_event("plugin_installed", Some(serde_json::json!({ "id": id })));
+
 	Ok(())
 }
 

@@ -254,22 +254,22 @@ pub fn get_device_profiles(device: &str) -> Result<Vec<String>, anyhow::Error> {
 
 	for entry in entries.flatten() {
 		if entry.metadata()?.is_file() {
+			let id = entry.file_name().to_string_lossy()[..entry.file_name().len() - 5].to_owned();
 			if let Err(error) = migrate_profile(entry.path()) {
-				log::warn!("Failed to migrate profile: {}", error);
+				log::warn!("Failed to migrate profile {id}: {error}");
+			} else {
+				profiles.push(id);
 			}
-			profiles.push(entry.file_name().to_string_lossy()[..entry.file_name().len() - 5].to_owned());
 		} else if entry.metadata()?.is_dir() {
 			let entries = fs::read_dir(entry.path())?;
 			for subentry in entries.flatten() {
 				if subentry.metadata()?.is_file() {
+					let id = format!("{}/{}", entry.file_name().to_string_lossy(), &subentry.file_name().to_string_lossy()[..subentry.file_name().len() - 5]);
 					if let Err(error) = migrate_profile(subentry.path()) {
-						log::warn!("Failed to migrate profile: {}", error);
+						log::warn!("Failed to migrate profile {id}: {error}");
+					} else {
+						profiles.push(id);
 					}
-					profiles.push(format!(
-						"{}/{}",
-						entry.file_name().to_string_lossy(),
-						subentry.file_name().to_string_lossy()[..subentry.file_name().len() - 5].to_owned()
-					));
 				}
 			}
 		}

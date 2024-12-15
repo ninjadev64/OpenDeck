@@ -1,6 +1,7 @@
 use std::fs;
 
 fn main() {
+	#[cfg(not(debug_assertions))]
 	println!("cargo:rerun-if-changed=../plugins");
 	if let Err(error) = || -> Result<(), std::io::Error> {
 		for entry in fs::read_dir("../plugins")?.flatten() {
@@ -17,6 +18,9 @@ fn main() {
 
 		Ok(())
 	}() {
+		#[cfg(debug_assertions)]
+		eprintln!("Failed to build builtin plugins: {error}");
+		#[cfg(not(debug_assertions))]
 		panic!("Failed to build builtin plugins: {error}");
 	}
 

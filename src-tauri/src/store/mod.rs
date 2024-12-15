@@ -74,18 +74,21 @@ pub struct Settings {
 	pub darktheme: bool,
 	pub brightness: u8,
 	pub developer: bool,
+	pub statistics: bool,
 }
 
 impl Default for Settings {
 	fn default() -> Self {
 		Self {
-			version: crate::built_info::PKG_VERSION.to_owned(),
+			version: "0.0.0".to_owned(),
 			language: "en".to_owned(),
 			background: std::env::var("container").is_err(),
 			autolaunch: false,
 			darktheme: true,
 			brightness: 50,
 			developer: false,
+			// Consent is given by the user on install so it is OK to have the default be `true`
+			statistics: true,
 		}
 	}
 }

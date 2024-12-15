@@ -89,6 +89,11 @@
 				so you should disable it if it is not in use.
 			</Tooltip>
 		</div>
+
+		<div class="flex flex-row items-center m-2 space-x-2">
+			<span class="dark:text-neutral-400"> Contribute statistics: </span>
+			<input type="checkbox" bind:checked={$settings.statistics} />
+		</div>
 	{/if}
 
 	<div class="ml-2">

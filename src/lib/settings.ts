@@ -6,6 +6,7 @@ export type Settings = {
 	darktheme: boolean;
 	brightness: number;
 	developer: boolean;
+	statistics: boolean;
 };
 
 import { invoke } from "@tauri-apps/api/core";
