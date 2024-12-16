@@ -80,7 +80,7 @@ pub async fn install_plugin(app: AppHandle, id: String, url: Option<String>, fil
 		let _ = crate::plugins::initialise_plugin(&actual).await;
 		return Err(anyhow::Error::from(error).into());
 	}
-	let _ = crate::plugins::initialise_plugin(&actual).await;
+	crate::plugins::initialise_plugin(&actual).await?;
 	let _ = tokio::fs::remove_dir_all(temp).await;
 
 	use tauri_plugin_aptabase::EventTracker;

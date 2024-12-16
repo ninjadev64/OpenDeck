@@ -151,9 +151,8 @@
 					class="mr-4 mt-1 scale-125"
 				/>
 				<span class="mr-2"> Size </span>
-				<!-- The type property is spread so Svelte does not convert the value to a number. -->
 				<input
-					{...{ type: "number" }}
+					type="number"
 					bind:value={instance.states[state].size}
 					class="px-0.5 w-14 dark:text-neutral-300 dark:bg-neutral-600 rounded-md outline-none"
 				/>

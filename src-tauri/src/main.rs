@@ -153,7 +153,7 @@ Enjoy!"#,
 			#[cfg(any(target_os = "linux", all(debug_assertions, windows)))]
 			{
 				use tauri_plugin_deep_link::DeepLinkExt;
-				app.deep_link().register_all()?;
+				let _ = app.deep_link().register_all();
 			}
 
 			Ok(())

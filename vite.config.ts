@@ -5,7 +5,7 @@ export default defineConfig({
 	plugins: [ sveltekit() ],
 	server: {
 		watch: {
-			ignored: "src-tauri/**"
+			ignored: "src-tauri/**/*"
 		}
 	}
 });

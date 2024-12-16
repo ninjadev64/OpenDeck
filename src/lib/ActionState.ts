@@ -7,6 +7,6 @@ export type ActionState = {
 	alignment: "top" | "middle" | "bottom";
 	family: string;
 	style: string;
-	size: string;
+	size: number;
 	underline: boolean;
 };

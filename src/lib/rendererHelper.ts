@@ -60,7 +60,7 @@ export async function renderImage(
 
 	// Draw text
 	if (state.show) {
-		const size = parseInt(state.size) * 2 * scale;
+		const size = state.size * 2 * scale;
 		context.textAlign = "center";
 		context.font = (state.style.includes("Bold") ? "bold " : "") + (state.style.includes("Italic") ? "italic " : "") +
 			`${size}px "${state.family}", sans-serif`;

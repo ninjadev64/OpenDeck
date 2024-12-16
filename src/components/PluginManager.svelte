@@ -86,7 +86,7 @@
 
 	async function installPluginFile() {
 		const path = await open({ multiple: false, directory: false });
-		const id = prompt("Plugin ID:");
+		const id = path ? prompt("Plugin ID:") : null;
 		if (!id || id.split(".").length < 3) {
 			message("Failed to install plugin from file: invalid plugin ID", { title: "Failed to install" });
 			return;

@@ -87,7 +87,9 @@ pub async fn initialise_plugin(path: &path::Path) -> anyhow::Result<()> {
 		for action in manifest.actions {
 			category.push(action);
 		}
-		categories.insert(manifest.category, category);
+		if !category.is_empty() {
+			categories.insert(manifest.category, category);
+		}
 	}
 
 	if let Some(namespace) = manifest.device_namespace {

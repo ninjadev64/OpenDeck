@@ -3,6 +3,6 @@ export type DeviceInfo = {
 	name: string;
 	rows: number;
 	columns: number;
-	sliders: number;
+	encoders: number;
 	type: number;
 };

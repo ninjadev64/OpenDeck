@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::path::Path;
 
-use serde::{Deserialize, Serialize};
+use serde::{de::Visitor, Deserialize, Deserializer, Serialize};
 use serde_inline_default::serde_inline_default;
 
 use once_cell::sync::Lazy;
@@ -60,6 +60,44 @@ pub fn convert_icon(path: String) -> String {
 	}
 }
 
+#[derive(Clone, Copy, Serialize)]
+pub struct FontSize(pub u16);
+impl<'de> Deserialize<'de> for FontSize {
+	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+	where
+		D: Deserializer<'de>,
+	{
+		struct MyVisitor;
+
+		impl Visitor<'_> for MyVisitor {
+			type Value = FontSize;
+
+			fn expecting(&self, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+				fmt.write_str("integer or string")
+			}
+
+			fn visit_u64<E>(self, val: u64) -> Result<Self::Value, E>
+			where
+				E: serde::de::Error,
+			{
+				Ok(FontSize(val as u16))
+			}
+
+			fn visit_str<E>(self, val: &str) -> Result<Self::Value, E>
+			where
+				E: serde::de::Error,
+			{
+				match val.parse::<u64>() {
+					Ok(val) => self.visit_u64(val),
+					Err(_) => Err(E::custom("failed to parse integer")),
+				}
+			}
+		}
+
+		deserializer.deserialize_any(MyVisitor)
+	}
+}
+
 /// A state of an action.
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(default)]
@@ -81,7 +119,7 @@ pub struct ActionState {
 	#[serde(alias = "FontStyle")]
 	pub style: String,
 	#[serde(alias = "FontSize")]
-	pub size: String,
+	pub size: FontSize,
 	#[serde(alias = "FontUnderline")]
 	pub underline: bool,
 }
@@ -97,7 +135,7 @@ impl Default for ActionState {
 			alignment: "middle".to_owned(),
 			family: "Liberation Sans".to_owned(),
 			style: "Regular".to_owned(),
-			size: "16".to_owned(),
+			size: FontSize(16),
 			underline: false,
 		}
 	}

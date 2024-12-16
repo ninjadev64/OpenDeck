@@ -62,7 +62,7 @@
 
 {#key device}
 	<div class="flex flex-row" class:hidden={$inspectedParentAction || selectedDevice != device.id}>
-		{#each { length: device.sliders } as _, i}
+		{#each { length: device.encoders } as _, i}
 			<Slider
 				context={{ device: device.id, profile: profile.id, controller: "Encoder", position: i }}
 				bind:slot={profile.sliders[i]}
