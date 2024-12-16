@@ -43,6 +43,26 @@
 	</branding>
 
 	<releases>
+		<release version="2.3.0" date="2024-12-16">
+			<url type="details">https://github.com/ninjadev64/OpenDeck/releases/tag/v2.3.0</url>
+			<description>
+				<ul>
+					<li>Support platform-specific manifest property overrides</li>
+					<li>Store state images as files outside of the profile</li>
+					<li>Implement switching profiles based on the active window</li>
+					<li>Support installing plugins through deep linking</li>
+					<li>Add star and sponsorship prompt</li>
+					<li>Implement device registration by plugins</li>
+					<li>Support closing popups with keyboard and improve dialogue boxes</li>
+					<li>Build and include builtin plugins with OpenDeck</li>
+					<li>Resize window automatically with device size</li>
+					<li>Implement installing plugins from local files</li>
+					<li>Collect statistics</li>
+					<li>Update dependencies</li>
+					<li>Bug fixes</li>
+				</ul>
+			</description>
+		</release>
 		<release version="2.2.1" date="2024-11-03">
 			<url type="details">https://github.com/ninjadev64/OpenDeck/releases/tag/v2.2.1</url>
 			<description>
