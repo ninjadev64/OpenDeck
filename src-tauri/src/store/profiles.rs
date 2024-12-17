@@ -51,12 +51,17 @@ impl ProfileStores {
 
 			let categories = crate::shared::CATEGORIES.read().await;
 			let actions = categories.values().flatten().collect::<Vec<_>>();
+			let plugins_dir = config_dir().join("plugins");
+			let keep_instance = |instance: &ActionInstance| -> bool {
+				plugins_dir.join(&instance.action.plugin).exists()
+					&& (!futures::executor::block_on(crate::plugins::is_plugin_registered(&instance.action.plugin)) || actions.iter().any(|v| v.uuid == instance.action.uuid))
+			};
 			for slot in store.value.keys.iter_mut() {
 				if let Some(instance) = slot {
-					if !actions.iter().any(|v| v.uuid == instance.action.uuid) {
+					if !keep_instance(instance) {
 						*slot = None;
 					} else if let Some(children) = &mut instance.children {
-						children.retain_mut(|child| actions.iter().any(|v| v.uuid == child.action.uuid));
+						children.retain_mut(|child| keep_instance(child));
 					}
 				}
 			}

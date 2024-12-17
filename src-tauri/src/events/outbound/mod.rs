@@ -6,7 +6,7 @@ pub mod settings;
 pub mod states;
 pub mod will_appear;
 
-use futures_util::SinkExt;
+use futures::SinkExt;
 use serde::Serialize;
 
 #[derive(Serialize)]

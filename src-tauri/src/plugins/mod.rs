@@ -14,7 +14,7 @@ use std::{fs, path};
 
 use tauri::{AppHandle, Manager};
 
-use futures_util::StreamExt;
+use futures::StreamExt;
 use tokio::net::{TcpListener, TcpStream};
 
 use anyhow::anyhow;
@@ -31,6 +31,10 @@ enum PluginInstance {
 
 pub static DEVICE_NAMESPACES: Lazy<RwLock<HashMap<String, String>>> = Lazy::new(|| RwLock::new(HashMap::new()));
 static INSTANCES: Lazy<Mutex<HashMap<String, PluginInstance>>> = Lazy::new(|| Mutex::new(HashMap::new()));
+
+pub async fn is_plugin_registered(uuid: &str) -> bool {
+	INSTANCES.lock().await.contains_key(uuid)
+}
 
 /// Initialise a plugin from a given directory.
 pub async fn initialise_plugin(path: &path::Path) -> anyhow::Result<()> {

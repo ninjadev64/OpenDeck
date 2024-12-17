@@ -6,7 +6,7 @@ use inbound::RegisterEvent;
 
 use std::collections::HashMap;
 
-use futures_util::{stream::SplitSink, SinkExt, StreamExt};
+use futures::{stream::SplitSink, SinkExt, StreamExt};
 use once_cell::sync::Lazy;
 use tokio::net::TcpStream;
 use tokio::sync::{Mutex, RwLock};

@@ -3129,7 +3129,7 @@ dependencies = [
  "base64 0.22.1",
  "built",
  "elgato-streamdeck",
- "futures-util",
+ "futures",
  "hidapi",
  "image",
  "json-patch",
