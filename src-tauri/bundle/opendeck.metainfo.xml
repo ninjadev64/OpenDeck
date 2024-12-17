@@ -27,13 +27,16 @@
 
 	<screenshots>
 		<screenshot type="default">
-			<image>https://github.com/ninjadev64/OpenDeck/raw/2daaf68/.github/readme/mainmenu.png</image>
+			<image>https://github.com/ninjadev64/OpenDeck/raw/f3e84c7/.github/readme/mainmenu.png</image>
 		</screenshot>
 		<screenshot>
-			<image>https://github.com/ninjadev64/OpenDeck/raw/2daaf68/.github/readme/multiaction.png</image>
+			<image>https://github.com/ninjadev64/OpenDeck/raw/f3e84c7/.github/readme/multiaction.png</image>
 		</screenshot>
 		<screenshot>
-			<image>https://github.com/ninjadev64/OpenDeck/raw/2daaf68/.github/readme/plugins.png</image>
+			<image>https://github.com/ninjadev64/OpenDeck/raw/f3e84c7/.github/readme/plugins.png</image>
+		</screenshot>
+		<screenshot>
+			<image>https://github.com/ninjadev64/OpenDeck/raw/f3e84c7/.github/readme/profiles.png</image>
 		</screenshot>
 	</screenshots>
 
@@ -43,6 +46,16 @@
 	</branding>
 
 	<releases>
+		<release version="2.3.1" date="2024-12-17">
+			<url type="details">https://github.com/ninjadev64/OpenDeck/releases/tag/v2.3.1</url>
+			<description>
+				<ul>
+					<li>Fix instances being removed due to a race condition</li>
+					<li>Fix profile switching deadlock</li>
+					<li>Bug fixes and improvements</li>
+				</ul>
+			</description>
+		</release>
 		<release version="2.3.0" date="2024-12-16">
 			<url type="details">https://github.com/ninjadev64/OpenDeck/releases/tag/v2.3.0</url>
 			<description>
