@@ -91,7 +91,6 @@ OpenDeck is licensed under the GNU General Public License version 3.0 or later. 
 ## Showcase
 
 ![Main menu](.github/readme/mainmenu.png)
-![Light mode](.github/readme/lightmode.png)
 ![Multi action](.github/readme/multiaction.png)
 ![Plugins](.github/readme/plugins.png)
 ![Profiles](.github/readme/profiles.png)
