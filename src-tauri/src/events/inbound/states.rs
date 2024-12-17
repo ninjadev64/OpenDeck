@@ -40,7 +40,13 @@ pub async fn set_title(event: ContextAndPayloadEvent<SetTitlePayload>) -> Result
 	Ok(())
 }
 
-pub async fn set_image(event: ContextAndPayloadEvent<SetImagePayload>) -> Result<(), anyhow::Error> {
+pub async fn set_image(mut event: ContextAndPayloadEvent<SetImagePayload>) -> Result<(), anyhow::Error> {
+	if let Some(image) = &event.payload.image {
+		if image.is_empty() {
+			event.payload.image = None;
+		}
+	}
+
 	let mut locks = acquire_locks_mut().await;
 
 	if let Some(instance) = get_instance_mut(&event.context, &mut locks).await? {

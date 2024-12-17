@@ -22,6 +22,12 @@
 	$: invoke("set_state", { instance, state });
 </script>
 
+<svelte:window
+	on:keydown={(event) => {
+		if (event.key == "Escape") showEditor = false;
+	}}
+/>
+
 <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 p-2 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 border-2 dark:border-neutral-600 rounded-lg z-10">
 	<div class="flex flex-row">
 		<div class="select-wrapper ml-2 mt-2 mb-1 w-full">

@@ -46,7 +46,7 @@
 	$: {
 		if (devices[value]) {
 			const width = (devices[value].columns * 128) + 256;
-			const height = (devices[value].rows * 128) + 192;
+			const height = (devices[value].rows * 128) + 256;
 			const window = getCurrentWindow();
 			window.setMinSize(new LogicalSize(width, height)).then(async () => {
 				const innerSize = await window.innerSize();

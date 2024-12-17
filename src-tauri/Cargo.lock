@@ -4802,7 +4802,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-aptabase"
 version = "0.5.1"
-source = "git+https://github.com/ninjadev64/tauri-plugin-aptabase.git?branch=v2#c4b5ca35952a65e5d959b6f572456ad9d1e70b73"
+source = "git+https://github.com/ninjadev64/tauri-plugin-aptabase.git?branch=v2#373abe1954bf20152082e506d36be07727259bb5"
 dependencies = [
  "futures",
  "log",

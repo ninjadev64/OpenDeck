@@ -22,14 +22,14 @@
 	let showPopup: boolean;
 
 	async function installPlugin(id: string, name: string, url: string | null = null, file: string | null = null) {
-		if (!file && !await ask(`Install "${name}"? It may take a while to download the plugin.`, { title: `Install "${name}"?` })) return;
+		if (!file && !await ask(`It may take a while to download the plugin.`, { title: `Install "${name}"?` })) return;
 		try {
 			await invoke("install_plugin", { id, url, file });
 			message(`Successfully installed "${name}".`, { title: `Installed "${name}"` });
 			actionList().reload();
 			installed = await invoke("list_plugins");
 		} catch (error: any) {
-			message(`Failed to install "${name}": ${error}`, { title: `Failed to install "${name}"` });
+			message(error, { title: `Failed to install "${name}"` });
 		}
 	}
 
@@ -63,7 +63,7 @@
 		try {
 			res = await (await fetch(endpoint)).json();
 		} catch (error: any) {
-			message(`Failed to install "${plugin.name}": ${error}`, { title: `Failed to install "${plugin.name}"` });
+			message(error, { title: `Failed to install "${plugin.name}"` });
 			return;
 		}
 
@@ -86,9 +86,10 @@
 
 	async function installPluginFile() {
 		const path = await open({ multiple: false, directory: false });
-		const id = path ? prompt("Plugin ID:") : null;
+		if (!path) return;
+		const id = prompt("Plugin ID:");
 		if (!id || id.split(".").length < 3) {
-			message("Failed to install plugin from file: invalid plugin ID", { title: "Failed to install" });
+			message("Invalid plugin ID", { title: `Failed to install "${id}"` });
 			return;
 		}
 		installPlugin(id, id, null, path);
@@ -103,7 +104,7 @@
 			deviceSelector().reloadProfiles();
 			installed = await invoke("list_plugins");
 		} catch (error: any) {
-			message(`Failed to remove "${plugin.name}": ${error}`, { title: `Failed to remove "${plugin.name}"` });
+			message(error, { title: `Failed to remove "${plugin.name}"` });
 		}
 	}
 
