@@ -62,7 +62,7 @@
 		if (value == "opendeck_edit_profiles") {
 			if (oldValue) showPopup = true;
 			value = oldValue;
-		} else if (value && (!profile || profile.id != value)) {
+		} else if (value && value != oldValue && (!profile || profile.id != value)) {
 			setProfile(value);
 			oldValue = value;
 		}
