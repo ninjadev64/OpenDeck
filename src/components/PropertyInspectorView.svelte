@@ -42,6 +42,9 @@
 					payload: {
 						settings: instance.settings,
 						coordinates,
+						controller: split[2],
+						state: instance.current_state,
+						isInMultiAction: parseInt(split[4]) != 0
 					},
 				}),
 			],

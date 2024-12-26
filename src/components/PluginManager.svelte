@@ -112,7 +112,7 @@
 	(async () => installed = await invoke("list_plugins"))();
 
 	let plugins: { [id: string]: GitHubPlugin };
-	(async () => plugins = await (await fetch("https://ninjadev64.github.io/openaction-plugins/catalogue.json")).json())();
+	(async () => plugins = await (await fetch("https://openactionapi.github.io/plugins/catalogue.json")).json())();
 
 	let search: string = "";
 

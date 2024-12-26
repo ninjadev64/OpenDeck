@@ -39,7 +39,7 @@ pub async fn key_down(device: &str, key: u8) -> Result<(), anyhow::Error> {
 					action: child.action.uuid.clone(),
 					context: child.context.clone(),
 					device: child.context.device.clone(),
-					payload: GenericInstancePayload::new(child, true),
+					payload: GenericInstancePayload::new(child),
 				},
 			)
 			.await?;
@@ -57,7 +57,7 @@ pub async fn key_down(device: &str, key: u8) -> Result<(), anyhow::Error> {
 					action: child.action.uuid.clone(),
 					context: child.context.clone(),
 					device: child.context.device.clone(),
-					payload: GenericInstancePayload::new(child, true),
+					payload: GenericInstancePayload::new(child),
 				},
 			)
 			.await?;
@@ -84,7 +84,7 @@ pub async fn key_down(device: &str, key: u8) -> Result<(), anyhow::Error> {
 				action: child.action.uuid.clone(),
 				context: child.context.clone(),
 				device: child.context.device.clone(),
-				payload: GenericInstancePayload::new(child, false),
+				payload: GenericInstancePayload::new(child),
 			},
 		)
 		.await?;
@@ -96,7 +96,7 @@ pub async fn key_down(device: &str, key: u8) -> Result<(), anyhow::Error> {
 				action: instance.action.uuid.clone(),
 				context: instance.context.clone(),
 				device: instance.context.device.clone(),
-				payload: GenericInstancePayload::new(instance, false),
+				payload: GenericInstancePayload::new(instance),
 			},
 		)
 		.await?;
@@ -134,7 +134,7 @@ pub async fn key_up(device: &str, key: u8) -> Result<(), anyhow::Error> {
 				action: child.action.uuid.clone(),
 				context: child.context.clone(),
 				device: child.context.device.clone(),
-				payload: GenericInstancePayload::new(child, false),
+				payload: GenericInstancePayload::new(child),
 			},
 		)
 		.await?;
@@ -150,7 +150,7 @@ pub async fn key_up(device: &str, key: u8) -> Result<(), anyhow::Error> {
 				action: instance.action.uuid.clone(),
 				context: instance.context.clone(),
 				device: instance.context.device.clone(),
-				payload: GenericInstancePayload::new(instance, false),
+				payload: GenericInstancePayload::new(instance),
 			},
 		)
 		.await?;

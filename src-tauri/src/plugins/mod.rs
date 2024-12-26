@@ -32,8 +32,8 @@ enum PluginInstance {
 pub static DEVICE_NAMESPACES: Lazy<RwLock<HashMap<String, String>>> = Lazy::new(|| RwLock::new(HashMap::new()));
 static INSTANCES: Lazy<Mutex<HashMap<String, PluginInstance>>> = Lazy::new(|| Mutex::new(HashMap::new()));
 
-pub async fn is_plugin_registered(uuid: &str) -> bool {
-	INSTANCES.lock().await.contains_key(uuid)
+pub async fn registered_plugins() -> Vec<String> {
+	INSTANCES.lock().await.keys().map(|x| x.to_owned()).collect()
 }
 
 /// Initialise a plugin from a given directory.
@@ -78,21 +78,23 @@ pub async fn initialise_plugin(path: &path::Path) -> anyhow::Result<()> {
 		}
 	}
 
-	let mut categories = CATEGORIES.write().await;
-	if let Some(category) = categories.get_mut(&manifest.category) {
-		for action in manifest.actions {
-			if let Some(index) = category.iter().position(|v| v.uuid == action.uuid) {
-				category.remove(index);
+	{
+		let mut categories = CATEGORIES.write().await;
+		if let Some(category) = categories.get_mut(&manifest.category) {
+			for action in manifest.actions {
+				if let Some(index) = category.iter().position(|v| v.uuid == action.uuid) {
+					category.remove(index);
+				}
+				category.push(action);
 			}
-			category.push(action);
-		}
-	} else {
-		let mut category: Vec<Action> = vec![];
-		for action in manifest.actions {
-			category.push(action);
-		}
-		if !category.is_empty() {
-			categories.insert(manifest.category, category);
+		} else {
+			let mut category: Vec<Action> = vec![];
+			for action in manifest.actions {
+				category.push(action);
+			}
+			if !category.is_empty() {
+				categories.insert(manifest.category, category);
+			}
 		}
 	}
 

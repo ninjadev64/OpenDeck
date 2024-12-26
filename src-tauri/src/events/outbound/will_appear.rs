@@ -11,7 +11,7 @@ struct AppearEvent {
 	payload: GenericInstancePayload,
 }
 
-pub async fn will_appear(instance: &ActionInstance, multi_action: bool) -> Result<(), anyhow::Error> {
+pub async fn will_appear(instance: &ActionInstance) -> Result<(), anyhow::Error> {
 	send_to_plugin(
 		&instance.action.plugin,
 		&AppearEvent {
@@ -19,13 +19,13 @@ pub async fn will_appear(instance: &ActionInstance, multi_action: bool) -> Resul
 			action: instance.action.uuid.clone(),
 			context: instance.context.clone(),
 			device: instance.context.device.clone(),
-			payload: GenericInstancePayload::new(instance, multi_action),
+			payload: GenericInstancePayload::new(instance),
 		},
 	)
 	.await
 }
 
-pub async fn will_disappear(instance: &ActionInstance, multi_action: bool, clear_on_device: bool) -> Result<(), anyhow::Error> {
+pub async fn will_disappear(instance: &ActionInstance, clear_on_device: bool) -> Result<(), anyhow::Error> {
 	send_to_plugin(
 		&instance.action.plugin,
 		&AppearEvent {
@@ -33,7 +33,7 @@ pub async fn will_disappear(instance: &ActionInstance, multi_action: bool, clear
 			action: instance.action.uuid.clone(),
 			context: instance.context.clone(),
 			device: instance.context.device.clone(),
-			payload: GenericInstancePayload::new(instance, multi_action),
+			payload: GenericInstancePayload::new(instance),
 		},
 	)
 	.await?;

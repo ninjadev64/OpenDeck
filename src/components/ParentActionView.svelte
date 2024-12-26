@@ -48,6 +48,12 @@
 	context = null!;
 </script>
 
+<svelte:window
+	on:keydown={(event) => {
+		if (event.key == "Escape") $inspectedParentAction = null;
+	}}
+/>
+
 <div class="px-6 pt-6 pb-4 dark:text-neutral-300">
 	<button class="float-right text-xl" on:click={() => $inspectedParentAction = null}>✕</button>
 	<h1 class="font-semibold text-2xl">{parentUuid == "opendeck.toggleaction" ? "Toggle Action" : "Multi Action"}</h1>
