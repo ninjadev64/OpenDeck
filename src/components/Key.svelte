@@ -115,7 +115,7 @@
 
 <canvas
 	bind:this={canvas}
-	class="relative -m-2 border-2 dark:border-neutral-700 rounded-md select-none"
+	class="relative -m-2 border-2 dark:border-neutral-700 rounded-md outline-none"
 	class:-m-[2.06rem]={size == 192}
 	width={size}
 	height={size}

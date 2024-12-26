@@ -26,7 +26,7 @@ struct GenericInstancePayload {
 }
 
 impl GenericInstancePayload {
-	fn new(instance: &crate::shared::ActionInstance, multi_action: bool) -> Self {
+	fn new(instance: &crate::shared::ActionInstance) -> Self {
 		let coordinates = match &instance.context.controller[..] {
 			"Encoder" => Coordinates {
 				row: 0,
@@ -43,7 +43,7 @@ impl GenericInstancePayload {
 			coordinates,
 			controller: instance.context.controller.clone(),
 			state: instance.current_state,
-			isInMultiAction: multi_action,
+			isInMultiAction: instance.context.index != 0,
 		}
 	}
 }
