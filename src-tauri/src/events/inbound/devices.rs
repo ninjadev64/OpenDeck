@@ -70,3 +70,8 @@ pub async fn encoder_down(event: PayloadEvent<PressPayload>) -> Result<(), anyho
 pub async fn encoder_up(event: PayloadEvent<PressPayload>) -> Result<(), anyhow::Error> {
 	crate::events::outbound::encoder::dial_press(&event.payload.device, "dialUp", event.payload.position).await
 }
+
+pub async fn rerender_images(_event: PayloadEvent<String>) -> Result<(), anyhow::Error> {
+	crate::events::frontend::profiles::rerender_images(&crate::APP_HANDLE.get().unwrap()).await?;
+	Ok(())
+}

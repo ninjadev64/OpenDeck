@@ -43,11 +43,13 @@ impl ProfileStores {
 		} else {
 			let default = Profile {
 				id: id.to_owned(),
-				keys: vec![None; (device.rows * device.columns) as usize],
-				sliders: vec![None; device.encoders as usize],
+				keys: Vec::new(),
+				sliders: Vec::new(),
 			};
 
 			let mut store = Store::new(path, &config_dir(), default).context(format!("Failed to create store for profile {}", path))?;
+			store.value.keys.resize((device.rows * device.columns) as usize, None);
+			store.value.sliders.resize(device.encoders as usize, None);
 
 			let categories = crate::shared::CATEGORIES.read().await;
 			let actions = categories.values().flatten().collect::<Vec<_>>();
@@ -330,7 +332,7 @@ pub async fn acquire_locks_mut() -> LocksMut<'static> {
 }
 
 pub async fn get_slot<'a>(context: &crate::shared::Context, locks: &'a Locks<'_>) -> Result<&'a Option<crate::shared::ActionInstance>, anyhow::Error> {
-	let device = locks.devices.get(&context.device).unwrap();
+	let device = locks.devices.get(&context.device).ok_or_else(|| anyhow::anyhow!("device not found"))?;
 	let store = locks.profile_stores.get_profile_store(device, &context.profile)?;
 
 	let configured = match &context.controller[..] {
@@ -342,7 +344,7 @@ pub async fn get_slot<'a>(context: &crate::shared::Context, locks: &'a Locks<'_>
 }
 
 pub async fn get_slot_mut<'a>(context: &crate::shared::Context, locks: &'a mut LocksMut<'_>) -> Result<&'a mut Option<crate::shared::ActionInstance>, anyhow::Error> {
-	let device = locks.devices.get(&context.device).unwrap();
+	let device = locks.devices.get(&context.device).ok_or_else(|| anyhow::anyhow!("device not found"))?;
 	let store = locks.profile_stores.get_profile_store_mut(device, &context.profile).await?;
 
 	let configured = match &context.controller[..] {
