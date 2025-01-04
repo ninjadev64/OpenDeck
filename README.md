@@ -30,12 +30,12 @@ Special thanks go to the developers of [Tauri](https://github.com/tauri-apps/tau
 
 ### Windows
 
-- Download the latest release (`.exe` or `.msi`) from GitHub Releases.
+- Download the latest release (`.exe` or `.msi`) from [GitHub Releases](https://github.com/ninjadev64/OpenDeck/releases).
 - Double-click the downloaded file to run the installer.
 
 ### macOS
 
-- Download the latest release from GitHub Releases.
+- Download the latest release from [GitHub Releases](https://github.com/ninjadev64/OpenDeck/releases).
 - If you downloaded a `.dmg`, open the downloaded disk image and drag the application inside into your Applications folder; otherwise, extract the `.tar.gz` to your Applications folder.
 - Open the installed application. Note: if you receive a warning about OpenDeck being distributed by an unknown developer, *right-click the app in Finder and then click Open* to suppress the warning.
 - If you intend to use plugins that are only compiled for Windows, you will need to have [Wine](https://www.winehq.org/) installed on your system.
