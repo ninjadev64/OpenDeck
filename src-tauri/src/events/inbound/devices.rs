@@ -18,7 +18,7 @@ pub async fn register_device(uuid: &str, mut event: PayloadEvent<crate::shared::
 				}
 			}
 		}
-		crate::events::outbound::devices::device_did_connect(&event.payload.id, (&event.payload).into()).await.ok();
+		let _ = crate::events::outbound::devices::device_did_connect(&event.payload.id, (&event.payload).into()).await;
 		DEVICES.write().await.insert(event.payload.id.clone(), event.payload);
 		crate::events::frontend::update_devices().await;
 		Ok(())
@@ -29,6 +29,12 @@ pub async fn register_device(uuid: &str, mut event: PayloadEvent<crate::shared::
 
 pub async fn deregister_device(uuid: &str, event: PayloadEvent<String>) -> Result<(), anyhow::Error> {
 	if uuid.is_empty() || Some(uuid) == DEVICE_NAMESPACES.read().await.get(&event.payload[..2]).map(|x| x.as_str()) {
+		if let Ok(profiles) = get_device_profiles(&event.payload) {
+			let mut profile_stores = crate::store::profiles::PROFILE_STORES.write().await;
+			for profile in profiles {
+				profile_stores.remove_profile(&event.payload, &profile);
+			}
+		}
 		let _ = crate::events::outbound::devices::device_did_disconnect(&event.payload).await;
 		DEVICES.write().await.remove(&event.payload);
 		crate::events::frontend::update_devices().await;
@@ -69,4 +75,9 @@ pub async fn encoder_down(event: PayloadEvent<PressPayload>) -> Result<(), anyho
 
 pub async fn encoder_up(event: PayloadEvent<PressPayload>) -> Result<(), anyhow::Error> {
 	crate::events::outbound::encoder::dial_press(&event.payload.device, "dialUp", event.payload.position).await
+}
+
+pub async fn rerender_images(_event: PayloadEvent<String>) -> Result<(), anyhow::Error> {
+	crate::events::frontend::profiles::rerender_images(crate::APP_HANDLE.get().unwrap()).await?;
+	Ok(())
 }
