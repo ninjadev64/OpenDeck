@@ -2,7 +2,7 @@ use super::Error;
 
 use crate::store::profiles::{acquire_locks_mut, get_device_profiles, PROFILE_STORES};
 
-use tauri::command;
+use tauri::{command, AppHandle, Emitter, Manager};
 
 #[command]
 pub fn get_profiles(device: &str) -> Result<Vec<String>, Error> {
@@ -69,4 +69,10 @@ pub async fn set_selected_profile(device: String, id: String) -> Result<(), Erro
 pub async fn delete_profile(device: String, profile: String) {
 	let mut profile_stores = PROFILE_STORES.write().await;
 	profile_stores.delete_profile(&device, &profile);
+}
+
+pub async fn rerender_images(app: &AppHandle) -> Result<(), anyhow::Error> {
+	let window = app.get_webview_window("main").unwrap();
+	window.emit("rerender_images", ())?;
+	Ok(())
 }

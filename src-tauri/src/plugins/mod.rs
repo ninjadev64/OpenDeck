@@ -275,6 +275,25 @@ pub async fn initialise_plugin(path: &path::Path) -> anyhow::Result<()> {
 }
 
 pub async fn deactivate_plugin(app: &AppHandle, uuid: &str) -> Result<(), anyhow::Error> {
+	{
+		let mut namespaces = DEVICE_NAMESPACES.write().await;
+		if let Some((namespace, _)) = namespaces.clone().iter().find(|(_, plugin)| uuid == **plugin) {
+			namespaces.remove(namespace);
+			drop(namespaces);
+			let devices = crate::shared::DEVICES
+				.read()
+				.await
+				.iter()
+				.filter(|(id, _)| &id[..2] == namespace)
+				.map(|(id, _)| id.to_owned())
+				.collect::<Vec<_>>();
+			for device in devices {
+				crate::events::inbound::devices::deregister_device("", crate::events::inbound::PayloadEvent { payload: device }).await?;
+			}
+			crate::events::frontend::update_devices().await;
+		}
+	}
+
 	let mut instances = INSTANCES.lock().await;
 	if let Some(instance) = instances.remove(uuid) {
 		match instance {

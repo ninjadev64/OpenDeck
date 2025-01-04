@@ -44,6 +44,12 @@
 		folders = folders;
 	}
 
+	listen("rerender_images", async () => {
+		try {
+			profile = await invoke("get_selected_profile", { device: device.id });
+		} catch {}
+	});
+
 	async function deleteProfile(id: string) {
 		for (const devices of Object.values(applicationProfiles)) {
 			if (devices[device.id] == id) {
