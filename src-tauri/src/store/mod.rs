@@ -1,5 +1,5 @@
 pub mod profiles;
-mod simplified_context;
+mod simplified_profile;
 
 use std::fs;
 use std::path::{Path, PathBuf};

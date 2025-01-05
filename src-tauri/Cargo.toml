@@ -47,6 +47,7 @@ reqwest = "0.12"
 zip = { version = "2.2", default-features = false, features = ["deflate", "zstd"] }
 active-win-pos-rs = "0.8"
 semver = "1.0"
+path-slash = "0.2"
 
 [features]
 custom-protocol = ["tauri/custom-protocol"]

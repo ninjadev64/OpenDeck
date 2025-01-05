@@ -1,5 +1,5 @@
 use super::{
-	simplified_context::{DiskActionInstance, DiskProfile},
+	simplified_profile::{DiskActionInstance, DiskProfile},
 	Store,
 };
 use crate::shared::{config_dir, Action, ActionInstance, ActionState, DeviceInfo, Profile, DEVICES};
@@ -260,7 +260,11 @@ pub fn get_device_profiles(device: &str) -> Result<Vec<String>, anyhow::Error> {
 
 	for entry in entries.flatten() {
 		if entry.metadata()?.is_file() {
-			let id = entry.file_name().to_string_lossy()[..entry.file_name().len() - 5].to_owned();
+			let mut id = entry.file_name().to_string_lossy().into_owned();
+			if !id.ends_with(".json") {
+				continue;
+			}
+			id.truncate(id.len() - 5);
 			if let Err(error) = migrate_profile(entry.path()) {
 				log::warn!("Failed to migrate profile {id}: {error}");
 			} else {
@@ -270,7 +274,11 @@ pub fn get_device_profiles(device: &str) -> Result<Vec<String>, anyhow::Error> {
 			let entries = fs::read_dir(entry.path())?;
 			for subentry in entries.flatten() {
 				if subentry.metadata()?.is_file() {
-					let id = format!("{}/{}", entry.file_name().to_string_lossy(), &subentry.file_name().to_string_lossy()[..subentry.file_name().len() - 5]);
+					let mut id = format!("{}/{}", entry.file_name().to_string_lossy(), &subentry.file_name().to_string_lossy());
+					if !id.ends_with(".json") {
+						continue;
+					}
+					id.truncate(id.len() - 5);
 					if let Err(error) = migrate_profile(subentry.path()) {
 						log::warn!("Failed to migrate profile {id}: {error}");
 					} else {
