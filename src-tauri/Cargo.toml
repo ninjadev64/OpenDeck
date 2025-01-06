@@ -36,16 +36,17 @@ tauri-plugin-single-instance = { version = "2.0", features = ["deep-link"] }
 tauri-plugin-autostart = "2.0"
 tauri-plugin-dialog = "2.0"
 tauri-plugin-deep-link = "2.0"
+tauri-plugin-updater = "2.0"
 tauri-plugin-aptabase = { git = "https://github.com/ninjadev64/tauri-plugin-aptabase.git", branch = "v2" }
 serde-inline-default = "0.2"
-serde_with = "3.11"
+serde_with = "3.12"
 json-patch = "3.0"
 os_info = "3.9"
 urlencoding = "2.1"
 base64 = "0.22"
 reqwest = "0.12"
 zip = { version = "2.2", default-features = false, features = ["deflate", "zstd"] }
-active-win-pos-rs = "0.8"
+active-win-pos-rs = "0.9"
 semver = "1.0"
 path-slash = "0.2"
 

@@ -156,6 +156,37 @@ Enjoy!"#,
 				let _ = app.deep_link().register_all();
 			}
 
+			async fn update() -> tauri_plugin_updater::Result<()> {
+				#[cfg(target_os = "linux")]
+				if std::env::var("container").is_ok() {
+					return Ok(());
+				}
+
+				use tauri_plugin_updater::UpdaterExt;
+
+				let app = APP_HANDLE.get().unwrap();
+
+				if let Some(update) = app.updater()?.check().await? {
+					app.dialog().message(format!(
+						r#"A new version of OpenDeck, {}, is available.
+Would you like to download and install it automatically?
+
+If you installed OpenDeck using a package manager, you should not update using this tool.
+Instead, update using your package manager's normal method.
+					"#,
+						update.version
+					));
+				}
+
+				Ok(())
+			}
+
+			tokio::spawn(async {
+				if let Err(error) = update().await {
+					log::warn!("Failed to update application: {error}");
+				}
+			});
+
 			Ok(())
 		})
 		.plugin(
@@ -169,6 +200,7 @@ Enjoy!"#,
 		.plugin(tauri_plugin_single_instance::init(|app, _, _| app.get_webview_window("main").unwrap().show().unwrap()))
 		.plugin(tauri_plugin_dialog::init())
 		.plugin(tauri_plugin_deep_link::init())
+		.plugin(tauri_plugin_updater::Builder::new().build())
 		.on_window_event(|window, event| {
 			if window.label() != "main" {
 				return;

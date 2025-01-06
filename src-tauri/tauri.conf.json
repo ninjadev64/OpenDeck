@@ -8,6 +8,7 @@
 	"bundle": {
 		"active": true,
 		"targets": "all",
+		"createUpdaterArtifacts": true,
 		"resources": { "target/plugins/": "plugins/" },
 		"linux": {
 			"deb": {
@@ -25,18 +26,18 @@
 				}
 			}
 		},
+		"macOS": {
+			"exceptionDomain": "localhost"
+		},
 		"publisher": "ninjadev64",
 		"shortDescription": "Use stream controllers",
-		"longDescription": "OpenDeck is a desktop application for using stream controller devices like the Elgato Stream Deck. OpenDeck conforms to the OpenAction API, which is cross-compatible with the Stream Deck SDK, allowing a wide range of pre-existing plugins to be used.",
+		"longDescription": "OpenDeck is a desktop application for using stream controller devices like the Elgato Stream Deck. OpenDeck conforms to the OpenAction API, which is backwards-compatible with the Stream Deck SDK, allowing a wide range of pre-existing plugins to be used.",
 		"category": "Productivity",
 		"icon": [
 			"icons/icon.png",
 			"icons/icon.icns",
 			"icons/icon.ico"
-		],
-		"macOS": {
-			"exceptionDomain": "localhost"
-		}
+		]
 	},
 	"productName": "OpenDeck",
 	"mainBinaryName": "opendeck",
@@ -47,6 +48,10 @@
 			"desktop": {
 				"schemes": ["opendeck"]
 			}
+		},
+		"updater": {
+			"pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEYyMjBFNTdEOUI4MTMxN0EKUldSNk1ZR2JmZVVnOGlxdEZ5WnRYR0kvRU81bXdFQUtqbW1sTU1CL2o1T0dGOUN1SDdWTUU1VmsK",
+			"endpoints": ["https://github.com/ninjadev64/OpenDeck/releases/latest/download/latest.json"]
 		}
 	},
 	"app": {
