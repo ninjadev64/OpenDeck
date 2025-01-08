@@ -51,6 +51,11 @@ pub async fn init_webserver(prefix: PathBuf) {
 
 		if url.ends_with("|opendeck_property_inspector") {
 			let path = &url[..url.len() - 28];
+			if !matches!(tokio::fs::try_exists(path).await, Ok(true)) {
+				let _ = request.respond(Response::empty(404).with_header(access_control_allow_origin));
+				continue;
+			}
+
 			let mut content = tokio::fs::read_to_string(path).await.unwrap_or_default();
 			content += r#"
 				<div id="opendeck_iframe_container" style="position: absolute; z-index: 100; top: 0; left: 0; width: 100%; height: 100%; display: none;" />
@@ -96,6 +101,11 @@ pub async fn init_webserver(prefix: PathBuf) {
 			});
 			let _ = request.respond(response);
 		} else {
+			if !matches!(tokio::fs::try_exists(&url).await, Ok(true)) {
+				let _ = request.respond(Response::empty(404).with_header(access_control_allow_origin));
+				continue;
+			}
+
 			let mime_type = mime(&match Path::new(&url).extension() {
 				Some(extension) => extension.to_string_lossy().into_owned(),
 				None => "html".to_owned(),
