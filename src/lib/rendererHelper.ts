@@ -45,18 +45,24 @@ export async function renderImage(
 	if (!context) return;
 	context.clearRect(0, 0, canvas.width, canvas.height);
 
-	// Load image
-	let image = document.createElement("img");
-	image.crossOrigin = "anonymous";
-	image.src = processImage ? getImage(state.image, fallback) : state.image;
-	if (image.src == undefined) return;
-	await new Promise((resolve) => {
-		image.onload = resolve;
-	});
+	try {
+		// Load image
+		let image = document.createElement("img");
+		image.crossOrigin = "anonymous";
+		image.src = processImage ? getImage(state.image, fallback) : state.image;
+		if (image.src == undefined) return;
+		await new Promise((resolve, reject) => {
+			image.onload = resolve;
+			image.onerror = reject;
+		});
 
-	// Draw image
-	context.imageSmoothingQuality = "high";
-	context.drawImage(image, 0, 0, canvas.width, canvas.height);
+		// Draw image
+		context.imageSmoothingQuality = "high";
+		context.drawImage(image, 0, 0, canvas.width, canvas.height);
+	} catch (error: any) {
+		if (!(error instanceof Event)) console.error(error);
+		showAlert = true;
+	}
 
 	// Draw text
 	if (state.show) {

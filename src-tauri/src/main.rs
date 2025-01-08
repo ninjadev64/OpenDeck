@@ -29,7 +29,7 @@ static APP_HANDLE: OnceCell<AppHandle> = OnceCell::new();
 async fn main() {
 	log_panics::init();
 
-	match Builder::default()
+	let app = match Builder::default()
 		.invoke_handler(tauri::generate_handler![
 			frontend::get_devices,
 			frontend::restart,
@@ -124,7 +124,12 @@ Enjoy!"#,
 				}
 			}
 
-			elgato::initialise_devices();
+			tokio::spawn(async {
+				loop {
+					elgato::initialise_devices().await;
+					tokio::time::sleep(std::time::Duration::from_secs(10)).await;
+				}
+			});
 			plugins::initialise_plugins();
 			application_watcher::init_application_watcher();
 
@@ -214,9 +219,18 @@ Instead, update using your package manager's normal method.
 				}
 			}
 		})
-		.run(tauri::generate_context!())
+		.build(tauri::generate_context!())
 	{
-		Ok(_) => (),
-		Err(error) => panic!("failed to run Tauri application: {}", error),
+		Ok(app) => app,
+		Err(error) => panic!("failed to build Tauri application: {}", error),
 	};
+
+	app.run(|app, event| {
+		if let tauri::RunEvent::Exit = event {
+			tokio::spawn(elgato::reset_devices());
+			use tauri_plugin_aptabase::EventTracker;
+			let _ = app.track_event("app_exited", None);
+			app.flush_events_blocking();
+		}
+	});
 }
