@@ -41,7 +41,7 @@ pub async fn create_instance(app: AppHandle, action: Action, context: Context) -
 		}
 
 		save_profile(&context.device, &mut locks).await?;
-		let _ = crate::events::outbound::will_appear::will_appear(&instance, true).await;
+		let _ = crate::events::outbound::will_appear::will_appear(&instance).await;
 
 		Ok(Some(instance))
 	} else {
@@ -62,7 +62,7 @@ pub async fn create_instance(app: AppHandle, action: Action, context: Context) -
 		let slot = slot.clone();
 
 		save_profile(&context.device, &mut locks).await?;
-		let _ = crate::events::outbound::will_appear::will_appear(&instance, false).await;
+		let _ = crate::events::outbound::will_appear::will_appear(&instance).await;
 
 		Ok(slot)
 	}
@@ -111,13 +111,13 @@ pub async fn move_instance(source: Context, destination: Context, retain: bool) 
 	if !retain {
 		let src = get_slot_mut(&source, &mut locks).await?;
 		if let Some(old) = src {
-			let _ = crate::events::outbound::will_appear::will_disappear(old, false, true).await;
+			let _ = crate::events::outbound::will_appear::will_disappear(old, true).await;
 			let _ = remove_dir_all(instance_images_dir(old)).await;
 		}
 		*src = None;
 	}
 
-	let _ = crate::events::outbound::will_appear::will_appear(&new, false).await;
+	let _ = crate::events::outbound::will_appear::will_appear(&new).await;
 
 	save_profile(&destination.device, &mut locks).await?;
 
@@ -133,10 +133,10 @@ pub async fn remove_instance(context: ActionContext) -> Result<(), Error> {
 	};
 
 	if instance.context == context {
-		let _ = crate::events::outbound::will_appear::will_disappear(instance, false, true).await;
+		let _ = crate::events::outbound::will_appear::will_disappear(instance, true).await;
 		if let Some(children) = &instance.children {
 			for child in children {
-				let _ = crate::events::outbound::will_appear::will_disappear(child, false, true).await;
+				let _ = crate::events::outbound::will_appear::will_disappear(child, true).await;
 				let _ = remove_dir_all(instance_images_dir(child)).await;
 			}
 		}
@@ -146,7 +146,7 @@ pub async fn remove_instance(context: ActionContext) -> Result<(), Error> {
 		let children = instance.children.as_mut().unwrap();
 		for (index, instance) in children.iter().enumerate() {
 			if instance.context == context {
-				let _ = crate::events::outbound::will_appear::will_disappear(instance, true, true).await;
+				let _ = crate::events::outbound::will_appear::will_disappear(instance, true).await;
 				let _ = remove_dir_all(instance_images_dir(instance)).await;
 				children.remove(index);
 				break;

@@ -36,10 +36,10 @@ pub async fn set_selected_profile(device: String, id: String) -> Result<(), Erro
 		let old_profile = &locks.profile_stores.get_profile_store(locks.devices.get(&device).unwrap(), &selected_profile)?.value;
 		for instance in old_profile.keys.iter().flatten().chain(&mut old_profile.sliders.iter().flatten()) {
 			if !matches!(instance.action.uuid.as_str(), "opendeck.multiaction" | "opendeck.toggleaction") {
-				let _ = crate::events::outbound::will_appear::will_disappear(instance, false, false).await;
+				let _ = crate::events::outbound::will_appear::will_disappear(instance, false).await;
 			} else {
 				for child in instance.children.as_ref().unwrap() {
-					let _ = crate::events::outbound::will_appear::will_disappear(child, true, false).await;
+					let _ = crate::events::outbound::will_appear::will_disappear(child, false).await;
 				}
 			}
 		}
@@ -51,10 +51,10 @@ pub async fn set_selected_profile(device: String, id: String) -> Result<(), Erro
 	let new_profile = &store.value;
 	for instance in new_profile.keys.iter().flatten().chain(&mut new_profile.sliders.iter().flatten()) {
 		if !matches!(instance.action.uuid.as_str(), "opendeck.multiaction" | "opendeck.toggleaction") {
-			let _ = crate::events::outbound::will_appear::will_appear(instance, false).await;
+			let _ = crate::events::outbound::will_appear::will_appear(instance).await;
 		} else {
 			for child in instance.children.as_ref().unwrap() {
-				let _ = crate::events::outbound::will_appear::will_appear(child, true).await;
+				let _ = crate::events::outbound::will_appear::will_appear(child).await;
 			}
 		}
 	}
@@ -68,5 +68,5 @@ pub async fn set_selected_profile(device: String, id: String) -> Result<(), Erro
 #[command]
 pub async fn delete_profile(device: String, profile: String) {
 	let mut profile_stores = PROFILE_STORES.write().await;
-	profile_stores.remove_profile(&device, &profile);
+	profile_stores.delete_profile(&device, &profile);
 }

@@ -11,7 +11,7 @@ use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use anyhow::Context;
+use anyhow::{anyhow, Context};
 use once_cell::sync::Lazy;
 use tokio::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 
@@ -20,42 +20,40 @@ pub struct ProfileStores {
 }
 
 impl ProfileStores {
-	pub fn get_profile_store(&self, device: &DeviceInfo, id: &str) -> Result<&Store<Profile>, anyhow::Error> {
-		let path = PathBuf::from("profiles").join(&device.id).join(id);
-		let path = path.to_str().unwrap();
-
-		if self.stores.contains_key(path) {
-			Ok(self.stores.get(path).unwrap())
+	fn canonical_id(device: &str, id: &str) -> String {
+		if cfg!(target_os = "windows") {
+			PathBuf::from(device).join(id.replace('/', "\\")).to_str().unwrap().to_owned()
 		} else {
-			Err(anyhow::anyhow!("profile not found"))
+			PathBuf::from(device).join(id).to_str().unwrap().to_owned()
 		}
 	}
 
-	pub async fn get_profile_store_mut(&mut self, device: &DeviceInfo, id: &str) -> Result<&mut Store<Profile>, anyhow::Error> {
-		#[cfg(target_os = "windows")]
-		let path = PathBuf::from("profiles").join(&device.id).join(id.replace('/', "\\"));
-		#[cfg(not(target_os = "windows"))]
-		let path = PathBuf::from("profiles").join(&device.id).join(id);
-		let path = path.to_str().unwrap();
+	pub fn get_profile_store(&self, device: &DeviceInfo, id: &str) -> Result<&Store<Profile>, anyhow::Error> {
+		self.stores.get(&Self::canonical_id(&device.id, id)).ok_or_else(|| anyhow!("profile not found"))
+	}
 
-		if self.stores.contains_key(path) {
-			Ok(self.stores.get_mut(path).unwrap())
+	pub async fn get_profile_store_mut(&mut self, device: &DeviceInfo, id: &str) -> Result<&mut Store<Profile>, anyhow::Error> {
+		let canonical_id = Self::canonical_id(&device.id, id);
+		if self.stores.contains_key(&canonical_id) {
+			Ok(self.stores.get_mut(&canonical_id).unwrap())
 		} else {
 			let default = Profile {
 				id: id.to_owned(),
-				keys: vec![None; (device.rows * device.columns) as usize],
-				sliders: vec![None; device.encoders as usize],
+				keys: Vec::new(),
+				sliders: Vec::new(),
 			};
 
-			let mut store = Store::new(path, &config_dir(), default).context(format!("Failed to create store for profile {}", path))?;
+			let mut store = Store::new(&canonical_id, &config_dir().join("profiles"), default).context(format!("Failed to create store for profile {}", canonical_id))?;
+			store.value.keys.resize((device.rows * device.columns) as usize, None);
+			store.value.sliders.resize(device.encoders as usize, None);
 
 			let categories = crate::shared::CATEGORIES.read().await;
 			let actions = categories.values().flatten().collect::<Vec<_>>();
 			let plugins_dir = config_dir().join("plugins");
+			let registered = crate::plugins::registered_plugins().await;
 			let keep_instance = |instance: &ActionInstance| -> bool {
 				instance.action.plugin == "opendeck"
-					|| (plugins_dir.join(&instance.action.plugin).exists()
-						&& (!futures::executor::block_on(crate::plugins::is_plugin_registered(&instance.action.plugin)) || actions.iter().any(|v| v.uuid == instance.action.uuid)))
+					|| (plugins_dir.join(&instance.action.plugin).exists() && (!registered.contains(&instance.action.plugin) || actions.iter().any(|v| v.uuid == instance.action.uuid)))
 			};
 			for slot in store.value.keys.iter_mut() {
 				if let Some(instance) = slot {
@@ -68,13 +66,17 @@ impl ProfileStores {
 			}
 			store.save()?;
 
-			self.stores.insert(path.to_owned(), store);
-			Ok(self.stores.get_mut(path).unwrap())
+			self.stores.insert(canonical_id.clone(), store);
+			Ok(self.stores.get_mut(&canonical_id).unwrap())
 		}
 	}
 
 	pub fn remove_profile(&mut self, device: &str, id: &str) {
-		self.stores.remove(id);
+		self.stores.remove(&Self::canonical_id(device, id));
+	}
+
+	pub fn delete_profile(&mut self, device: &str, id: &str) {
+		self.remove_profile(device, id);
 		let config_dir = config_dir();
 		#[cfg(target_os = "windows")]
 		let id = &id.replace('/', "\\");
@@ -117,8 +119,7 @@ impl DeviceStores {
 				selected_profile: "Default".to_owned(),
 			};
 
-			let path = PathBuf::from("profiles").join(device);
-			let store = Store::new(path.to_str().unwrap(), &config_dir(), default).context(format!("Failed to create store for device config {}", device))?;
+			let store = Store::new(device, &config_dir().join("profiles"), default).context(format!("Failed to create store for device config {}", device))?;
 			store.save()?;
 
 			self.stores.insert(device.to_owned(), store);
@@ -141,8 +142,7 @@ impl DeviceStores {
 		} else {
 			let default = DeviceConfig { selected_profile: id };
 
-			let path = PathBuf::from("profiles").join(device);
-			let store = Store::new(path.to_str().unwrap(), &config_dir(), default).context(format!("Failed to create store for device config {}", device))?;
+			let store = Store::new(device, &config_dir().join("profiles"), default).context(format!("Failed to create store for device config {}", device))?;
 			store.save()?;
 
 			self.stores.insert(device.to_owned(), store);
@@ -330,24 +330,24 @@ pub async fn acquire_locks_mut() -> LocksMut<'static> {
 }
 
 pub async fn get_slot<'a>(context: &crate::shared::Context, locks: &'a Locks<'_>) -> Result<&'a Option<crate::shared::ActionInstance>, anyhow::Error> {
-	let device = locks.devices.get(&context.device).unwrap();
+	let device = locks.devices.get(&context.device).ok_or_else(|| anyhow!("device not found"))?;
 	let store = locks.profile_stores.get_profile_store(device, &context.profile)?;
 
 	let configured = match &context.controller[..] {
-		"Encoder" => &store.value.sliders[context.position as usize],
-		_ => &store.value.keys[context.position as usize],
+		"Encoder" => store.value.sliders.get(context.position as usize).ok_or_else(|| anyhow!("index out of bounds"))?,
+		_ => store.value.keys.get(context.position as usize).ok_or_else(|| anyhow!("index out of bounds"))?,
 	};
 
 	Ok(configured)
 }
 
 pub async fn get_slot_mut<'a>(context: &crate::shared::Context, locks: &'a mut LocksMut<'_>) -> Result<&'a mut Option<crate::shared::ActionInstance>, anyhow::Error> {
-	let device = locks.devices.get(&context.device).unwrap();
+	let device = locks.devices.get(&context.device).ok_or_else(|| anyhow!("device not found"))?;
 	let store = locks.profile_stores.get_profile_store_mut(device, &context.profile).await?;
 
 	let configured = match &context.controller[..] {
-		"Encoder" => &mut store.value.sliders[context.position as usize],
-		_ => &mut store.value.keys[context.position as usize],
+		"Encoder" => store.value.sliders.get_mut(context.position as usize).ok_or_else(|| anyhow!("index out of bounds"))?,
+		_ => store.value.keys.get_mut(context.position as usize).ok_or_else(|| anyhow!("index out of bounds"))?,
 	};
 
 	Ok(configured)

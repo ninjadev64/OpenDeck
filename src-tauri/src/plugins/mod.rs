@@ -7,8 +7,6 @@ use crate::store::get_settings;
 use crate::APP_HANDLE;
 
 use std::collections::HashMap;
-#[cfg(target_os = "windows")]
-use std::os::windows::process::CommandExt;
 use std::process::{Child, Command, Stdio};
 use std::{fs, path};
 
@@ -32,8 +30,8 @@ enum PluginInstance {
 pub static DEVICE_NAMESPACES: Lazy<RwLock<HashMap<String, String>>> = Lazy::new(|| RwLock::new(HashMap::new()));
 static INSTANCES: Lazy<Mutex<HashMap<String, PluginInstance>>> = Lazy::new(|| Mutex::new(HashMap::new()));
 
-pub async fn is_plugin_registered(uuid: &str) -> bool {
-	INSTANCES.lock().await.contains_key(uuid)
+pub async fn registered_plugins() -> Vec<String> {
+	INSTANCES.lock().await.keys().map(|x| x.to_owned()).collect()
 }
 
 /// Initialise a plugin from a given directory.
@@ -78,21 +76,23 @@ pub async fn initialise_plugin(path: &path::Path) -> anyhow::Result<()> {
 		}
 	}
 
-	let mut categories = CATEGORIES.write().await;
-	if let Some(category) = categories.get_mut(&manifest.category) {
-		for action in manifest.actions {
-			if let Some(index) = category.iter().position(|v| v.uuid == action.uuid) {
-				category.remove(index);
+	{
+		let mut categories = CATEGORIES.write().await;
+		if let Some(category) = categories.get_mut(&manifest.category) {
+			for action in manifest.actions {
+				if let Some(index) = category.iter().position(|v| v.uuid == action.uuid) {
+					category.remove(index);
+				}
+				category.push(action);
 			}
-			category.push(action);
-		}
-	} else {
-		let mut category: Vec<Action> = vec![];
-		for action in manifest.actions {
-			category.push(action);
-		}
-		if !category.is_empty() {
-			categories.insert(manifest.category, category);
+		} else {
+			let mut category: Vec<Action> = vec![];
+			for action in manifest.actions {
+				category.push(action);
+			}
+			if !category.is_empty() {
+				categories.insert(manifest.category, category);
+			}
 		}
 	}
 
@@ -157,6 +157,7 @@ pub async fn initialise_plugin(path: &path::Path) -> anyhow::Result<()> {
 		// Create a webview window for the plugin and call its registration function.
 		let url = "http://localhost:57118/".to_owned() + path.join(code_path).to_str().unwrap();
 		let window = tauri::WebviewWindowBuilder::new(APP_HANDLE.get().unwrap(), plugin_uuid.replace('.', "_"), tauri::WebviewUrl::External(url.parse()?))
+			.title(plugin_uuid)
 			.visible(false)
 			.build()?;
 
@@ -232,26 +233,42 @@ pub async fn initialise_plugin(path: &path::Path) -> anyhow::Result<()> {
 	} else {
 		let info = info_param::make_info(plugin_uuid.to_owned(), manifest.version, false).await;
 		let log_file = fs::File::create(log_dir().join("plugins").join(format!("{plugin_uuid}.log")))?;
-		// Run the plugin's executable natively.
-		#[cfg(target_os = "windows")]
-		let child = Command::new(path.join(code_path))
-			.current_dir(path)
-			.args(args)
-			.arg(serde_json::to_string(&info)?)
-			.stdout(Stdio::from(log_file.try_clone()?))
-			.stderr(Stdio::from(log_file))
-			.creation_flags(0x08000000)
-			.spawn()?;
-		#[cfg(not(target_os = "windows"))]
-		let child = Command::new(path.join(code_path))
-			.current_dir(path)
-			.args(args)
-			.arg(serde_json::to_string(&info)?)
-			.stdout(Stdio::from(log_file.try_clone()?))
-			.stderr(Stdio::from(log_file))
-			.spawn()?;
 
-		INSTANCES.lock().await.insert(plugin_uuid.to_owned(), PluginInstance::Native(child));
+		// Run the plugin's executable natively.
+
+		#[cfg(target_os = "windows")]
+		{
+			use std::os::windows::process::CommandExt;
+			let child = Command::new(path.join(code_path))
+				.current_dir(path)
+				.args(args)
+				.arg(serde_json::to_string(&info)?)
+				.stdout(Stdio::from(log_file.try_clone()?))
+				.stderr(Stdio::from(log_file))
+				.creation_flags(0x08000000)
+				.spawn()?;
+
+			INSTANCES.lock().await.insert(plugin_uuid.to_owned(), PluginInstance::Native(child));
+		}
+
+		#[cfg(unix)]
+		{
+			use std::os::unix::fs::PermissionsExt;
+			fs::set_permissions(path.join(&code_path), fs::Permissions::from_mode(0o755))?;
+		}
+
+		#[cfg(not(target_os = "windows"))]
+		{
+			let child = Command::new(path.join(code_path))
+				.current_dir(path)
+				.args(args)
+				.arg(serde_json::to_string(&info)?)
+				.stdout(Stdio::from(log_file.try_clone()?))
+				.stderr(Stdio::from(log_file))
+				.spawn()?;
+
+			INSTANCES.lock().await.insert(plugin_uuid.to_owned(), PluginInstance::Native(child));
+		}
 	}
 
 	Ok(())
@@ -333,8 +350,6 @@ pub fn initialise_plugins() {
 						warn!("Failed to initialise plugin at {}: {}", path.display(), error);
 					}
 				});
-			} else {
-				warn!("Failed to initialise plugin at {}: is a file", entry.path().display());
 			}
 		} else if let Err(error) = entry {
 			warn!("Failed to read entry of plugins directory: {}", error)
