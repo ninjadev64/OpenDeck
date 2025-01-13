@@ -69,7 +69,7 @@
 			}
 		],
 		"security": {
-			"csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: http://localhost:57118 https://ninjadev64.github.io https://plugins.amankhanna.me; frame-src http://localhost:57118; connect-src ipc: http://ipc.localhost https://ninjadev64.github.io https://api.github.com https://plugins.amankhanna.me;"
+			"csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: http://localhost:57118 https://openactionapi.github.io https://plugins.amankhanna.me; frame-src http://localhost:57118; connect-src ipc: http://ipc.localhost https://openactionapi.github.io https://api.github.com https://plugins.amankhanna.me;"
 		}
 	}
 }

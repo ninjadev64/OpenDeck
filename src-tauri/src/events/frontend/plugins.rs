@@ -2,7 +2,7 @@ use crate::shared::config_dir;
 
 use super::Error;
 
-use tauri::{command, AppHandle};
+use tauri::{command, AppHandle, Manager};
 
 #[derive(serde::Serialize)]
 pub struct PluginInfo {
@@ -11,15 +11,22 @@ pub struct PluginInfo {
 	author: String,
 	icon: String,
 	version: String,
+	builtin: bool,
 }
 
 #[command]
-pub async fn list_plugins() -> Result<Vec<PluginInfo>, Error> {
+pub async fn list_plugins(app: AppHandle) -> Result<Vec<PluginInfo>, Error> {
 	let mut plugins = vec![];
 
 	let mut entries = match tokio::fs::read_dir(&config_dir().join("plugins")).await {
 		Ok(entries) => entries,
 		Err(error) => return Err(anyhow::Error::from(error).into()),
+	};
+
+	let registered = crate::plugins::registered_plugins().await;
+	let builtins = match app.path().resolve("plugins", tauri::path::BaseDirectory::Resource).map(std::fs::read_dir) {
+		Ok(Ok(entries)) => entries.flatten().map(|x| x.file_name().to_str().unwrap().to_owned()).collect(),
+		_ => vec![],
 	};
 
 	while let Ok(Some(entry)) = entries.next_entry().await {
@@ -29,15 +36,20 @@ pub async fn list_plugins() -> Result<Vec<PluginInfo>, Error> {
 		};
 		let metadata = tokio::fs::metadata(&path).await.unwrap();
 		if metadata.is_dir() {
+			let id = path.file_name().unwrap().to_str().unwrap().to_owned();
+			if !registered.contains(&id) {
+				continue;
+			}
 			let Ok(manifest) = crate::plugins::manifest::read_manifest(&path) else {
 				continue;
 			};
 			plugins.push(PluginInfo {
-				id: path.file_name().unwrap().to_str().unwrap().to_owned(),
 				name: manifest.name,
 				author: manifest.author,
 				icon: crate::shared::convert_icon(path.join(manifest.icon).to_str().unwrap().to_owned()),
 				version: manifest.version,
+				builtin: builtins.contains(&id),
+				id,
 			});
 		}
 	}
@@ -68,20 +80,28 @@ pub async fn install_plugin(app: AppHandle, id: String, url: Option<String>, fil
 	let _ = crate::plugins::deactivate_plugin(&app, &format!("{}.sdPlugin", id)).await;
 
 	let config_dir = config_dir();
-	let _ = tokio::fs::create_dir_all(config_dir.join("temp")).await;
-
-	let temp = config_dir.join("temp").join(format!("{id}.sdPlugin"));
 	let actual = config_dir.join("plugins").join(format!("{id}.sdPlugin"));
 
+	if actual.exists() {
+		let _ = tokio::fs::create_dir_all(config_dir.join("temp")).await;
+	}
+	let temp = config_dir.join("temp").join(format!("{id}.sdPlugin"));
 	let _ = tokio::fs::rename(&actual, &temp).await;
+
 	if let Err(error) = crate::zip_extract::extract(std::io::Cursor::new(bytes), &config_dir.join("plugins")) {
 		log::error!("Failed to unzip file: {}", error.to_string());
 		let _ = tokio::fs::rename(&temp, &actual).await;
 		let _ = crate::plugins::initialise_plugin(&actual).await;
 		return Err(anyhow::Error::from(error).into());
 	}
-	crate::plugins::initialise_plugin(&actual).await?;
-	let _ = tokio::fs::remove_dir_all(temp).await;
+	if let Err(error) = crate::plugins::initialise_plugin(&actual).await {
+		log::warn!("Failed to initialise plugin at {}: {}", actual.display(), error);
+		let _ = tokio::fs::remove_dir_all(&actual).await;
+		let _ = tokio::fs::rename(&temp, &actual).await;
+		let _ = crate::plugins::initialise_plugin(&actual).await;
+		return Err(error.into());
+	}
+	let _ = tokio::fs::remove_dir_all(config_dir.join("temp")).await;
 
 	use tauri_plugin_aptabase::EventTracker;
 	let _ = app.track_event("plugin_installed", Some(serde_json::json!({ "id": id })));

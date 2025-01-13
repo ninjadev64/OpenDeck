@@ -119,7 +119,7 @@
 	class:-m-[2.06rem]={size == 192}
 	width={size}
 	height={size}
-	style={`scale: ${(112 / size) * scale};`}
+	style={`transform: scale(${(112 / size) * scale});`}
 	draggable={slot != null}
 	on:dragstart
 	on:dragover
