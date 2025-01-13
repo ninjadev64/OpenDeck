@@ -3,6 +3,7 @@
 	import type DeviceSelector from "./DeviceSelector.svelte";
 
 	import ArrowClockwise from "phosphor-svelte/lib/ArrowClockwise";
+	import ArrowSquareOut from "phosphor-svelte/lib/ArrowSquareOut";
 	import CloudArrowDown from "phosphor-svelte/lib/CloudArrowDown";
 	import FileArrowUp from "phosphor-svelte/lib/FileArrowUp";
 	import Trash from "phosphor-svelte/lib/Trash";
@@ -88,7 +89,7 @@
 		const path = await open({ multiple: false, directory: false });
 		if (!path) return;
 		const id = prompt("Plugin ID:");
-		if (!id || id.split(".").length < 3) {
+		if (!id || id.split(".").length < 3 || id.endsWith(".sdPlugin")) {
 			message("Invalid plugin ID", { title: `Failed to install "${id}"` });
 			return;
 		}
@@ -112,7 +113,9 @@
 	(async () => installed = await invoke("list_plugins"))();
 
 	let plugins: { [id: string]: GitHubPlugin };
-	(async () => plugins = await (await fetch("https://ninjadev64.github.io/openaction-plugins/catalogue.json")).json())();
+	(async () => plugins = await (await fetch("https://openactionapi.github.io/plugins/catalogue.json")).json())();
+
+	let archiveRes: Response;
 
 	let search: string = "";
 
@@ -158,7 +161,7 @@
 						size="24"
 						color={document.documentElement.classList.contains("dark") ? "#C0BFBC" : "#77767B"}
 					/>
-				{:else}
+				{:else if !plugin.builtin}
 					<Trash
 						size="24"
 						color={document.documentElement.classList.contains("dark") ? "#C0BFBC" : "#77767B"}
@@ -191,14 +194,17 @@
 	{#if !plugins}
 		<h2 class="mx-2 mt-6 mb-2 text-md dark:text-neutral-400">Loading open-source plugin list...</h2>
 	{:else}
-		<div class="flex flex-row items-center mt-6 mb-2">
-			<h2 class="mx-2 font-semibold text-md dark:text-neutral-400">Open-source plugins</h2>
+		<div class="flex flex-row items-center ml-2 mt-6 mb-2 space-x-2">
+			<h2 class="font-semibold text-md dark:text-neutral-400">Open-source plugins</h2>
 			<Tooltip> Open-source plugins downloaded from the author's releases. </Tooltip>
+			<button on:click={() => invoke("open_url", { url: "https://marketplace.rivul.us/" })}>
+				<ArrowSquareOut size="24" color="#77767B" />
+			</button>
 		</div>
 		<div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 			{#each Object.entries(plugins) as [id, plugin]}
 				<ListedPlugin
-					icon="https://ninjadev64.github.io/openaction-plugins/icons/{id}.png"
+					icon="https://openactionapi.github.io/plugins/icons/{id}.png"
 					name={plugin.name}
 					subtitle={plugin.author}
 					hidden={!plugin.name.toUpperCase().includes(search.toUpperCase())}
@@ -234,14 +240,19 @@
 		</div>
 	{/if}
 
-	{#await fetch("https://plugins.amankhanna.me/catalogue.json")}
-		<h2 class="mx-2 mt-6 mb-2 text-md dark:text-neutral-400">Loading plugin list...</h2>
-	{:then res}
-		{#await res.json() then entries}
-			<div class="flex flex-row items-center mt-6 mb-2">
-				<h2 class="mx-2 font-semibold text-md dark:text-neutral-400">Elgato App Store archive</h2>
-				<Tooltip> Plugins archived from the now deprecated Elgato App Store. </Tooltip>
-			</div>
+	<div class="flex flex-row items-center mt-6 mb-2">
+		<h2 class="mx-2 font-semibold text-md dark:text-neutral-400">Elgato App Store archive</h2>
+		<Tooltip> Plugins archived from the now deprecated Elgato App Store. </Tooltip>
+	</div>
+	{#if !archiveRes}
+		<button
+			on:click={async () => archiveRes = await fetch("https://plugins.amankhanna.me/catalogue.json")}
+			class="mx-2 mt-2 mb-4 p-1 text-sm text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 border dark:border-neutral-600 rounded-lg outline-none"
+		>
+			Load Elgato App Store Archive plugins list
+		</button>
+	{:else}
+		{#await archiveRes.json() then entries}
 			<div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 				{#each entries as plugin}
 					<ListedPlugin
@@ -259,5 +270,5 @@
 				{/each}
 			</div>
 		{/await}
-	{/await}
+	{/if}
 </Popup>
