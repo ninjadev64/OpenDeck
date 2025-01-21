@@ -16,7 +16,7 @@ pub async fn create_instance(app: AppHandle, action: Action, context: Context) -
 	let slot = get_slot_mut(&context, &mut locks).await?;
 
 	if let Some(parent) = slot {
-		let Some(ref mut children) = parent.children else { return Ok(None) };
+		let Some(children) = &mut parent.children else { return Ok(None) };
 		let index = match children.last() {
 			None => 1,
 			Some(instance) => instance.context.index + 1,
@@ -68,12 +68,12 @@ pub async fn create_instance(app: AppHandle, action: Action, context: Context) -
 	}
 }
 
-fn instance_images_dir(instance: &ActionInstance) -> std::path::PathBuf {
+fn instance_images_dir(context: &ActionContext) -> std::path::PathBuf {
 	config_dir()
 		.join("images")
-		.join(&instance.context.device)
-		.join(&instance.context.profile)
-		.join(format!("{}.{}.{}", instance.context.controller, instance.context.position, instance.context.index))
+		.join(&context.device)
+		.join(&context.profile)
+		.join(format!("{}.{}.{}", context.controller, context.position, context.index))
 }
 
 #[command]
@@ -89,16 +89,31 @@ pub async fn move_instance(source: Context, destination: Context, retain: bool) 
 		return Ok(None);
 	};
 	new.context = ActionContext::from_context(destination.clone(), 0);
-	if let Some(ref mut children) = new.children {
+	if let Some(children) = &mut new.children {
 		for (index, instance) in children.iter_mut().enumerate() {
 			instance.context = ActionContext::from_context(destination.clone(), index as u16 + 1);
+			for (i, state) in instance.states.iter_mut().enumerate() {
+				if !instance.action.states[i].image.is_empty() {
+					state.image = instance.action.states[i].image.clone();
+				} else {
+					state.image = instance.action.icon.clone();
+				}
+			}
 		}
 	}
 
-	if let Ok(files) = instance_images_dir(&src.clone().unwrap()).read_dir() {
-		let new_dir = instance_images_dir(&new);
+	let old_dir = instance_images_dir(&src.as_ref().unwrap().context);
+	let new_dir = instance_images_dir(&new.context);
+	let _ = tokio::fs::create_dir_all(&new_dir).await;
+	if let Ok(files) = old_dir.read_dir() {
 		for file in files.flatten() {
 			let _ = tokio::fs::copy(file.path(), new_dir.join(file.file_name())).await;
+		}
+	}
+	for state in new.states.iter_mut() {
+		let path = std::path::Path::new(&state.image);
+		if path.starts_with(&old_dir) {
+			state.image = new_dir.join(path.strip_prefix(&old_dir).unwrap()).to_string_lossy().into_owned();
 		}
 	}
 
@@ -112,7 +127,7 @@ pub async fn move_instance(source: Context, destination: Context, retain: bool) 
 		let src = get_slot_mut(&source, &mut locks).await?;
 		if let Some(old) = src {
 			let _ = crate::events::outbound::will_appear::will_disappear(old, true).await;
-			let _ = remove_dir_all(instance_images_dir(old)).await;
+			let _ = remove_dir_all(instance_images_dir(&old.context)).await;
 		}
 		*src = None;
 	}
@@ -137,17 +152,17 @@ pub async fn remove_instance(context: ActionContext) -> Result<(), Error> {
 		if let Some(children) = &instance.children {
 			for child in children {
 				let _ = crate::events::outbound::will_appear::will_disappear(child, true).await;
-				let _ = remove_dir_all(instance_images_dir(child)).await;
+				let _ = remove_dir_all(instance_images_dir(&child.context)).await;
 			}
 		}
-		let _ = remove_dir_all(instance_images_dir(instance)).await;
+		let _ = remove_dir_all(instance_images_dir(&instance.context)).await;
 		*slot = None;
 	} else {
 		let children = instance.children.as_mut().unwrap();
 		for (index, instance) in children.iter().enumerate() {
 			if instance.context == context {
 				let _ = crate::events::outbound::will_appear::will_disappear(instance, true).await;
-				let _ = remove_dir_all(instance_images_dir(instance)).await;
+				let _ = remove_dir_all(instance_images_dir(&instance.context)).await;
 				children.remove(index);
 				break;
 			}
