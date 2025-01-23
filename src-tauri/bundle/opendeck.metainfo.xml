@@ -27,16 +27,16 @@
 
 	<screenshots>
 		<screenshot type="default">
-			<image>https://github.com/ninjadev64/OpenDeck/raw/f3e84c7/.github/readme/mainmenu.png</image>
+			<image>https://github.com/ninjadev64/OpenDeck/raw/release/.github/readme/mainmenu.png</image>
 		</screenshot>
 		<screenshot>
-			<image>https://github.com/ninjadev64/OpenDeck/raw/f3e84c7/.github/readme/multiaction.png</image>
+			<image>https://github.com/ninjadev64/OpenDeck/raw/release/.github/readme/multiaction.png</image>
 		</screenshot>
 		<screenshot>
-			<image>https://github.com/ninjadev64/OpenDeck/raw/f3e84c7/.github/readme/plugins.png</image>
+			<image>https://github.com/ninjadev64/OpenDeck/raw/release/.github/readme/plugins.png</image>
 		</screenshot>
 		<screenshot>
-			<image>https://github.com/ninjadev64/OpenDeck/raw/f3e84c7/.github/readme/profiles.png</image>
+			<image>https://github.com/ninjadev64/OpenDeck/raw/release/.github/readme/profiles.png</image>
 		</screenshot>
 	</screenshots>
 
@@ -46,6 +46,19 @@
 	</branding>
 
 	<releases>
+		<release version="2.4.0" date="2025-01-23">
+			<url type="details">https://github.com/ninjadev64/OpenDeck/releases/tag/v2.4.0</url>
+			<description>
+				<ul>
+					<li>Plugin management improvements</li>
+					<li>Config file portability improvements</li>
+					<li>Device support and automatic reconnection</li>
+					<li>Update notifications</li>
+					<li>Run Command action improvements</li>
+					<li>Numerous bug fixes</li>
+				</ul>
+			</description>
+		</release>
 		<release version="2.3.1" date="2024-12-17">
 			<url type="details">https://github.com/ninjadev64/OpenDeck/releases/tag/v2.3.1</url>
 			<description>
