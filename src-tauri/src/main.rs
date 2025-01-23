@@ -84,7 +84,7 @@ async fn main() {
 							built_info::PKG_VERSION,
 							settings.value.version
 						))
-						.title("Upgrade required")
+						.title("OpenDeck upgrade required")
 						.kind(MessageDialogKind::Error)
 						.show(|_| APP_HANDLE.get().unwrap().exit(1));
 					return Ok(());
@@ -154,6 +154,39 @@ Enjoy!"#,
 			{
 				use tauri_plugin_deep_link::DeepLinkExt;
 				let _ = app.deep_link().register_all();
+			}
+
+			async fn update() -> Result<(), anyhow::Error> {
+				let res = reqwest::Client::new()
+					.get("https://api.github.com/repos/ninjadev64/OpenDeck/releases/latest")
+					.header("Accept", "application/vnd.github+json")
+					.header("User-Agent", "OpenDeck")
+					.send()
+					.await?
+					.json::<serde_json::Value>()
+					.await?;
+				let tag_name = res.get("tag_name").unwrap().as_str().unwrap();
+				if semver::Version::parse(built_info::PKG_VERSION)?.cmp(&semver::Version::parse(&tag_name[1..])?) == Ordering::Less {
+					let app = APP_HANDLE.get().unwrap();
+					app.dialog()
+						.message(format!(
+							"A new version of OpenDeck, {}, is available.\nUpdate description:\n\n{}",
+							tag_name,
+							res.get("body").map(|v| v.as_str().unwrap()).unwrap_or("No description").trim()
+						))
+						.title("OpenDeck update available")
+						.show(|_| ());
+				}
+
+				Ok(())
+			}
+
+			if settings.value.updatecheck {
+				tokio::spawn(async {
+					if let Err(error) = update().await {
+						log::warn!("Failed to update application: {error}");
+					}
+				});
 			}
 
 			Ok(())

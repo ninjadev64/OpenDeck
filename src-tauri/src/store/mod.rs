@@ -74,6 +74,7 @@ pub struct Settings {
 	pub darktheme: bool,
 	pub brightness: u8,
 	pub developer: bool,
+	pub updatecheck: bool,
 	pub statistics: bool,
 }
 
@@ -87,6 +88,7 @@ impl Default for Settings {
 			darktheme: true,
 			brightness: 50,
 			developer: false,
+			updatecheck: true,
 			// Consent is given by the user on install so it is OK to have the default be `true`
 			statistics: true,
 		}

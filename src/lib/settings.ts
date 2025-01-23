@@ -6,6 +6,7 @@ export type Settings = {
 	darktheme: boolean;
 	brightness: number;
 	developer: boolean;
+	updatecheck: boolean;
 	statistics: boolean;
 };
 
