@@ -29,6 +29,13 @@ static APP_HANDLE: OnceCell<AppHandle> = OnceCell::new();
 async fn main() {
 	log_panics::init();
 
+	#[cfg(target_os = "linux")]
+	// SAFETY: std::env::set_var can cause race conditions in multithreaded contexts. We have not spawned any other threads at this point.
+	unsafe {
+		std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
+		std::env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
+	}
+
 	let app = match Builder::default()
 		.invoke_handler(tauri::generate_handler![
 			frontend::get_devices,
