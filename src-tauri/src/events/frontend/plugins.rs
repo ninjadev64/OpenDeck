@@ -23,7 +23,7 @@ pub async fn list_plugins(app: AppHandle) -> Result<Vec<PluginInfo>, Error> {
 		Err(error) => return Err(anyhow::Error::from(error).into()),
 	};
 
-	let registered = crate::plugins::registered_plugins().await;
+	let registered = crate::events::registered_plugins().await;
 	let builtins = match app.path().resolve("plugins", tauri::path::BaseDirectory::Resource).map(std::fs::read_dir) {
 		Ok(Ok(entries)) => entries.flatten().map(|x| x.file_name().to_str().unwrap().to_owned()).collect(),
 		_ => vec![],

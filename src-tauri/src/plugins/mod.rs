@@ -30,10 +30,6 @@ enum PluginInstance {
 pub static DEVICE_NAMESPACES: Lazy<RwLock<HashMap<String, String>>> = Lazy::new(|| RwLock::new(HashMap::new()));
 static INSTANCES: Lazy<Mutex<HashMap<String, PluginInstance>>> = Lazy::new(|| Mutex::new(HashMap::new()));
 
-pub async fn registered_plugins() -> Vec<String> {
-	INSTANCES.lock().await.keys().map(|x| x.to_owned()).collect()
-}
-
 /// Initialise a plugin from a given directory.
 pub async fn initialise_plugin(path: &path::Path) -> anyhow::Result<()> {
 	let plugin_uuid = path.file_name().unwrap().to_str().unwrap();

@@ -21,6 +21,9 @@
 	export let deviceSelector: () => DeviceSelector;
 
 	let showPopup: boolean;
+	setInterval(async () => {
+		if (showPopup) installed = await invoke("list_plugins");
+	}, 1e3);
 
 	async function installPlugin(id: string, name: string, url: string | null = null, file: string | null = null) {
 		if (!file && !await ask(`It may take a while to download the plugin.`, { title: `Install "${name}"?` })) return;

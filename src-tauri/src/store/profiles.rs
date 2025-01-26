@@ -50,7 +50,7 @@ impl ProfileStores {
 			let categories = crate::shared::CATEGORIES.read().await;
 			let actions = categories.values().flatten().collect::<Vec<_>>();
 			let plugins_dir = config_dir().join("plugins");
-			let registered = crate::plugins::registered_plugins().await;
+			let registered = crate::events::registered_plugins().await;
 			let keep_instance = |instance: &ActionInstance| -> bool {
 				instance.action.plugin == "opendeck"
 					|| (plugins_dir.join(&instance.action.plugin).exists() && (!registered.contains(&instance.action.plugin) || actions.iter().any(|v| v.uuid == instance.action.uuid)))

@@ -18,6 +18,10 @@ static PROPERTY_INSPECTOR_SOCKETS: Sockets = Lazy::new(|| Mutex::new(HashMap::ne
 static PLUGIN_QUEUES: Lazy<RwLock<HashMap<String, Vec<Message>>>> = Lazy::new(|| RwLock::new(HashMap::new()));
 static PROPERTY_INSPECTOR_QUEUES: Lazy<RwLock<HashMap<String, Vec<Message>>>> = Lazy::new(|| RwLock::new(HashMap::new()));
 
+pub async fn registered_plugins() -> Vec<String> {
+	PLUGIN_SOCKETS.lock().await.keys().map(|x| x.to_owned()).collect()
+}
+
 /// Register a plugin or property inspector to send and receive events with its WebSocket.
 pub async fn register_plugin(event: RegisterEvent, stream: WebSocketStream<TcpStream>) {
 	let (mut read, write) = stream.split();
