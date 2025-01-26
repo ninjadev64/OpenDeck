@@ -42,7 +42,7 @@ pub async fn set_title(event: ContextAndPayloadEvent<SetTitlePayload>) -> Result
 
 pub async fn set_image(mut event: ContextAndPayloadEvent<SetImagePayload>) -> Result<(), anyhow::Error> {
 	if let Some(image) = &event.payload.image {
-		if image.is_empty() {
+		if image.trim().is_empty() {
 			event.payload.image = None;
 		}
 	}
