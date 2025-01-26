@@ -83,6 +83,7 @@ pub async fn init_webserver(prefix: PathBuf) {
 						iframe.onload = () => {
 							iframe.contentWindow.opener = window;
 							iframe.contentWindow.onbeforeunload = () => top.postMessage({ event: "windowClosed", payload: window.name }, "*");
+							iframe.contentWindow.close = () => { iframe.contentWindow.onbeforeunload(); iframe.remove(); };
 							iframe.contentWindow.document.body.style.overflowY = "auto";
 						};
 						opendeck_iframe_container.appendChild(iframe);

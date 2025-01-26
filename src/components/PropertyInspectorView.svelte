@@ -109,6 +109,14 @@
 		.concat(profile.sliders.filter(nonNull));
 </script>
 
+<svelte:window
+	on:keydown={(event) => {
+		if (event.key == "Escape" && iframePopupsOpen.length > 0) {
+			closePopup(iframePopupsOpen[iframePopupsOpen.length - 1]);
+		}
+	}}
+/>
+
 <div class="grow overflow-scroll bg-white dark:bg-neutral-900 border-t dark:border-neutral-700" bind:this={iframeContainer}>
 	<button
 		bind:this={iframeClosePopup}
