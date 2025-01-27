@@ -46,6 +46,14 @@
 	</branding>
 
 	<releases>
+		<release version="2.4.1" date="2025-01-27">
+			<url type="details">https://github.com/ninjadev64/OpenDeck/releases/tag/v2.4.1</url>
+			<description>
+				<ul>
+					<li>Numerous bug fixes</li>
+				</ul>
+			</description>
+		</release>
 		<release version="2.4.0" date="2025-01-23">
 			<url type="details">https://github.com/ninjadev64/OpenDeck/releases/tag/v2.4.0</url>
 			<description>
