@@ -15,11 +15,11 @@ built = { version = "0.7", features = ["dependency-tree", "git2"] }
 
 [dependencies]
 # Large, fundamental libraries
-tauri = { version = "2.1", features = ["devtools", "tray-icon"] }
+tauri = { version = "2.2", features = ["devtools", "tray-icon"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tokio = { version = "1.42", features = ["full"] }
-tokio-tungstenite = "0.24"
+tokio-tungstenite = "0.26"
 tiny_http = "0.12"
 elgato-streamdeck = { version = "0.9", default-features = false, features = ["async"] }
 image = { version = "0.25", default-features = false, features = ["bmp", "jpeg"] }
@@ -30,11 +30,11 @@ anyhow = "1.0"
 log = "0.4"
 log-panics = "2.1"
 open = "5.3"
-tauri-plugin-log = "2.0"
-tauri-plugin-single-instance = { version = "2.0", features = ["deep-link"] }
-tauri-plugin-autostart = "2.0"
-tauri-plugin-dialog = "2.0"
-tauri-plugin-deep-link = "2.0"
+tauri-plugin-log = "2.2"
+tauri-plugin-single-instance = { version = "2.2", features = ["deep-link"] }
+tauri-plugin-autostart = "2.2"
+tauri-plugin-dialog = "2.2"
+tauri-plugin-deep-link = "2.2"
 tauri-plugin-aptabase = { git = "https://github.com/ninjadev64/tauri-plugin-aptabase.git", branch = "v2" }
 serde-inline-default = "0.2"
 serde_with = "3.12"
