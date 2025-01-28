@@ -362,7 +362,7 @@ pub fn initialise_plugins() {
 			if metadata.is_dir() {
 				tokio::spawn(async move {
 					if let Err(error) = initialise_plugin(&path).await {
-						warn!("Failed to initialise plugin at {}: {}", path.display(), error);
+						warn!("Failed to initialise plugin at {}: {:#}", path.display(), error);
 					}
 				});
 			}

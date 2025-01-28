@@ -57,8 +57,12 @@ pub struct PluginManifest {
 pub fn read_manifest(base_path: &std::path::Path) -> Result<PluginManifest, anyhow::Error> {
 	use anyhow::Context;
 
-	let manifest = std::fs::read(base_path.join("manifest.json")).context("failed to read manifest")?;
-	let mut manifest: serde_json::Value = serde_json::from_slice(&manifest).context("failed to parse manifest")?;
+	let mut manifest: serde_json::Value = serde_json::from_str(
+		std::fs::read_to_string(base_path.join("manifest.json"))
+			.context("failed to read manifest")?
+			.trim_start_matches("\u{feff}"),
+	)
+	.context("failed to parse manifest")?;
 
 	let platform_overrides_path = base_path.join(format!("manifest.{}.json", std::env::consts::OS));
 	if platform_overrides_path.exists() {
