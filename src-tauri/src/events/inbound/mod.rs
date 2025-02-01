@@ -87,6 +87,8 @@ pub async fn process_incoming_message(data: Result<Message, Error>, uuid: &str) 
 				if instance.action.plugin != uuid {
 					return;
 				}
+			} else {
+				return;
 			}
 		} else if let InboundEventType::SetGlobalSettings(event) = &decoded {
 			if event.context != uuid {
