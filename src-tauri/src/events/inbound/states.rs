@@ -41,15 +41,25 @@ pub async fn set_title(event: ContextAndPayloadEvent<SetTitlePayload>) -> Result
 }
 
 pub async fn set_image(mut event: ContextAndPayloadEvent<SetImagePayload>) -> Result<(), anyhow::Error> {
-	if let Some(image) = &event.payload.image {
-		if image.trim().is_empty() {
-			event.payload.image = None;
-		}
-	}
-
 	let mut locks = acquire_locks_mut().await;
 
 	if let Some(instance) = get_instance_mut(&event.context, &mut locks).await? {
+		if let Some(image) = &event.payload.image {
+			if image.trim().is_empty() {
+				event.payload.image = None;
+			} else if !image.trim().starts_with("data:") {
+				event.payload.image = Some(crate::shared::convert_icon(
+					crate::shared::config_dir()
+						.join("plugins")
+						.join(&instance.action.plugin)
+						.join(image.trim())
+						.to_str()
+						.unwrap()
+						.to_owned(),
+				));
+			}
+		}
+
 		if let Some(state) = event.payload.state {
 			instance.states[state as usize].image = event.payload.image.unwrap_or(instance.action.states[state as usize].image.clone());
 		} else {
