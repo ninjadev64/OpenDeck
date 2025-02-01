@@ -65,6 +65,10 @@ async fn init(device: AsyncStreamDeck, serial: String) {
 		_ => 2,
 	};
 	let _ = device.clear_all_button_images().await;
+	if let Ok(settings) = crate::store::get_settings() {
+		let _ = device.set_brightness(settings.value.brightness).await;
+	}
+	let _ = device.flush().await;
 	crate::events::inbound::devices::register_device(
 		"",
 		crate::events::inbound::PayloadEvent {
