@@ -1,14 +1,8 @@
-use super::{send_to_plugin, send_to_property_inspector, Coordinates};
+use super::{send_to_plugin, send_to_property_inspector, GenericInstancePayload};
 
 use crate::shared::ActionContext;
 
 use serde::Serialize;
-
-#[derive(Serialize)]
-struct DidReceiveSettingsPayload {
-	settings: serde_json::Value,
-	coordinates: Coordinates,
-}
 
 #[derive(Serialize)]
 struct DidReceiveSettingsEvent {
@@ -16,7 +10,7 @@ struct DidReceiveSettingsEvent {
 	action: String,
 	context: ActionContext,
 	device: String,
-	payload: DidReceiveSettingsPayload,
+	payload: GenericInstancePayload,
 }
 
 #[derive(Serialize)]
@@ -36,13 +30,7 @@ pub async fn did_receive_settings(instance: &crate::shared::ActionInstance, to_p
 		action: instance.action.uuid.clone(),
 		context: instance.context.clone(),
 		device: instance.context.device.clone(),
-		payload: DidReceiveSettingsPayload {
-			settings: instance.settings.clone(),
-			coordinates: Coordinates {
-				row: instance.context.position / 3,
-				column: instance.context.position % 3,
-			},
-		},
+		payload: GenericInstancePayload::new(instance),
 	};
 	if to_property_inspector {
 		send_to_property_inspector(&instance.context, &data).await
