@@ -18,11 +18,12 @@
 		const iframe = iframes[instance.context];
 		const split = instance.context.split(".");
 
+		const position = parseInt(split[3]);
 		let coordinates: { row: number; column: number };
 		if (split[2] == "Encoder") {
-			coordinates = { row: 0, column: parseInt(split[3]) };
+			coordinates = { row: 0, column: position };
 		} else {
-			coordinates = { row: Math.floor(parseInt(split[3]) / device.rows), column: parseInt(split[3]) % device.columns };
+			coordinates = { row: Math.floor(position / device.columns), column: position % device.columns };
 		}
 
 		if (instance == null || !iframe.src || !iframe.src.startsWith("http://localhost:57118")) return;

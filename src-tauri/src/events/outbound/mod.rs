@@ -32,10 +32,13 @@ impl GenericInstancePayload {
 				row: 0,
 				column: instance.context.position,
 			},
-			_ => Coordinates {
-				row: instance.context.position / 3,
-				column: instance.context.position % 3,
-			},
+			_ => {
+				let columns = crate::shared::DEVICES.get(&instance.context.device).unwrap().columns;
+				Coordinates {
+					row: instance.context.position / columns,
+					column: instance.context.position % columns,
+				}
+			}
 		};
 
 		Self {
