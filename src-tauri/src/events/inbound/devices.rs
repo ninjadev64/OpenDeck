@@ -20,12 +20,12 @@ pub async fn register_device(uuid: &str, mut event: PayloadEvent<crate::shared::
 
 		event.payload.plugin = uuid.to_owned();
 		let _ = crate::events::outbound::devices::device_did_connect(&event.payload.id, (&event.payload).into()).await;
-		DEVICES.write().await.insert(event.payload.id.clone(), event.payload.clone());
+		DEVICES.insert(event.payload.id.clone(), event.payload.clone());
 		crate::events::frontend::update_devices().await;
 
 		let mut locks = crate::store::profiles::acquire_locks_mut().await;
 		let selected_profile = locks.device_stores.get_selected_profile(&event.payload.id)?;
-		let profile = locks.profile_stores.get_profile_store(locks.devices.get(&event.payload.id).unwrap(), &selected_profile)?;
+		let profile = locks.profile_stores.get_profile_store(&DEVICES.get(&event.payload.id).unwrap(), &selected_profile)?;
 		for instance in profile.value.keys.iter().flatten().chain(profile.value.sliders.iter().flatten()) {
 			let _ = crate::events::outbound::will_appear::will_appear(instance).await;
 		}
@@ -41,7 +41,7 @@ pub async fn deregister_device(uuid: &str, event: PayloadEvent<String>) -> Resul
 		let mut locks = crate::store::profiles::acquire_locks_mut().await;
 
 		let selected_profile = locks.device_stores.get_selected_profile(&event.payload)?;
-		let profile = locks.profile_stores.get_profile_store(locks.devices.get(&event.payload).unwrap(), &selected_profile)?;
+		let profile = locks.profile_stores.get_profile_store(&DEVICES.get(&event.payload).unwrap(), &selected_profile)?;
 		for instance in profile.value.keys.iter().flatten().chain(profile.value.sliders.iter().flatten()) {
 			let _ = crate::events::outbound::will_appear::will_disappear(instance, false).await;
 		}
@@ -55,7 +55,7 @@ pub async fn deregister_device(uuid: &str, event: PayloadEvent<String>) -> Resul
 		drop(locks);
 
 		let _ = crate::events::outbound::devices::device_did_disconnect(&event.payload).await;
-		DEVICES.write().await.remove(&event.payload);
+		DEVICES.remove(&event.payload);
 		crate::events::frontend::update_devices().await;
 
 		Ok(())

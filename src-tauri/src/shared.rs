@@ -4,6 +4,7 @@ use std::path::Path;
 use serde::{de::Visitor, Deserialize, Deserializer, Serialize};
 use serde_inline_default::serde_inline_default;
 
+use dashmap::DashMap;
 use once_cell::sync::Lazy;
 use tauri::Manager;
 use tokio::sync::RwLock;
@@ -35,7 +36,7 @@ pub struct DeviceInfo {
 	pub r#type: u8,
 }
 
-pub static DEVICES: Lazy<RwLock<HashMap<String, DeviceInfo>>> = Lazy::new(|| RwLock::new(HashMap::new()));
+pub static DEVICES: Lazy<DashMap<String, DeviceInfo>> = Lazy::new(DashMap::new);
 
 /// Get the application configuration directory.
 pub fn config_dir() -> std::path::PathBuf {

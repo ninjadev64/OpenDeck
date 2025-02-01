@@ -305,41 +305,29 @@ pub static DEVICE_STORES: Lazy<RwLock<DeviceStores>> = Lazy::new(|| RwLock::new(
 pub struct Locks<'a> {
 	#[allow(dead_code)]
 	pub device_stores: RwLockReadGuard<'a, DeviceStores>,
-	pub devices: RwLockReadGuard<'a, HashMap<String, DeviceInfo>>,
 	pub profile_stores: RwLockReadGuard<'a, ProfileStores>,
 }
 
 pub async fn acquire_locks() -> Locks<'static> {
 	let device_stores = DEVICE_STORES.read().await;
-	let devices = DEVICES.read().await;
 	let profile_stores = PROFILE_STORES.read().await;
-	Locks {
-		device_stores,
-		devices,
-		profile_stores,
-	}
+	Locks { device_stores, profile_stores }
 }
 
 pub struct LocksMut<'a> {
 	pub device_stores: RwLockWriteGuard<'a, DeviceStores>,
-	pub devices: RwLockWriteGuard<'a, HashMap<String, DeviceInfo>>,
 	pub profile_stores: RwLockWriteGuard<'a, ProfileStores>,
 }
 
 pub async fn acquire_locks_mut() -> LocksMut<'static> {
 	let device_stores = DEVICE_STORES.write().await;
-	let devices = DEVICES.write().await;
 	let profile_stores = PROFILE_STORES.write().await;
-	LocksMut {
-		device_stores,
-		devices,
-		profile_stores,
-	}
+	LocksMut { device_stores, profile_stores }
 }
 
 pub async fn get_slot<'a>(context: &crate::shared::Context, locks: &'a Locks<'_>) -> Result<&'a Option<crate::shared::ActionInstance>, anyhow::Error> {
-	let device = locks.devices.get(&context.device).ok_or_else(|| anyhow!("device not found"))?;
-	let store = locks.profile_stores.get_profile_store(device, &context.profile)?;
+	let device = DEVICES.get(&context.device).ok_or_else(|| anyhow!("device not found"))?;
+	let store = locks.profile_stores.get_profile_store(&device, &context.profile)?;
 
 	let configured = match &context.controller[..] {
 		"Encoder" => store.value.sliders.get(context.position as usize).ok_or_else(|| anyhow!("index out of bounds"))?,
@@ -350,8 +338,8 @@ pub async fn get_slot<'a>(context: &crate::shared::Context, locks: &'a Locks<'_>
 }
 
 pub async fn get_slot_mut<'a>(context: &crate::shared::Context, locks: &'a mut LocksMut<'_>) -> Result<&'a mut Option<crate::shared::ActionInstance>, anyhow::Error> {
-	let device = locks.devices.get(&context.device).ok_or_else(|| anyhow!("device not found"))?;
-	let store = locks.profile_stores.get_profile_store_mut(device, &context.profile).await?;
+	let device = DEVICES.get(&context.device).ok_or_else(|| anyhow!("device not found"))?;
+	let store = locks.profile_stores.get_profile_store_mut(&device, &context.profile).await?;
 
 	let configured = match &context.controller[..] {
 		"Encoder" => store.value.sliders.get_mut(context.position as usize).ok_or_else(|| anyhow!("index out of bounds"))?,
@@ -395,7 +383,7 @@ pub async fn get_instance_mut<'a>(context: &crate::shared::ActionContext, locks:
 
 pub async fn save_profile<'a>(device: &str, locks: &'a mut LocksMut<'_>) -> Result<(), anyhow::Error> {
 	let selected_profile = locks.device_stores.get_selected_profile(device)?;
-	let device = locks.devices.get(device).unwrap();
-	let store = locks.profile_stores.get_profile_store(device, &selected_profile)?;
+	let device = DEVICES.get(device).unwrap();
+	let store = locks.profile_stores.get_profile_store(&device, &selected_profile)?;
 	store.save()
 }

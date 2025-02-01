@@ -34,9 +34,8 @@ pub fn init_application_watcher() {
 					let application_profiles = &APPLICATION_PROFILES.read().await.value;
 					if application_profiles.contains_key(&win.app_name) {
 						let profiles = application_profiles.get(&win.app_name).unwrap();
-						let devices = crate::shared::DEVICES.read().await;
 						for (device, profile) in profiles.iter() {
-							if !devices.contains_key(device) {
+							if !crate::shared::DEVICES.contains_key(device) {
 								continue;
 							}
 							let _ = app_handle.get_webview_window("main").unwrap().emit(

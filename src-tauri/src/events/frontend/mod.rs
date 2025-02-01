@@ -47,13 +47,13 @@ pub async fn restart(app: tauri::AppHandle) {
 }
 
 #[command]
-pub async fn get_devices() -> HashMap<String, DeviceInfo> {
-	DEVICES.read().await.clone()
+pub async fn get_devices() -> dashmap::DashMap<String, DeviceInfo> {
+	DEVICES.clone()
 }
 
 pub async fn update_devices() {
 	let app = crate::APP_HANDLE.get().unwrap();
-	let _ = app.get_webview_window("main").unwrap().emit("devices", DEVICES.read().await.clone());
+	let _ = app.get_webview_window("main").unwrap().emit("devices", DEVICES.clone());
 }
 
 #[command]

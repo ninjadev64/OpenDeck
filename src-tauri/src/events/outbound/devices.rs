@@ -89,9 +89,8 @@ struct SetBrightnessEvent {
 }
 
 pub async fn set_brightness(brightness: u8) -> Result<(), anyhow::Error> {
-	let devices = crate::shared::DEVICES.read().await;
 	let namespaces = DEVICE_NAMESPACES.read().await;
-	for device in devices.values() {
+	for device in crate::shared::DEVICES.iter() {
 		if let Some(plugin) = namespaces.get(&device.id[..2]) {
 			send_to_plugin(
 				plugin,

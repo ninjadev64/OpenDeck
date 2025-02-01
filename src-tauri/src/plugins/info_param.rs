@@ -76,11 +76,6 @@ pub async fn make_info(uuid: String, version: String, wine: bool) -> Info {
 	#[cfg(target_os = "linux")]
 	let platform = "linux";
 
-	let mut devices: Vec<DeviceInfo> = vec![];
-	for device in crate::shared::DEVICES.read().await.values() {
-		devices.push(device.into());
-	}
-
 	Info {
 		application: ApplicationInfo {
 			font: "ui-sans-serif".to_owned(),
@@ -99,6 +94,6 @@ pub async fn make_info(uuid: String, version: String, wine: bool) -> Info {
 			highlightColor: "#F7821BFF".to_owned(),
 			mouseDownColor: "#CF6304FF".to_owned(),
 		},
-		devices,
+		devices: crate::shared::DEVICES.iter().map(|v| (&*v).into()).collect(),
 	}
 }

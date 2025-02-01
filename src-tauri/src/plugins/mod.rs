@@ -141,11 +141,6 @@ pub async fn initialise_plugin(path: &path::Path) -> anyhow::Result<()> {
 		return Err(anyhow!("Unsupported on platform {}", platform));
 	}
 
-	let mut devices: Vec<info_param::DeviceInfo> = vec![];
-	for device in crate::shared::DEVICES.read().await.values() {
-		devices.push(device.into());
-	}
-
 	let code_path = code_path.unwrap();
 	let args = ["-port", "57116", "-pluginUUID", plugin_uuid, "-registerEvent", "registerPlugin", "-info"];
 
@@ -276,13 +271,7 @@ pub async fn deactivate_plugin(app: &AppHandle, uuid: &str) -> Result<(), anyhow
 		if let Some((namespace, _)) = namespaces.clone().iter().find(|(_, plugin)| uuid == **plugin) {
 			namespaces.remove(namespace);
 			drop(namespaces);
-			let devices = crate::shared::DEVICES
-				.read()
-				.await
-				.iter()
-				.filter(|(id, _)| &id[..2] == namespace)
-				.map(|(id, _)| id.to_owned())
-				.collect::<Vec<_>>();
+			let devices = crate::shared::DEVICES.iter().map(|v| v.key().to_owned()).filter(|id| &id[..2] == namespace).collect::<Vec<_>>();
 			for device in devices {
 				crate::events::inbound::devices::deregister_device("", crate::events::inbound::PayloadEvent { payload: device }).await?;
 			}
