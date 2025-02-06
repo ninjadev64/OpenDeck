@@ -196,7 +196,7 @@
 	<span class="text-sm dark:text-neutral-400">If your application isn't listed, try switching to it and back again.</span>
 
 	<table class="w-full dark:text-neutral-300 divide-y">
-		{#each Object.entries(applicationProfiles) as [appName, devices]}
+		{#each Object.entries(applicationProfiles).sort((a, b) => a[0].localeCompare(b[0])) as [appName, devices]}
 			{#if devices[device.id]}
 				<tr class="h-12">
 					<td>{appName}:</td>
