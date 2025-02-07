@@ -84,7 +84,6 @@
 				<span> Text </span>
 				<textarea
 					bind:value={instance.states[state].text}
-					disabled={!instance.action.user_title_enabled}
 					rows="1"
 					class="w-full px-1 dark:text-neutral-300 dark:bg-neutral-600 rounded-md outline-none resize-none"
 				/>
@@ -94,14 +93,12 @@
 				<input
 					type="color"
 					bind:value={instance.states[state].colour}
-					disabled={!instance.action.user_title_enabled}
 					class="mr-2 px-0.5 dark:bg-neutral-600 rounded-md outline-none"
 				/>
 				<span class="mr-2"> Show </span>
 				<input
 					type="checkbox"
 					bind:checked={instance.states[state].show}
-					disabled={!instance.action.user_title_enabled}
 					class="mr-4 mt-1 scale-125"
 				/>
 				<select
@@ -138,7 +135,6 @@
 					type="checkbox"
 					bind:checked={bold}
 					on:change={() => instance.states[state].style = bold && italic ? "Bold Italic" : bold ? "Bold" : italic ? "Italic" : "Regular"}
-					disabled={!instance.action.user_title_enabled}
 					class="mr-4 mt-1 scale-125"
 				/>
 				<span class="mr-3 italic"> I </span>
@@ -146,14 +142,12 @@
 					type="checkbox"
 					bind:checked={italic}
 					on:change={() => instance.states[state].style = bold && italic ? "Bold Italic" : bold ? "Bold" : italic ? "Italic" : "Regular"}
-					disabled={!instance.action.user_title_enabled}
 					class="mr-4 mt-1 scale-125"
 				/>
 				<span class="mr-3 underline"> U </span>
 				<input
 					type="checkbox"
 					bind:checked={instance.states[state].underline}
-					disabled={!instance.action.user_title_enabled}
 					class="mr-4 mt-1 scale-125"
 				/>
 				<span class="mr-2"> Size </span>

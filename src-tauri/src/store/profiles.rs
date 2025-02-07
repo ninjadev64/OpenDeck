@@ -180,7 +180,6 @@ impl From<ProfileV1> for DiskProfile {
 						disable_automatic_states: false,
 						visible_in_action_list: true,
 						supported_in_multi_actions: false,
-						user_title_enabled: true,
 						property_inspector: String::new(),
 						controllers: vec!["Keypad".to_owned()],
 						states: vec![ActionState {

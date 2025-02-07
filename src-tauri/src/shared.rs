@@ -175,10 +175,6 @@ pub struct Action {
 	#[serde(alias = "SupportedInMultiActions")]
 	pub supported_in_multi_actions: bool,
 
-	#[serde_inline_default(true)]
-	#[serde(alias = "UserTitleEnabled")]
-	pub user_title_enabled: bool,
-
 	#[serde_inline_default(String::new())]
 	#[serde(alias = "PropertyInspectorPath")]
 	pub property_inspector: String,

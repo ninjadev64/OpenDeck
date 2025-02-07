@@ -8,7 +8,6 @@ export type Action = {
 	icon: string;
 	visible_in_action_list: boolean;
 	supported_in_multi_actions: boolean;
-	user_title_enabled: boolean;
 	property_inspector: string;
 	controllers: string[];
 	states: ActionState[];
