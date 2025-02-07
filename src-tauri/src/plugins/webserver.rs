@@ -7,7 +7,8 @@ fn mime(extension: &str) -> String {
 		"htm" | "html" | "xhtml" => "text/html".to_owned(),
 		"js" | "cjs" | "mjs" => "text/javascript".to_owned(),
 		"css" => "text/css".to_owned(),
-		"png" | "jpg" | "jpeg" | "gif" | "webp" => format!("image/{}", extension),
+		"png" | "jpeg" | "gif" | "webp" => format!("image/{}", extension),
+		"jpg" => "image/jpeg".to_owned(),
 		"svg" => "image/svg+xml".to_owned(),
 		_ => "application/octet-stream".to_owned(),
 	}
