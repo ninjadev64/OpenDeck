@@ -38,6 +38,10 @@ pub async fn register_device(uuid: &str, mut event: PayloadEvent<crate::shared::
 
 pub async fn deregister_device(uuid: &str, event: PayloadEvent<String>) -> Result<(), anyhow::Error> {
 	if uuid.is_empty() || Some(uuid) == DEVICE_NAMESPACES.read().await.get(&event.payload[..2]).map(|x| x.as_str()) {
+		if !DEVICES.contains_key(&event.payload) {
+			return Ok(());
+		}
+
 		let mut locks = crate::store::profiles::acquire_locks_mut().await;
 
 		let selected_profile = locks.device_stores.get_selected_profile(&event.payload)?;
