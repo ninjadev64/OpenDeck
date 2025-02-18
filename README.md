@@ -81,7 +81,7 @@ To change other options, open Settings. From here, you can also view information
 ### Support forums
 
 - [Discord](https://discord.gg/26Nf8rHvaj)
-- [Matrix](https://matrix.to/#/#opendeck:amankhanna.me)
+- [Matrix](https://matrix.to/#/#opendeck:matrix.org)
 - [GitHub Issues](https://github.com/ninjadev64/OpenDeck/issues)
 
 ### Building from source / contributing
