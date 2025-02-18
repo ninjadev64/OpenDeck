@@ -40,7 +40,7 @@ tauri-plugin-aptabase = { git = "https://github.com/ninjadev64/tauri-plugin-apta
 serde-inline-default = "0.2"
 serde_with = "3.12"
 json-patch = "3.0"
-os_info = "3.9"
+os_info = "3.10"
 urlencoding = "2.1"
 base64 = "0.22"
 reqwest = "0.12"
