@@ -85,7 +85,7 @@
 				<textarea
 					bind:value={instance.states[state].text}
 					rows="1"
-					class="w-full px-1 dark:text-neutral-300 dark:bg-neutral-600 rounded-md outline-none resize-none"
+					class="w-full px-1 dark:text-neutral-300 dark:bg-neutral-600 rounded-md outline-hidden resize-none"
 				/>
 			</div>
 			<div class="flex flex-row items-center">
@@ -93,7 +93,7 @@
 				<input
 					type="color"
 					bind:value={instance.states[state].colour}
-					class="mr-2 px-0.5 dark:bg-neutral-600 rounded-md outline-none"
+					class="mr-2 px-0.5 dark:bg-neutral-600 rounded-md outline-hidden"
 				/>
 				<span class="mr-2"> Show </span>
 				<input
@@ -103,7 +103,7 @@
 				/>
 				<select
 					bind:value={instance.states[state].alignment}
-					class="!px-1 !py-0.5"
+					class="px-1! py-0.5!"
 				>
 					<option value="top">Top</option>
 					<option value="middle">Middle</option>
@@ -115,7 +115,7 @@
 					list="families"
 					bind:value={instance.states[state].family}
 					placeholder="Font family"
-					class="w-full px-1 dark:text-neutral-300 dark:bg-neutral-600 rounded-md outline-none"
+					class="w-full px-1 dark:text-neutral-300 dark:bg-neutral-600 rounded-md outline-hidden"
 				/>
 				<datalist id="families">
 					<option value="Liberation Sans">Liberation Sans</option>
@@ -154,7 +154,7 @@
 				<input
 					type="number"
 					bind:value={instance.states[state].size}
-					class="px-0.5 w-14 dark:text-neutral-300 dark:bg-neutral-600 rounded-md outline-none"
+					class="px-0.5 w-14 dark:text-neutral-300 dark:bg-neutral-600 rounded-md outline-hidden"
 				/>
 			</div>
 		</div>

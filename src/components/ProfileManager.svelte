@@ -139,13 +139,13 @@
 		<input
 			bind:this={nameInput}
 			pattern="[a-zA-Z0-9_ ]+(\/[a-zA-Z0-9_ ]+)?"
-			class="grow p-2 dark:text-neutral-300 invalid:text-red-400 dark:bg-neutral-700 rounded-l-md outline-none"
+			class="grow p-2 dark:text-neutral-300 invalid:text-red-400 dark:bg-neutral-700 rounded-l-md outline-hidden"
 			placeholder='Profile ID (e.g. "folder/profile")'
 		/>
 
 		<button
 			on:click={async () => {
-				if (!nameInput.checkValidity()) return;
+				if (!nameInput.checkValidity() || !nameInput.value) return;
 				await setProfile(nameInput.value);
 				value = nameInput.value;
 				nameInput.value = "";
@@ -157,7 +157,7 @@
 		</button>
 
 		<button
-			class="ml-2 px-4 flex items-center dark:text-neutral-300 bg-neutral-200 dark:bg-neutral-900 rounded-md outline-none"
+			class="ml-2 px-4 flex items-center dark:text-neutral-300 bg-neutral-200 dark:bg-neutral-900 rounded-md outline-hidden"
 			on:click={() => showApplicationManager = true}
 		>
 			<Browsers size={24} />

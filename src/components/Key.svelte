@@ -115,8 +115,8 @@
 
 <canvas
 	bind:this={canvas}
-	class="relative -m-2 border-2 dark:border-neutral-700 rounded-md outline outline-0 outline-offset-2 outline-blue-500"
-	class:!outline-2={slot && $inspectedInstance == slot.context}
+	class="relative -m-2 border-2 dark:border-neutral-700 rounded-md outline-none outline-offset-2 outline-blue-500"
+	class:outline-solid={slot && $inspectedInstance == slot.context}
 	class:-m-[2.06rem]={size == 192}
 	width={size}
 	height={size}

@@ -131,7 +131,7 @@
 			<iframe
 				title="Property inspector"
 				class="w-full h-full hidden"
-				class:!block={$inspectedInstance == instance.context}
+				class:block!={$inspectedInstance == instance.context}
 				src={"http://localhost:57118/" + instance.action.property_inspector + "|opendeck_property_inspector"}
 				name={instance.context}
 				bind:this={iframes[instance.context]}

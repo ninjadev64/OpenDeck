@@ -131,7 +131,7 @@
 </script>
 
 <button
-	class="mt-2 p-1 w-1/2 text-sm text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 border dark:border-neutral-600 rounded-lg outline-none"
+	class="mt-2 p-1 w-1/2 text-sm text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 border dark:border-neutral-600 rounded-lg outline-hidden"
 	on:click={() => showPopup = true}
 >
 	Plugins
@@ -177,7 +177,7 @@
 	<div class="flex flex-row justify-between items-center mx-2 mt-6 mb-2">
 		<h2 class="text-lg dark:text-neutral-400">Plugin store</h2>
 		<button
-			class="flex flex-row items-center mt-2 px-1 py-0.5 text-sm text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 border dark:border-neutral-600 rounded-lg outline-none"
+			class="flex flex-row items-center mt-2 px-1 py-0.5 text-sm text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 border dark:border-neutral-600 rounded-lg outline-hidden"
 			on:click={installPluginFile}
 		>
 			<FileArrowUp />
@@ -187,7 +187,7 @@
 	<div class="flex flex-row m-2">
 		<input
 			bind:value={search}
-			class="grow p-2 dark:text-neutral-300 dark:bg-neutral-700 rounded-md outline-none"
+			class="grow p-2 dark:text-neutral-300 dark:bg-neutral-700 rounded-md outline-hidden"
 			placeholder="Search plugins"
 			type="search"
 			spellcheck="false"
@@ -250,7 +250,7 @@
 	{#if !archiveRes}
 		<button
 			on:click={async () => archiveRes = await fetch("https://plugins.amankhanna.me/catalogue.json")}
-			class="mx-2 mt-2 mb-4 p-1 text-sm text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 border dark:border-neutral-600 rounded-lg outline-none"
+			class="mx-2 mt-2 mb-4 p-1 text-sm text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 border dark:border-neutral-600 rounded-lg outline-hidden"
 		>
 			Load Elgato App Store Archive plugins list
 		</button>

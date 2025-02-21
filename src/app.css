@@ -1,15 +1,25 @@
-@import url("fonts.css");
+@import url("fonts.css") layer(base);
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+	*, ::after, ::before, ::backdrop, ::file-selector-button {
+		border-color: var(--color-gray-200, currentColor);
+	}
+}
+
+button, input[type="radio"], input[type="checkbox"], input[type="range"], input[type="color"] {
+	@apply cursor-pointer;
+}
 
 select {
 	@apply appearance-none;
 	@apply px-2 py-1;
 	@apply text-sm text-neutral-700 dark:text-neutral-300;
 	@apply bg-neutral-100 dark:bg-neutral-700;
-	@apply border-2 dark:border-neutral-900 outline-none;
+	@apply border-2 dark:border-neutral-900 rounded-md outline-hidden;
 	@apply cursor-pointer;
 }
 
@@ -22,8 +32,4 @@ select {
 	@apply w-2 h-2 rotate-45;
 	@apply border-r-2 border-b-2;
 	@apply pointer-events-none content-["_"];
-}
-
-input:disabled {
-	@apply opacity-50;
 }

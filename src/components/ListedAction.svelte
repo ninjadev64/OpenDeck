@@ -18,7 +18,7 @@
 	<img
 		src={!action.icon.startsWith("opendeck/") ? "http://localhost:57118/" + action.icon : action.icon.replace("opendeck", "")}
 		alt={localisation.tooltip}
-		class="w-12 h-12 rounded-sm"
+		class="w-12 h-12 rounded-xs"
 		draggable="true"
 		on:dragstart={handleDragStart}
 		on:dragover={handleDragOver}
