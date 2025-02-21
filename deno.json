@@ -1,12 +1,10 @@
 {
 	"fmt": {
-		"include": ["src/"],
+		"exclude": ["src-tauri/", "plugins/", "*.md"],
 		"useTabs": true,
-		"lineWidth": 200,
-		"proseWrap": "never"
+		"lineWidth": 200
 	},
 	"lint": {
-		"include": ["src/"],
 		"rules": {
 			"exclude": ["prefer-const", "no-explicit-any"]
 		}
