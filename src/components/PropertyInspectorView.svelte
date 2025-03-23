@@ -100,6 +100,49 @@
 			closePopup(data.payload);
 		} else if (data.event == "openUrl") {
 			invoke("open_url", { url: data.payload });
+		} else if (data.event == "fetch") {
+			function combineUint8Arrays(arrays: Uint8Array[]): Uint8Array {
+				const totalLength = arrays.reduce((acc, curr) => acc + curr.length, 0);
+				let mergedArray = new Uint8Array(totalLength);
+				let offset = 0;
+
+				arrays.forEach((item) => {
+					mergedArray.set(item, offset);
+					offset += item.length;
+				});
+
+				return mergedArray;
+			}
+
+			// @ts-expect-error
+			window.fetchCORS(...data.payload.args).then(async (response: Response) => {
+				const chunks = [];
+				if (response.body) {
+					const reader = response.body.getReader();
+					while (true) {
+						const { done, value } = await reader.read();
+						if (done) break;
+						chunks.push(value);
+					}
+				}
+				const body = combineUint8Arrays(chunks);
+
+				iframes[data.payload.context]?.contentWindow?.postMessage({
+					event: "fetchResponse",
+					payload: {
+						id: data.payload.id,
+						response: {
+							url: response.url,
+							body,
+							headers: response.headers.entries().toArray(),
+							status: response.status,
+							statusText: response.statusText,
+						},
+					},
+				}, "http://localhost:57118");
+			}).catch((error: any) => {
+				iframes[data.payload.context]?.contentWindow?.postMessage({ event: "fetchError", payload: { id: data.payload.id, error } }, "http://localhost:57118");
+			});
 		}
 	});
 

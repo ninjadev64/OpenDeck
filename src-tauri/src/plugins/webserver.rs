@@ -92,6 +92,25 @@ pub async fn init_webserver(prefix: PathBuf) {
 						top.postMessage({ event: "windowOpened", payload: window.name }, "*");
 						return iframe.contentWindow;
 					};
+
+					const opendeck_window_fetch = window.fetch;
+					let opendeck_fetch_count = 0;
+					let opendeck_fetch_promises = {};
+					window.addEventListener("message", ({ data }) => {
+						if (data.event == "fetchResponse") {
+							const response = new Response(data.payload.response.body, data.payload.response);
+							Object.defineProperty(response, "url", { value: data.payload.response.url });
+							opendeck_fetch_promises[data.payload.id].resolve(response);
+							delete opendeck_fetch_promises[data.payload.id];
+						} else if (data.event == "fetchError") {
+							opendeck_fetch_promises[data.payload.id].reject(data.payload.error);
+							delete opendeck_fetch_promises[data.payload.id];
+						}
+					});
+					window.fetch = (...args) => {
+						top.postMessage({ event: "fetch", payload: { args, context: window.name, id: ++opendeck_fetch_count }}, "*");
+						return new Promise((resolve, reject) => { opendeck_fetch_promises[opendeck_fetch_count] = { resolve, reject }; });
+					};
 				</script>
 			"#;
 

@@ -210,8 +210,9 @@ Enjoy!"#,
 				.level_for("opendeck", log::LevelFilter::Trace)
 				.build(),
 		)
-		.plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, Some(vec!["--hide"])))
+		.plugin(tauri_plugin_cors_fetch::init())
 		.plugin(tauri_plugin_single_instance::init(|app, _, _| app.get_webview_window("main").unwrap().show().unwrap()))
+		.plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, Some(vec!["--hide"])))
 		.plugin(tauri_plugin_dialog::init())
 		.plugin(tauri_plugin_deep_link::init())
 		.on_window_event(|window, event| {
