@@ -58,16 +58,15 @@
 	}
 </script>
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
 	class="relative flex items-center m-2 w-20 h-144 border-2 dark:border-neutral-700 rounded-md select-none"
-	on:dragover
-	on:drop
 	draggable
 	on:dragstart
-	role="cell"
-	tabindex="-1"
-	on:click={select}
-	on:keyup={select}
+	on:dragover
+	on:drop
+	on:click|stopPropagation={select}
+	on:keyup|stopPropagation={select}
 	on:contextmenu={clear}
 >
 	{#if state}

@@ -125,10 +125,8 @@
 	on:dragstart
 	on:dragover
 	on:drop
-	role="cell"
-	tabindex="-1"
-	on:click={select}
-	on:keyup={select}
+	on:click|stopPropagation={select}
+	on:keyup|stopPropagation={select}
 	on:contextmenu={contextMenu}
 />
 

@@ -7,7 +7,7 @@
 	import Key from "./Key.svelte";
 	import Slider from "./Slider.svelte";
 
-	import { inspectedParentAction } from "$lib/propertyInspector";
+	import { inspectedInstance, inspectedParentAction } from "$lib/propertyInspector";
 	import { invoke } from "@tauri-apps/api/core";
 
 	export let device: DeviceInfo;
@@ -61,7 +61,13 @@
 </script>
 
 {#key device}
-	<div class="flex flex-row" class:hidden={$inspectedParentAction || selectedDevice != device.id}>
+	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<div
+		class="flex flex-row"
+		class:hidden={$inspectedParentAction || selectedDevice != device.id}
+		on:click={() => inspectedInstance.set(null)}
+		on:keyup={() => inspectedInstance.set(null)}
+	>
 		{#each { length: device.encoders } as _, i}
 			<Slider
 				context={{ device: device.id, profile: profile.id, controller: "Encoder", position: i }}

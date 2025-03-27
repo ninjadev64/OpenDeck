@@ -6,7 +6,7 @@
 	import Trash from "phosphor-svelte/lib/Trash";
 	import Key from "./Key.svelte";
 
-	import { inspectedParentAction } from "$lib/propertyInspector";
+	import { inspectedInstance, inspectedParentAction } from "$lib/propertyInspector";
 	import { invoke } from "@tauri-apps/api/core";
 
 	export let profile: Profile;
@@ -59,7 +59,12 @@
 	<h1 class="font-semibold text-2xl">{parentUuid == "opendeck.toggleaction" ? "Toggle Action" : "Multi Action"}</h1>
 </div>
 
-<div class="flex flex-col h-80 overflow-scroll">
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<div
+	class="flex flex-col h-80 overflow-scroll"
+	on:click={() => inspectedInstance.set(null)}
+	on:keyup={() => inspectedInstance.set(null)}
+>
 	{#each children as instance, index}
 		<div class="flex flex-row items-center mx-4 my-1 bg-neutral-100 dark:bg-neutral-800 rounded-md">
 			<Key inslot={instance} {context} active={false} scale={3 / 4} />
@@ -76,8 +81,6 @@
 		class="flex flex-row items-center mx-4 mt-1 mb-4 p-3 bg-neutral-100 dark:bg-neutral-800 border-2 border-dashed dark:border-neutral-700 rounded-md"
 		on:dragover={handleDragOver}
 		on:drop={handleDrop}
-		role="cell"
-		tabindex="-1"
 	>
 		<img src="/cube.png" class="m-2 w-24 rounded-xl" alt="Add new action" />
 		<p class="ml-4 text-xl text-neutral-500">Drop actions here</p>
