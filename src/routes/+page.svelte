@@ -24,10 +24,11 @@
 </script>
 
 <div class="flex flex-col grow">
-	{#if $inspectedParentAction}
-		<ParentActionView bind:profile={selectedProfiles[selectedDevice]} />
-	{/if}
 	{#if Object.keys(devices).length > 0 && selectedProfiles}
+		{#if $inspectedParentAction}
+			<ParentActionView bind:profile={selectedProfiles[selectedDevice]} />
+		{/if}
+
 		{#each Object.entries(devices) as [id, device]}
 			{#if device && selectedProfiles[id]}
 				<DeviceView bind:device bind:profile={selectedProfiles[id]} bind:selectedDevice />
