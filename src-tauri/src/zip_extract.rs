@@ -7,7 +7,7 @@ use std::os::unix::fs::PermissionsExt;
 
 use log::{debug, trace};
 use std::io::{Read, Seek};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::{fs, io};
 
 #[derive(Debug)]
@@ -33,7 +33,29 @@ impl std::fmt::Display for ZipExtractError {
 }
 impl std::error::Error for ZipExtractError {}
 
-/// Extracts a zip archive into `target_dir`.
+pub fn dir_name<S: Read + Seek>(source: S) -> Result<String, ZipExtractError> {
+	let mut archive = zip::ZipArchive::new(source)?;
+
+	if archive.len() == 1 {
+		let file = archive.by_index(0)?;
+		if file.is_file() {
+			return dir_name(std::io::Cursor::new(file.bytes().flatten().collect::<Vec<u8>>()));
+		}
+	}
+
+	for i in 0..archive.len() {
+		let file = archive.by_index(i)?;
+		if let Some(c) = PathBuf::from(file.name().replace('\\', "/"))
+			.components()
+			.find(|c| c.as_os_str().to_string_lossy().to_lowercase().ends_with(".sdplugin"))
+		{
+			return Ok(c.as_os_str().to_string_lossy().to_string());
+		}
+	}
+
+	Err(ZipExtractError::Zip(zip::result::ZipError::FileNotFound))
+}
+
 pub fn extract<S: Read + Seek>(source: S, target_dir: &Path) -> Result<(), ZipExtractError> {
 	if !target_dir.exists() {
 		fs::create_dir(target_dir)?;
@@ -41,10 +63,9 @@ pub fn extract<S: Read + Seek>(source: S, target_dir: &Path) -> Result<(), ZipEx
 
 	let mut archive = zip::ZipArchive::new(source)?;
 
-	// OpenAction plugins should always contain multiple files, so if there is only one, assume it's a nested archive.
 	if archive.len() == 1 {
 		let file = archive.by_index(0)?;
-		if file.name().to_lowercase().ends_with(".streamdeckplugin") || file.name().to_lowercase().ends_with(".zip") {
+		if file.is_file() {
 			return extract(std::io::Cursor::new(file.bytes().flatten().collect::<Vec<u8>>()), target_dir);
 		}
 	}
@@ -55,7 +76,6 @@ pub fn extract<S: Read + Seek>(source: S, target_dir: &Path) -> Result<(), ZipEx
 		let relative_path = file.mangled_name();
 
 		if relative_path.to_string_lossy().is_empty() {
-			// Top-level directory
 			continue;
 		}
 
@@ -87,7 +107,9 @@ pub fn extract<S: Read + Seek>(source: S, target_dir: &Path) -> Result<(), ZipEx
 
 #[cfg(unix)]
 fn set_unix_mode(file: &zip::read::ZipFile, outpath: &Path) -> io::Result<()> {
-	if let Some(m) = file.unix_mode() {
+	if let Some(mut m) = file.unix_mode() {
+		m %= 0o1000;
+		m = if m >= 0o700 || file.is_dir() { 0o755 } else { 0o644 };
 		fs::set_permissions(outpath, PermissionsExt::from_mode(m))?
 	}
 	Ok(())

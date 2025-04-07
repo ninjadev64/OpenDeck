@@ -58,10 +58,10 @@ pub async fn list_plugins(app: AppHandle) -> Result<Vec<PluginInfo>, Error> {
 }
 
 #[command]
-pub async fn install_plugin(app: AppHandle, id: String, url: Option<String>, file: Option<String>) -> Result<(), Error> {
+pub async fn install_plugin(app: AppHandle, url: Option<String>, file: Option<String>, fallback_id: Option<String>) -> Result<(), Error> {
 	let bytes = match file {
 		None => {
-			let resp = match reqwest::get(url.unwrap_or(format!("https://plugins.amankhanna.me/rezipped/{id}.zip"))).await {
+			let resp = match reqwest::get(url.unwrap()).await {
 				Ok(resp) => resp,
 				Err(error) => return Err(anyhow::Error::from(error).into()),
 			};
@@ -77,15 +77,26 @@ pub async fn install_plugin(app: AppHandle, id: String, url: Option<String>, fil
 		},
 	};
 
-	let _ = crate::plugins::deactivate_plugin(&app, &format!("{}.sdPlugin", id)).await;
+	let id = match crate::zip_extract::dir_name(std::io::Cursor::new(&bytes)) {
+		Ok(id) => {
+			log::trace!("Found directory with name {id} within archive");
+			id
+		}
+		Err(error) => match fallback_id {
+			Some(id) => format!("{id}.sdPlugin"),
+			None => return Err(anyhow::Error::from(error).into()),
+		},
+	};
+
+	let _ = crate::plugins::deactivate_plugin(&app, &id).await;
 
 	let config_dir = config_dir();
-	let actual = config_dir.join("plugins").join(format!("{id}.sdPlugin"));
+	let actual = config_dir.join("plugins").join(&id);
 
 	if actual.exists() {
 		let _ = tokio::fs::create_dir_all(config_dir.join("temp")).await;
 	}
-	let temp = config_dir.join("temp").join(format!("{id}.sdPlugin"));
+	let temp = config_dir.join("temp").join(&id);
 	let _ = tokio::fs::rename(&actual, &temp).await;
 
 	if let Err(error) = crate::zip_extract::extract(std::io::Cursor::new(bytes), &config_dir.join("plugins")) {
@@ -104,7 +115,7 @@ pub async fn install_plugin(app: AppHandle, id: String, url: Option<String>, fil
 	let _ = tokio::fs::remove_dir_all(config_dir.join("temp")).await;
 
 	use tauri_plugin_aptabase::EventTracker;
-	let _ = app.track_event("plugin_installed", Some(serde_json::json!({ "id": id })));
+	let _ = app.track_event("plugin_installed", Some(serde_json::json!({ "id": id.strip_suffix(".sdPlugin").unwrap_or(&id) })));
 
 	Ok(())
 }

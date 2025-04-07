@@ -28,10 +28,10 @@
 		if (showPopup) installed = await invoke("list_plugins");
 	}, 1e3);
 
-	async function installPlugin(id: string, name: string, url: string | null = null, file: string | null = null) {
-		if (!file && !await ask(`It may take a while to download the plugin.`, { title: `Install "${name}"?` })) return;
+	async function installPlugin(name: string, url: string | null, file: string | null, fallback_id: string | null) {
+		if (!file && !await ask(`It may take a while to install the plugin.`, { title: `Install "${name}"?` })) return;
 		try {
-			await invoke("install_plugin", { id, url, file });
+			await invoke("install_plugin", { url, file, fallback_id });
 			message(`Successfully installed "${name}".`, { title: `Installed "${name}"` });
 			actionList().reload();
 			installed = await invoke("list_plugins");
@@ -58,7 +58,7 @@
 	};
 	async function installPluginGitHub(id: string, plugin: GitHubPlugin) {
 		if (plugin.download_url) {
-			await installPlugin(id, plugin.name, plugin.download_url);
+			await installPlugin(plugin.name, plugin.download_url, null, id);
 			return;
 		}
 
@@ -84,22 +84,17 @@
 		if (assets.length == 1) selected = assets[0];
 		else selected = await chooseAsset(assets);
 
-		await installPlugin(id, plugin.name, selected.browser_download_url);
+		await installPlugin(plugin.name, selected.browser_download_url, null, id);
 	}
 
 	async function installPluginElgato(plugin: any) {
-		await installPlugin(plugin.id, plugin.name);
+		await installPlugin(plugin.name, `https://plugins.amankhanna.me/rezipped/${plugin.id}.zip`, null, plugin.id);
 	}
 
 	async function installPluginFile() {
 		const path = await open({ multiple: false, directory: false });
 		if (!path) return;
-		const id = prompt("Plugin ID:");
-		if (!id || id.split(".").length < 3 || id.endsWith(".sdPlugin")) {
-			message("Invalid plugin ID", { title: `Failed to install "${id}"` });
-			return;
-		}
-		installPlugin(id, id, null, path);
+		await installPlugin(path.split(/[\/\\]/).at(-1) ?? path, null, path, null);
 	}
 
 	async function removePlugin(plugin: any) {
