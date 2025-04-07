@@ -17,6 +17,9 @@
 	import { onOpenUrl } from "@tauri-apps/plugin-deep-link";
 	import { ask, message, open } from "@tauri-apps/plugin-dialog";
 
+	// @ts-expect-error
+	const fetch = window.fetchNative ?? window.fetch;
+
 	export let actionList: () => ActionList;
 	export let deviceSelector: () => DeviceSelector;
 
