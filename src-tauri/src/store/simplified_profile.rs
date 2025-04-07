@@ -88,6 +88,10 @@ impl From<ActionInstance> for DiskActionInstance {
 		};
 
 		for (index, state) in value.states.iter_mut().enumerate() {
+			if state.image.trim() == "data:" {
+				state.image = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIW2NgYGD4DwABBAEAwS2OUAAAAABJRU5ErkJggg==".to_owned();
+			}
+
 			if state.image.starts_with("data:") {
 				let mut extension = state.image.split_once('/').unwrap().1.split_once(',').unwrap().0;
 				if extension.contains(';') {
