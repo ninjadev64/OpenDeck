@@ -17,9 +17,10 @@
 		"@sveltejs/vite-plugin-svelte": "^3.1",
 		"@tailwindcss/vite": "^4.0",
 		"@tauri-apps/cli": "^2.2",
+		"lightningcss": "^1.29",
 		"svelte": "^4.2",
 		"svelte-check": "^4.1",
-		"tailwindcss": "^4.0",
+		"tailwindcss": "^4.1",
 		"typescript": "^5.7",
 		"vite": "^5.4"
 	},

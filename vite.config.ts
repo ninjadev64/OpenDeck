@@ -5,6 +5,9 @@ import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
 	plugins: [sveltekit(), tailwindcss()],
+	css: {
+		transformer: "lightningcss",
+	},
 	clearScreen: false,
 	server: {
 		watch: {

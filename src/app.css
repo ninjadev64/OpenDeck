@@ -1,13 +1,13 @@
-@import url("fonts.css") layer(base);
+@import url("fonts.css");
 
-@import "tailwindcss";
+@import "tailwindcss/theme.css";
+@import "tailwindcss/preflight.css";
+@import "tailwindcss/utilities.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-@layer base {
-	*, ::after, ::before, ::backdrop, ::file-selector-button {
-		border-color: var(--color-gray-200, currentColor);
-	}
+*, ::after, ::before, ::backdrop, ::file-selector-button {
+	border-color: var(--color-gray-200, currentColor);
 }
 
 button, input[type="radio"], input[type="checkbox"], input[type="range"], input[type="color"] {
