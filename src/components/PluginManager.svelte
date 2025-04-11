@@ -193,7 +193,7 @@
 	</div>
 
 	<button
-		on:click={() => invoke("open_url", { url: "https://github.com/ninjadev64/OpenDeck/wiki/0.-Elgato-Marketplace" })}
+		on:click={() => invoke("open_url", { url: "https://github.com/nekename/OpenDeck/wiki/0.-Elgato-Marketplace" })}
 		class="mx-2 mt-6 text-md text-blue-400 hover:underline"
 	>
 		Looking for plugins from the Elgato Marketplace?
