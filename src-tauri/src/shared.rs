@@ -28,6 +28,14 @@ pub fn copy_dir(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> Result<(), std:
 }
 
 /// Metadata of a device.
+#[derive(Clone, Default, Deserialize, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum EncoderPosition {
+	Top,
+	#[default]
+	Bottom,
+}
+
 #[serde_inline_default]
 #[derive(Clone, Deserialize, Serialize)]
 pub struct DeviceInfo {
@@ -38,6 +46,8 @@ pub struct DeviceInfo {
 	pub rows: u8,
 	pub columns: u8,
 	pub encoders: u8,
+	#[serde(default)]
+	pub encoder_position: EncoderPosition,
 	#[serde_inline_default(0)]
 	pub touchpoints: u8,
 	#[serde_inline_default(0)]
@@ -46,6 +56,38 @@ pub struct DeviceInfo {
 }
 
 pub static DEVICES: LazyLock<DashMap<String, DeviceInfo>> = LazyLock::new(DashMap::new);
+
+#[cfg(test)]
+mod tests {
+	use super::{DeviceInfo, EncoderPosition};
+
+	fn device_json(encoder_position: Option<&str>) -> String {
+		let encoder_position = encoder_position.map_or_else(String::new, |position| format!(r#", "encoder_position": "{position}""#));
+		format!(
+			r#"{{
+				"id": "test-device",
+				"name": "Test device",
+				"rows": 2,
+				"columns": 3,
+				"encoders": 1,
+				"type": 0
+				{encoder_position}
+			}}"#,
+		)
+	}
+
+	#[test]
+	fn encoder_position_defaults_to_bottom() {
+		let device: DeviceInfo = serde_json::from_str(&device_json(None)).unwrap();
+		assert!(matches!(device.encoder_position, EncoderPosition::Bottom));
+	}
+
+	#[test]
+	fn encoder_position_accepts_top() {
+		let device: DeviceInfo = serde_json::from_str(&device_json(Some("top"))).unwrap();
+		assert!(matches!(device.encoder_position, EncoderPosition::Top));
+	}
+}
 
 /// Get the application configuration directory.
 pub fn config_dir() -> std::path::PathBuf {

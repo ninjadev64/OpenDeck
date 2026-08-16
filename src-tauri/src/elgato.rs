@@ -164,6 +164,7 @@ async fn init(device: AsyncStreamDeck, device_id: String) {
 				rows: kind.row_count(),
 				columns: kind.column_count(),
 				encoders: kind.encoder_count(),
+				encoder_position: crate::shared::EncoderPosition::Bottom,
 				touchpoints: kind.touchpoint_count(),
 				infobars: if kind == Kind::Neo { 1 } else { 0 },
 				r#type: device_type,
