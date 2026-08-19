@@ -42,6 +42,11 @@ pub struct DeviceInfo {
 	pub touchpoints: u8,
 	#[serde_inline_default(0)]
 	pub infobars: u8,
+	/// Keypad positions that are physically a dial rather than a key, for devices where the
+	/// encoders sit among the keys instead of in a row of their own. Encoders listed here are
+	/// drawn in place; any not listed keep the row below the keypad.
+	#[serde_inline_default(Vec::new())]
+	pub encoder_slots: Vec<u16>,
 	pub r#type: u8,
 }
 

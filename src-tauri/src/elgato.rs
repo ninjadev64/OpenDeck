@@ -166,6 +166,8 @@ async fn init(device: AsyncStreamDeck, device_id: String) {
 				encoders: kind.encoder_count(),
 				touchpoints: kind.touchpoint_count(),
 				infobars: if kind == Kind::Neo { 1 } else { 0 },
+				// Every Elgato device keeps its dials in a row of their own.
+				encoder_slots: Vec::new(),
 				r#type: device_type,
 			},
 		},

@@ -75,8 +75,14 @@
 		}
 	}
 
+	// A device can place some of its encoders among the keys (`encoder_slots[i]` is the keypad
+	// position of encoder `i`), for hardware where a dial sits in the same strip as the keys
+	// rather than in a row of its own. Anything not placed keeps the row below the keypad.
+	$: inlineEncoderSlots = device.encoder_slots ?? [];
+	$: rowEncoders = Array.from({ length: device.encoders }, (_, i) => i).filter((i) => i >= inlineEncoderSlots.length);
+
 	$: overflowsX = Math.max(device.columns, device.encoders, device.touchpoints) > 8;
-	$: overflowsY = device.rows + Math.min(device.encoders, 1) + Math.min(device.touchpoints, 1) > 4;
+	$: overflowsY = device.rows + Math.min(rowEncoders.length, 1) + Math.min(device.touchpoints, 1) > 4;
 
 	// Grid navigation: track focused cell and compute row lengths for arrow key movement.
 	let focusedRow = 0;
@@ -84,11 +90,11 @@
 
 	$: gridRowLengths = [
 		...Array(device.rows).fill(device.columns),
-		...(device.encoders > 0 ? [device.encoders] : []),
+		...(rowEncoders.length > 0 ? [rowEncoders.length] : []),
 		...(device.touchpoints > 0 || device.infobars > 0 ? [device.touchpoints + device.infobars] : []),
 	];
 	$: encoderRowIndex = device.rows;
-	$: touchpointRowIndex = device.rows + (device.encoders > 0 ? 1 : 0);
+	$: touchpointRowIndex = device.rows + (rowEncoders.length > 0 ? 1 : 0);
 	$: keypadRowWidth = device.columns * 132;
 
 	function flatIndexFromRowCol(row: number, col: number): number {
@@ -181,24 +187,39 @@
 			{#each { length: device.rows } as _, r}
 				<div class="flex flex-row" role="row">
 					{#each { length: device.columns } as _, c}
-						<Key
-							context={{ device: device.id, profile: profile.id, controller: "Keypad", position: r * device.columns + c }}
-							bind:inslot={profile.keys[r * device.columns + c]}
-							on:dragover={handleDragOver}
-							on:drop={(event) => handleDrop(event, "Keypad", r * device.columns + c)}
-							on:dragstart={(event) => handleDragStart(event, "Keypad", r * device.columns + c)}
-							{handlePaste}
-							size={device.id.startsWith("sd-") && device.rows == 4 && device.columns == 8 ? 192 : 144}
-							label="{$t('device_view.key')} {String.fromCharCode(65 + r)}{c + 1}"
-							tabindex={focusedRow === r && focusedCol === c ? 0 : -1}
-						/>
+						{@const inlineEncoder = inlineEncoderSlots.indexOf(r * device.columns + c)}
+						{#if inlineEncoder >= 0}
+							<Key
+								context={{ device: device.id, profile: profile.id, controller: "Encoder", position: inlineEncoder }}
+								bind:inslot={profile.sliders[inlineEncoder]}
+								on:dragover={handleDragOver}
+								on:drop={(event) => handleDrop(event, "Encoder", inlineEncoder)}
+								on:dragstart={(event) => handleDragStart(event, "Encoder", inlineEncoder)}
+								{handlePaste}
+								size={device.id.startsWith("sd-") && device.rows == 4 && device.columns == 8 ? 192 : 144}
+								label="{$t('device_view.encoder')} {inlineEncoder + 1}"
+								tabindex={focusedRow === r && focusedCol === c ? 0 : -1}
+							/>
+						{:else}
+							<Key
+								context={{ device: device.id, profile: profile.id, controller: "Keypad", position: r * device.columns + c }}
+								bind:inslot={profile.keys[r * device.columns + c]}
+								on:dragover={handleDragOver}
+								on:drop={(event) => handleDrop(event, "Keypad", r * device.columns + c)}
+								on:dragstart={(event) => handleDragStart(event, "Keypad", r * device.columns + c)}
+								{handlePaste}
+								size={device.id.startsWith("sd-") && device.rows == 4 && device.columns == 8 ? 192 : 144}
+								label="{$t('device_view.key')} {String.fromCharCode(65 + r)}{c + 1}"
+								tabindex={focusedRow === r && focusedCol === c ? 0 : -1}
+							/>
+						{/if}
 					{/each}
 				</div>
 			{/each}
 		</div>
 
 		<div class="flex flex-row justify-between" role="row" style={`width: ${keypadRowWidth}px;`}>
-			{#each { length: device.encoders } as _, i}
+			{#each rowEncoders as i, c}
 				<Key
 					context={{ device: device.id, profile: profile.id, controller: "Encoder", position: i }}
 					bind:inslot={profile.sliders[i]}
@@ -208,7 +229,7 @@
 					{handlePaste}
 					size={device.id.startsWith("sd-") && device.rows == 4 && device.columns == 8 ? 192 : 144}
 					label="{$t('device_view.encoder')} {i + 1}"
-					tabindex={focusedRow === encoderRowIndex && focusedCol === i ? 0 : -1}
+					tabindex={focusedRow === encoderRowIndex && focusedCol === c ? 0 : -1}
 				/>
 			{/each}
 		</div>
