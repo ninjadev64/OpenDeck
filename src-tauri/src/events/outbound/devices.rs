@@ -49,6 +49,10 @@ struct SetImageEvent {
 }
 
 pub async fn update_image(context: crate::shared::Context, image: Option<String>) -> Result<(), anyhow::Error> {
+	if crate::device_sleep::should_suppress_updates(&context.device) {
+		return Ok(());
+	}
+
 	if let Some(plugin) = DEVICE_NAMESPACES.read().await.get(&context.device[..2]) {
 		let image = match (context.controller.as_str(), image) {
 			("Encoder", Some(img)) => Some(to_encoder_jpeg_data_uri(&context, &img).await?),
@@ -71,6 +75,35 @@ pub async fn update_image(context: crate::shared::Context, image: Option<String>
 	}
 
 	Ok(())
+}
+
+#[derive(Serialize)]
+struct ClearOnSleepEvent {
+	event: &'static str,
+	device: String,
+}
+
+/// Clear a device using its plugin implementation or the legacy null-image fallback.
+pub async fn clear_on_sleep(device: &str) -> Result<(), anyhow::Error> {
+	let Some(info) = crate::shared::DEVICES.get(device).map(|entry| entry.clone()) else {
+		return Ok(());
+	};
+
+	if info.supports_clear_on_sleep {
+		if let Some(plugin) = DEVICE_NAMESPACES.read().await.get(&device[..2]) {
+			return send_to_plugin(
+				plugin,
+				&ClearOnSleepEvent {
+					event: "clearOnSleep",
+					device: device.to_owned(),
+				},
+			)
+			.await;
+		}
+	}
+
+	// Legacy fallback: null image means clear the whole device.
+	clear_screen(device.to_owned()).await
 }
 
 async fn to_encoder_jpeg_data_uri(context: &crate::shared::Context, image: &str) -> Result<String, anyhow::Error> {

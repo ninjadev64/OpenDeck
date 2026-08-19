@@ -147,6 +147,8 @@
 	"settings.sleep_timeout_minutes": "Viloläge efter inaktivitet:",
 	"settings.sleep_timeout_minutes.minutes": "minuter",
 	"settings.sleep_timeout_minutes.tooltip": "Detta alternativ styr hur många minuters inaktivitet som krävs innan enheter går in i viloläge. Värdet 0 inaktiverar automatisk vila.",
+	"settings.clear_display_on_sleep": "Rensa displayer under vila:",
+	"settings.clear_display_on_sleep.tooltip": "Om detta alternativ är aktiverat rensas enheternas displayer och bilduppdateringar blockeras under viloläge. Displayerna återställs efter uppvaknande.",
 	"settings.sleep_when_computer_locked": "Gå i viloläge när datorn är låst:",
 	"settings.sleep_when_computer_locked.tooltip": "Om detta alternativ är aktiverat går enheter in i viloläge när datorn låses, och alla knapptryckningar ignoreras tills den låses upp.",
 	"settings.statistics": "Bidra med statistik:",

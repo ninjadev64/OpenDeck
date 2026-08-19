@@ -149,6 +149,8 @@
 	"settings.sleep_timeout_minutes.tooltip": "Esta opção controla quantos minutos de inatividade farão os dispositivos entrarem em modo de suspensão. O valor 0 desativa a suspensão automática.",
 	"settings.sleep_when_computer_locked": "Suspender quando o computador estiver bloqueado:",
 	"settings.sleep_when_computer_locked.tooltip": "Se esta opção estiver ativada, os dispositivos entrarão em modo de suspensão quando o computador for bloqueado, e todos os pressionamentos de teclas serão suprimidos até ele ser desbloqueado.",
+	"settings.clear_display_on_sleep": "Limpar o display quando suspender:",
+	"settings.clear_display_on_sleep.tooltip": "Se esta opão for ativada, o display do dispositivo será apagado e atualizações são suprimidas enquanto suspenso. O display é restaurado quando acordado.",
 	"settings.statistics": "Contribuir com estatísticas:",
 	"settings.updatecheck": "Verificar atualizações:"
 }

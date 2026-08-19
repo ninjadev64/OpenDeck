@@ -149,6 +149,8 @@
 	"settings.sleep_timeout_minutes.tooltip": "Diese Option legt fest, nach wie vielen Minuten ohne Aktivität Geräte in den Schlafmodus wechseln; ein Wert von 0 deaktiviert den automatischen Schlafmodus.",
 	"settings.sleep_when_computer_locked": "Ruhezustand, wenn der Computer gesperrt ist:",
 	"settings.sleep_when_computer_locked.tooltip": "Wenn diese Option aktiviert ist, wechseln die Geräte beim Sperren des Computers in den Ruhezustand, und alle Tastendrücke werden bis zum Entsperren des Computers unterdrückt.",
+	"settings.clear_display_on_sleep": "Anzeige im Ruhezustand leeren:",
+	"settings.clear_display_on_sleep.tooltip": "Wenn diese Option aktiviert ist, werden Geräteanzeigen geleert und Bildaktualisierungen im Ruhezustand unterdrückt. Nach dem Aufwachen werden die Anzeigen wiederhergestellt.",
 	"settings.statistics": "Statistiken übermitteln:",
 	"settings.updatecheck": "Automatisch auf Updates prüfen:"
 }

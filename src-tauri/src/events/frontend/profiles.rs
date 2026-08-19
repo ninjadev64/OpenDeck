@@ -37,8 +37,9 @@ pub async fn set_selected_profile(device: String, id: String) -> Result<(), Erro
 	}
 
 	let selected_profile = locks.device_stores.get_selected_profile(&device)?;
+	let profile_changed = selected_profile != id;
 
-	if selected_profile != id {
+	if profile_changed {
 		let old_profile = &locks.profile_stores.get_profile_store(&DEVICES.get(&device).unwrap(), &selected_profile)?.value;
 		for instance in old_profile
 			.keys
@@ -79,6 +80,13 @@ pub async fn set_selected_profile(device: String, id: String) -> Result<(), Erro
 	store.save()?;
 
 	locks.device_stores.set_selected_profile(&device, id)?;
+	drop(locks);
+
+	// A profile switch is device activity. Wake it after releasing profile locks;
+	// waking may rerender images and acquire the same locks again.
+	if profile_changed {
+		crate::device_sleep::note_activity(&device).await?;
+	}
 
 	Ok(())
 }

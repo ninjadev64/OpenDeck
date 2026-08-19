@@ -7,4 +7,5 @@ export type DeviceInfo = {
 	touchpoints: number;
 	infobars: number;
 	type: number;
+	supports_clear_on_sleep: boolean;
 };

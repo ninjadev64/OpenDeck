@@ -116,6 +116,12 @@
 		</div>
 
 		<div class="flex flex-row items-center m-2 space-x-2">
+			<label for="settings-clear_display_on_sleep" class="text-neutral-400">{$t("settings.clear_display_on_sleep")}</label>
+			<input type="checkbox" bind:checked={$settings.clear_display_on_sleep} id="settings-clear_display_on_sleep" />
+			<Tooltip>{$t("settings.clear_display_on_sleep.tooltip")}</Tooltip>
+		</div>
+
+		<div class="flex flex-row items-center m-2 space-x-2">
 			<label for="settings-rotation" class="text-neutral-400">{$t("settings.rotation")}</label>
 			<input type="range" min="0" max="270" step="90" bind:value={$settings.rotation} id="settings-rotation" />
 		</div>

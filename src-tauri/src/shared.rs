@@ -43,6 +43,8 @@ pub struct DeviceInfo {
 	#[serde_inline_default(0)]
 	pub infobars: u8,
 	pub r#type: u8,
+	#[serde_inline_default(false)]
+	pub supports_clear_on_sleep: bool,
 }
 
 pub static DEVICES: LazyLock<DashMap<String, DeviceInfo>> = LazyLock::new(DashMap::new);

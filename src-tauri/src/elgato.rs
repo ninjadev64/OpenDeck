@@ -167,6 +167,7 @@ async fn init(device: AsyncStreamDeck, device_id: String) {
 				touchpoints: kind.touchpoint_count(),
 				infobars: if kind == Kind::Neo { 1 } else { 0 },
 				r#type: device_type,
+				supports_clear_on_sleep: false,
 			},
 		},
 	)

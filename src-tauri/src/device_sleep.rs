@@ -9,6 +9,7 @@ static LAST_ACTIVITY: LazyLock<DashMap<String, Instant>> = LazyLock::new(DashMap
 
 static SLEEP_WHEN_COMPUTER_LOCKED: AtomicBool = AtomicBool::new(false);
 static COMPUTER_LOCKED: AtomicBool = AtomicBool::new(false);
+static CLEAR_DISPLAY_ON_SLEEP: AtomicBool = AtomicBool::new(false);
 
 static SLEEPING_DEVICES: LazyLock<DashMap<String, ()>> = LazyLock::new(DashMap::new);
 
@@ -16,9 +17,14 @@ pub fn is_device_sleeping(device: &str) -> bool {
 	SLEEPING_DEVICES.contains_key(device)
 }
 
+pub fn should_suppress_updates(device: &str) -> bool {
+	CLEAR_DISPLAY_ON_SLEEP.load(Ordering::Relaxed) && is_device_sleeping(device)
+}
+
 pub fn init_device_sleep() {
 	SLEEP_TIMEOUT_MINUTES.store(crate::store::get_settings().value.sleep_timeout_minutes, Ordering::Relaxed);
 	SLEEP_WHEN_COMPUTER_LOCKED.store(crate::store::get_settings().value.sleep_when_computer_locked, Ordering::Relaxed);
+	CLEAR_DISPLAY_ON_SLEEP.store(crate::store::get_settings().value.clear_display_on_sleep, Ordering::Relaxed);
 
 	tokio::spawn(async {
 		loop {
@@ -58,6 +64,9 @@ pub fn deregister_device(device: &str) {
 
 pub async fn sleep_device(device: String) -> Result<(), anyhow::Error> {
 	crate::events::outbound::devices::set_device_brightness(&device, 0).await?;
+	if CLEAR_DISPLAY_ON_SLEEP.load(Ordering::Relaxed) {
+		crate::events::outbound::devices::clear_on_sleep(&device).await?;
+	}
 	SLEEPING_DEVICES.insert(device, ());
 	Ok(())
 }
@@ -88,10 +97,30 @@ pub async fn wake_device(device: &str) -> Result<bool, anyhow::Error> {
 	if SLEEPING_DEVICES.remove(device).is_some() {
 		let brightness = crate::store::get_settings().value.brightness;
 		crate::events::outbound::devices::set_device_brightness(device, brightness).await?;
+		if CLEAR_DISPLAY_ON_SLEEP.load(Ordering::Relaxed) {
+			crate::events::frontend::profiles::rerender_images(crate::APP_HANDLE.get().unwrap()).await?;
+		}
 		return Ok(true);
 	}
 
 	Ok(false)
+}
+
+pub async fn update_clear_display_on_sleep(enabled: bool) -> Result<(), anyhow::Error> {
+	let changed = CLEAR_DISPLAY_ON_SLEEP.swap(enabled, Ordering::Relaxed) != enabled;
+	if !changed {
+		return Ok(());
+	}
+
+	if enabled {
+		for device in SLEEPING_DEVICES.iter().map(|entry| entry.key().clone()).collect::<Vec<_>>() {
+			crate::events::outbound::devices::clear_on_sleep(&device).await?;
+		}
+	} else if !SLEEPING_DEVICES.is_empty() {
+		crate::events::frontend::profiles::rerender_images(crate::APP_HANDLE.get().unwrap()).await?;
+	}
+
+	Ok(())
 }
 
 pub async fn update_sleep_when_computer_locked(enabled: bool) -> Result<(), anyhow::Error> {

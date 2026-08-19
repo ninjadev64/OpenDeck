@@ -149,6 +149,8 @@
 	"settings.sleep_timeout_minutes.tooltip": "This option controls how many minutes of inactivity will cause devices to enter sleep mode, where a value of 0 disables sleeping automatically.",
 	"settings.sleep_when_computer_locked": "Sleep when computer is locked:",
 	"settings.sleep_when_computer_locked.tooltip": "If this option is enabled, devices will enter sleep mode when the computer locks and all key presses will be suppressed until it is unlocked.",
+	"settings.clear_display_on_sleep": "Clear display while sleeping:",
+	"settings.clear_display_on_sleep.tooltip": "If this option is enabled, device displays are cleared and image updates are suppressed while sleeping. Displays are restored after waking.",
 	"settings.statistics": "Contribute statistics:",
 	"settings.updatecheck": "Check for updates:"
 }
