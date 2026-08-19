@@ -51,7 +51,15 @@
 	}
 
 	listen("update_state", ({ payload }: { payload: { context: string; contents: ActionInstance | null } }) => {
-		if (payload.context == slot?.context) slot = payload.contents;
+		if (payload.context != slot?.context) return;
+		slot = payload.contents;
+		// The parent's `profile.keys[]` is the copy that survives a grid re-render, so a state
+		// update that only lands in the local `slot` is undone the next time anything sets
+		// `profile = profile` -- which is what made plugin-set images revert to the action's
+		// default icon (#152). Keep both copies in step, and move `lastInslot` with them so
+		// the write back does not immediately bounce through `update()`.
+		lastInslot = payload.contents;
+		inslot = payload.contents;
 	});
 
 	listen("key_moved", ({ payload }: { payload: { context: Context; pressed: boolean } }) => {
