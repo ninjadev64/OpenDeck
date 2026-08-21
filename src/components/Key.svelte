@@ -197,46 +197,64 @@
 	}
 
 	$: accessibleLabel = label + (slot ? ": " + slot.action.name + (state?.show && state?.text ? " - " + state.text : "") : "");
+
+	// What this key does, written under it. A key that carries an icon carries no text -- the
+	// text would be drawn across the middle of the picture, on the hardware as well as here --
+	// so without this the editor is a grid of pictures and no words, and a picture is only
+	// obvious once you already know what it means.
+	//
+	// The state's name is where a profile says what its key is for: it is the manifest's
+	// per-state Name, it round-trips through the profile file, and nothing else reads it, so
+	// two keys of the same action can finally be told apart. Failing that, the action's own
+	// tooltip and name. None of the three reaches the device, so the glass stays clean.
+	$: caption = slot ? state?.name || slot.action.tooltip || slot.action.name || "" : "";
 </script>
 
-<div class="relative" style={`transform: scale(${(112 /* desired inner size */ / size) * scale});`}>
-	<canvas
-		bind:this={canvas}
-		class="relative border-3 border-neutral-700 rounded-3xl outline-none outline-offset-2 outline-blue-500"
-		style={`margin: ${-((size + 3 * 2 /* border */ - 132) /* desired outer size */ / 2)}px;`}
-		class:outline-solid={active && ((slot && $inspectedInstance == slot.context) || (context && $inspectedInstance == context))}
-		class:rounded-full!={context?.controller == "Encoder"}
-		class:rounded-lg!={context?.controller == "Infobar"}
-		class:bg-black={slot != null}
-		{width}
-		{height}
-		draggable={slot != null}
-		{tabindex}
-		{role}
-		aria-label={accessibleLabel}
-		on:dragstart
-		on:dragover
-		on:drop
-		on:click|stopPropagation={select}
-		on:dblclick|stopPropagation={triggerVirtualPress}
-		on:keydown={(e) => {
-			if (!active || !context) return;
-			if (e.key == "Enter") select(e);
-			else if (e.key == "F2") edit();
-			else if ((e.ctrlKey || e.metaKey) && e.key == "c") copy();
-			else if ((e.ctrlKey || e.metaKey) && e.key == "v") paste();
-			else if (e.key == "Delete") clear();
-			else if (e.key == "ContextMenu" || (e.shiftKey && e.key == "F10")) contextMenu(e);
-		}}
-		on:keyup|stopPropagation={(e) => {
-			if (!active || !context) return;
-			if (e.key == " ") select(e);
-		}}
-		on:focus={onfocus}
-		on:contextmenu={contextMenu}
-	/>
-	{#if isTouchPoint && !slot}
-		<div class="absolute left-1/4 top-1/2 w-1/2 border-t-4 border-neutral-700 pointer-events-none"></div>
+<div class="flex flex-col items-center">
+	<div class="relative" style={`transform: scale(${(112 /* desired inner size */ / size) * scale});`}>
+		<canvas
+			bind:this={canvas}
+			class="relative border-3 border-neutral-700 rounded-3xl outline-none outline-offset-2 outline-blue-500"
+			style={`margin: ${-((size + 3 * 2 /* border */ - 132) /* desired outer size */ / 2)}px;`}
+			class:outline-solid={active && ((slot && $inspectedInstance == slot.context) || (context && $inspectedInstance == context))}
+			class:rounded-full!={context?.controller == "Encoder"}
+			class:rounded-lg!={context?.controller == "Infobar"}
+			class:bg-black={slot != null}
+			{width}
+			{height}
+			draggable={slot != null}
+			{tabindex}
+			{role}
+			aria-label={accessibleLabel}
+			on:dragstart
+			on:dragover
+			on:drop
+			on:click|stopPropagation={select}
+			on:dblclick|stopPropagation={triggerVirtualPress}
+			on:keydown={(e) => {
+				if (!active || !context) return;
+				if (e.key == "Enter") select(e);
+				else if (e.key == "F2") edit();
+				else if ((e.ctrlKey || e.metaKey) && e.key == "c") copy();
+				else if ((e.ctrlKey || e.metaKey) && e.key == "v") paste();
+				else if (e.key == "Delete") clear();
+				else if (e.key == "ContextMenu" || (e.shiftKey && e.key == "F10")) contextMenu(e);
+			}}
+			on:keyup|stopPropagation={(e) => {
+				if (!active || !context) return;
+				if (e.key == " ") select(e);
+			}}
+			on:focus={onfocus}
+			on:contextmenu={contextMenu}
+		/>
+		{#if isTouchPoint && !slot}
+			<div class="absolute left-1/4 top-1/2 w-1/2 border-t-4 border-neutral-700 pointer-events-none"></div>
+		{/if}
+	</div>
+	{#if caption}
+		<span class="w-[104px] -mt-1 mb-0.5 text-[10px] leading-tight text-center text-neutral-400 line-clamp-2 break-words select-none pointer-events-none" title={caption}>
+			{caption}
+		</span>
 	{/if}
 </div>
 
