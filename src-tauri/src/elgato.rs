@@ -208,14 +208,14 @@ async fn init(device: AsyncStreamDeck, device_id: String) {
 				DeviceStateUpdate::EncoderUp(dial) => inbound::devices::encoder_up(press(dial)).await,
 				DeviceStateUpdate::TouchScreenPress(x, y) => {
 					let (position, x, y) = match kind {
-						Kind::Plus => ((x / 200) as u8, x % 200, y),
+						Kind::Plus | Kind::PlusXl => ((x / 200) as u8, x % 200, y),
 						_ => continue,
 					};
 					inbound::devices::touchscreen_press(touchscreen_press(position, x, y, false)).await
 				}
 				DeviceStateUpdate::TouchScreenLongPress(x, y) => {
 					let (position, x, y) = match kind {
-						Kind::Plus => ((x / 200) as u8, x % 200, y),
+						Kind::Plus | Kind::PlusXl => ((x / 200) as u8, x % 200, y),
 						_ => continue,
 					};
 					inbound::devices::touchscreen_press(touchscreen_press(position, x, y, true)).await
