@@ -61,7 +61,13 @@ pub async fn update_image(context: &crate::shared::Context, image: Option<&str>)
 				let (r, g, b) = extract_average_colour(&image::load_from_memory(&bytes)?);
 				device.set_touchpoint_color(context.position - key_count, r, g, b).await?;
 			} else {
-				device.set_button_image(context.position, image::load_from_memory(&bytes)?).await?;
+				// Pre-scale to the key's native resolution: the device library
+				// otherwise resizes with nearest-neighbour, which visibly
+				// aliases key images (144 -> 120 on the Stream Deck +).
+				let img = image::load_from_memory(&bytes)?;
+				let (width, height) = kind.key_image_format().size;
+				let img = img.resize_exact(width as u32, height as u32, image::imageops::FilterType::Lanczos3);
+				device.set_button_image(context.position, img).await?;
 			}
 		} else if context.controller == "Encoder" {
 			let mut img = image::DynamicImage::new_rgb8(200, 100);
