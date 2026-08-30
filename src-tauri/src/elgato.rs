@@ -220,6 +220,17 @@ async fn init(device: AsyncStreamDeck, device_id: String) {
 					};
 					inbound::devices::touchscreen_press(touchscreen_press(position, x, y, true)).await
 				}
+				DeviceStateUpdate::TouchScreenSwipe((sx, _sy), (ex, _ey)) => {
+					let position = match kind {
+						Kind::Plus | Kind::PlusXl => (sx / 200) as u8,
+						_ => continue,
+					};
+					let ticks = ((ex as i32 - sx as i32) / 12).clamp(-127, 127) as i8;
+					if ticks == 0 {
+						continue;
+					}
+					inbound::devices::encoder_change(encoder(position, ticks)).await
+				}
 				_ => Ok(()),
 			} {
 				Ok(_) => (),
