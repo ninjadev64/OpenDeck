@@ -36,7 +36,7 @@
 	"key.paste": "Pegar",
 	"no_devices_detected.check_connection": "Asegurate que tu dispositivo está conectado correctamente y tienes permiso para acceder a el.",
 	"no_devices_detected.check_udev": "Asegurate que tienes las reglas del subsitema udev instaladas.",
-	"no_devices_detected.install_plugin": "Es posible que tengas que isntalar un plugin que soporte tu dispositivo.",
+	"no_devices_detected.install_plugin": "Es posible que tengas que instalar un plugin que soporte tu dispositivo.",
 	"no_devices_detected.restart": "Reinicia {{PRODUCT_NAME}}",
 	"no_devices_detected.title": "No se han detectado dispositivos",
 	"parent_action_view.child": "hijo",
